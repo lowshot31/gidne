@@ -1,0 +1,94 @@
+---
+import Dashboard from '../layouts/Dashboard.astro';
+---
+
+<Dashboard title="Gidne | Equities">
+	<div class="bento-grid">
+		<!-- Market Pulse Placeholder -->
+		<div class="bento-item market-pulse">
+			<h2>🟢 MARKET PULSE <span style="float:right">72/100</span></h2>
+			<p>8/11 섹터 상승 중, RS 리더: XLK +2.31%</p>
+		</div>
+
+		<!-- 3-Column Layout -->
+		<div class="grid-columns">
+			<div class="column macro">
+				<div class="bento-item">
+					<h3 class="text-secondary mb-md">MACRO FOCUS</h3>
+					<p class="text-muted">10Y/2Y Yield, VIX, DXY placeholder</p>
+				</div>
+				<div class="bento-item event-horizon">
+					<h3 class="text-secondary mb-md">EVENT HORIZON</h3>
+					<p class="text-muted">CPI / FOMC placeholder</p>
+				</div>
+			</div>
+			
+			<div class="column sector">
+				<div class="bento-item h-full">
+					<h3 class="text-secondary mb-md">SECTOR STRENGTH</h3>
+					<p class="text-muted">11 Sectors Horizontal Bar Chart Placeholder</p>
+				</div>
+				<div class="bento-item h-full">
+					<h3 class="text-secondary mb-md">PRICE CHART</h3>
+					<p class="text-muted">TradingView Lightweight Charts Placeholder</p>
+				</div>
+			</div>
+			
+			<div class="column leaderboard">
+				<div class="bento-item h-full">
+					<h3 class="text-secondary mb-md">RS LEADERBOARD</h3>
+					<p class="text-muted">RS Ranking and Changes Placeholder</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		.bento-grid {
+			display: flex;
+			flex-direction: column;
+			gap: var(--gap-md);
+			height: 100%;
+		}
+		.grid-columns {
+			display: grid;
+			grid-template-columns: 250px 1fr 300px;
+			gap: var(--gap-md);
+			flex: 1;
+		}
+		.column {
+			display: flex;
+			flex-direction: column;
+			gap: var(--gap-md);
+		}
+		.h-full {
+			flex: 1;
+		}
+		.mb-md { margin-bottom: var(--gap-sm); }
+		.text-secondary { color: var(--text-secondary); }
+		.text-muted { color: var(--text-muted); }
+		
+		@media (max-width: 1200px) {
+			.grid-columns {
+				grid-template-columns: 1fr 300px;
+			}
+			.macro {
+				flex-direction: row;
+			}
+			.macro .bento-item {
+				flex: 1;
+			}
+			.sector .bento-item.h-full {
+				min-height: 300px;
+			}
+		}
+		@media (max-width: 768px) {
+			.grid-columns {
+				grid-template-columns: 1fr;
+			}
+			.macro {
+				flex-direction: column;
+			}
+		}
+	</style>
+</Dashboard>

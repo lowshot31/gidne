@@ -1,0 +1,76 @@
+:root {
+  /* ── 배경 ── */
+  --bg-color: #050507;
+  --card-bg: rgba(15, 15, 20, 0.7);
+  --card-bg-hover: rgba(25, 25, 35, 0.8);
+
+  /* ── 브랜드 컬러 ── */
+  --accent-primary: #00f2ff;        /* 시안 네온 */
+  --accent-secondary: #6366f1;      /* 인디고 */
+  --gradient-brand: linear-gradient(90deg, #00f2ff, #6366f1);
+
+  /* ── 마켓 컬러 ── */
+  --bull: #00e676;                   /* 상승 - 녹색 */
+  --bear: #ff1744;                   /* 하락 - 빨강 */
+  --neutral: #ffd740;                /* 보합 - 노랑 */
+  --bull-bg: rgba(0, 230, 118, 0.1);
+  --bear-bg: rgba(255, 23, 68, 0.1);
+
+  /* ── 텍스트 ── */
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0ab;
+  --text-muted: #5a5a65;
+
+  /* ── 보더 & 글래스 ── */
+  --border-color: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --neon-glow: 0 0 20px rgba(0, 242, 255, 0.3);
+
+  /* ── 타이포 ── */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* ── 반경 ── */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+
+  /* ── 간격 ── */
+  --gap-sm: 0.75rem;
+  --gap-md: 1.5rem;
+  --gap-lg: 2rem;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  margin: 0;
+}
+
+.bento-item {
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  padding: var(--gap-md);
+  transition: all 0.2s ease;
+}
+
+.bento-item:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--neon-glow);
+}
+
+.text-bull { color: var(--bull); }
+.text-bear { color: var(--bear); }
+.bg-bull { background-color: var(--bull-bg); }
+.bg-bear { background-color: var(--bear-bg); }

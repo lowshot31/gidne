@@ -1,0 +1,112 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Gidne v2 - Financial Dashboard" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<body>
+		<div class="dashboard-container">
+			<!-- Header / Nav -->
+			<header class="app-header">
+				<div class="logo">GIDNE</div>
+				<nav class="tabs">
+					<a href="/" class="active">Equities</a>
+					<a href="/indices">Indices</a>
+					<a href="/macro">Macro</a>
+					<a href="/flows">Flows</a>
+				</nav>
+				<div class="search-bar">🔍 Search</div>
+			</header>
+
+			<!-- Ticker Strip Placeholder -->
+			<div class="ticker-strip">
+				<span>GOLD ▲0.38%</span>
+				<span>NASDAQ ▲1.25%</span>
+				<span>S&P ▲0.82%</span>
+			</div>
+
+			<!-- Main Content -->
+			<main class="dashboard-content">
+				<slot />
+			</main>
+		</div>
+
+		<style>
+			.dashboard-container {
+				display: flex;
+				flex-direction: column;
+				height: 100vh;
+				overflow: hidden;
+			}
+			.app-header {
+				display: flex;
+				align-items: center;
+				padding: var(--gap-sm) var(--gap-md);
+				border-bottom: 1px solid var(--border-color);
+				background: var(--card-bg);
+			}
+			.logo {
+				font-family: var(--font-heading);
+				font-size: 1.5rem;
+				font-weight: 700;
+				background: var(--gradient-brand);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				margin-right: var(--gap-lg);
+			}
+			.tabs {
+				display: flex;
+				gap: var(--gap-md);
+				flex: 1;
+			}
+			.tabs a {
+				color: var(--text-secondary);
+				text-decoration: none;
+				font-weight: 500;
+				padding-bottom: 4px;
+				transition: color 0.2s ease;
+			}
+			.tabs a:hover {
+				color: var(--text-primary);
+			}
+			.tabs a.active {
+				color: var(--text-primary);
+				border-bottom: 2px solid var(--accent-primary);
+			}
+			.search-bar {
+				color: var(--text-muted);
+			}
+			.ticker-strip {
+				display: flex;
+				gap: var(--gap-md);
+				padding: 8px var(--gap-md);
+				font-family: var(--font-mono);
+				font-size: 0.9rem;
+				border-bottom: 1px solid var(--border-color);
+				background: rgba(15, 15, 20, 0.9);
+			}
+			.dashboard-content {
+				flex: 1;
+				padding: var(--gap-md);
+				overflow-y: auto;
+			}
+		</style>
+	</body>
+</html>
