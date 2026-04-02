@@ -17,7 +17,30 @@ import {
 } from '../../lib/tickers';
 import type { MarketDataResponse, TickerQuote, MacroData } from '../../lib/types';
 
-export const GET: APIRoute = async () => {
+const rateLimit = new Map<string, { count: number; expiresAt: number }>();
+const RATE_LIMIT_COUNT = 60;
+const RATE_LIMIT_WINDOW = 60000;
+
+export const GET: APIRoute = async ({ request, clientAddress }) => {
+  const ip = clientAddress || 'unknown';
+  const now = Date.now();
+  const userRate = rateLimit.get(ip);
+  
+  if (userRate && userRate.expiresAt > now) {
+    if (userRate.count >= RATE_LIMIT_COUNT) {
+      return new Response(JSON.stringify({ error: 'Too Many Requests' }), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+    userRate.count++;
+  } else {
+    rateLimit.set(ip, { count: 1, expiresAt: now + RATE_LIMIT_WINDOW });
+  }
+
   try {
     // 1. 전체 티커 배치 요청 (1회 호출로 모든 데이터 fetch)
     const allTickers = getAllTickers();
@@ -88,6 +111,7 @@ export const GET: APIRoute = async () => {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'public, max-age=15', // CDN에서 15초 캐시
+        'Access-Control-Allow-Origin': '*',
       },
     });
   } catch (error) {
@@ -100,7 +124,10 @@ export const GET: APIRoute = async () => {
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
       }
     );
   }

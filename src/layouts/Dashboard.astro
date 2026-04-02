@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import TickerStripClient from '../components/TickerStripClient';
 
 interface Props {
 	title: string;
@@ -35,12 +36,8 @@ const { title } = Astro.props;
 				<div class="search-bar">🔍 Search</div>
 			</header>
 
-			<!-- Ticker Strip Placeholder -->
-			<div class="ticker-strip">
-				<span>GOLD ▲0.38%</span>
-				<span>NASDAQ ▲1.25%</span>
-				<span>S&P ▲0.82%</span>
-			</div>
+			<!-- Ticker Strip React Island -->
+			<TickerStripClient client:load />
 
 			<!-- Main Content -->
 			<main class="dashboard-content">

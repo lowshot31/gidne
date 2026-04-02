@@ -2,9 +2,12 @@
 // Yahoo Finance 데이터 fetch — 서버사이드 전용
 // yahoo-finance2 패키지 사용
 
-import yahooFinance from 'yahoo-finance2';
+import YahooFinance from 'yahoo-finance2';
 import { cache, TTL } from './cache';
 import type { TickerQuote } from './types';
+
+// yahoo-finance2 v3 이상부터는 인스턴스화가 필요합니다
+const yahooFinance = new YahooFinance();
 
 /**
  * 여러 티커의 실시간 시세를 배치로 가져옵니다.

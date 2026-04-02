@@ -10,7 +10,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "docker:build": "docker build -t gidne-app:latest .",
-    "docker:run": "docker run -p 4321:4321 gidne-app:latest"
+    "docker:run": "docker run --rm --name gidne -p 4321:4321 gidne-app:latest"
   },
   "dependencies": {
     "@astrojs/node": "^9.0.0",
