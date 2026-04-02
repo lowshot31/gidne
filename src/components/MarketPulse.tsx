@@ -1,16 +1,19 @@
 import React from 'react';
 import type { MarketPulseData } from '../lib/types';
+import { useFlash } from '../hooks/useFlash';
 
 interface Props {
   data: MarketPulseData;
 }
 
 export default function MarketPulse({ data }: Props) {
+  const flash = useFlash(data.score);
+  
   return (
-    <div className="bento-item market-pulse">
+    <div className="bento-item card-hero market-pulse">
       <div className="pulse-header">
         <h2>{data.emoji} MARKET PULSE</h2>
-        <h2 className="score">{data.score}/100</h2>
+        <h2 className={`score ${flash}`} style={{ padding: '0.25rem 0.75rem' }}>{data.score}/100</h2>
       </div>
       
       <div className="progress-bar-container">
@@ -44,7 +47,7 @@ export default function MarketPulse({ data }: Props) {
         }
         .progress-bar-container {
           height: 16px;
-          background: rgba(255,255,255,0.1);
+          background: var(--glass-border, #222222);
           border-radius: var(--radius-sm);
           overflow: hidden;
         }

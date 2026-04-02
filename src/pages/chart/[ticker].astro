@@ -1,0 +1,11 @@
+---
+import Dashboard from '../../layouts/Dashboard.astro';
+import ChartPageClient from '../../components/ChartPageClient';
+
+const { ticker } = Astro.params;
+const safeTicker = ticker?.toUpperCase() || 'SPY';
+---
+
+<Dashboard title={`Gidne | ${safeTicker} Chart`}>
+	<ChartPageClient client:load initialTicker={safeTicker} />
+</Dashboard>

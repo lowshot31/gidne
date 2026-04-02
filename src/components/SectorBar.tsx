@@ -43,10 +43,10 @@ export default function SectorBar({ sectors }: Props) {
           );
         })}
       </div>
-      <div className="cycle-legend text-muted" style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', gap: '1rem', fontSize: '0.85rem' }}>
-        <span>● Early/Growth</span>
-        <span>● Mid/Defensive</span>
-        <span>● Late/Rate-Sens</span>
+      <div className="cycle-legend" style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', gap: '1rem', fontSize: '0.85rem' }}>
+        <span><span style={{ color: '#22c55e' }}>●</span> Early/Growth</span>
+        <span><span style={{ color: '#06b6d4' }}>●</span> Mid/Defensive</span>
+        <span><span style={{ color: '#f43f5e' }}>●</span> Late/Rate-Sens</span>
       </div>
 
       <style>{`
@@ -70,7 +70,7 @@ export default function SectorBar({ sectors }: Props) {
         .bar-track {
           flex: 1;
           height: 12px;
-          background: rgba(255,255,255,0.05);
+          background: var(--glass-border, #222222);
           border-radius: 4px;
         }
         .bar-fill {

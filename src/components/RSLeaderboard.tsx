@@ -6,7 +6,21 @@ interface Props {
 }
 
 export default function RSLeaderboard({ sectors }: Props) {
-  // RS 기반 정렬된 상태이므로 상위 순서대로 표시
+  // 섹터 약칭 매핑 — 잘림 방지
+  const SHORT_NAMES: Record<string, string> = {
+    'Technology': 'Tech',
+    'Financials': 'Fin',
+    'Healthcare': 'Health',
+    'Energy': 'Energy',
+    'Industrials': 'Indust',
+    'Staples': 'Staples',
+    'Discretionary': 'Discrt',
+    'Utilities': 'Util',
+    'Materials': 'Matrl',
+    'Real Estate': 'RE',
+    'Communication': 'Comm',
+  };
+
   return (
     <div className="bento-item h-full leaderboard-container">
       <h3 className="text-secondary mb-md">RS LEADERBOARD</h3>
@@ -16,6 +30,7 @@ export default function RSLeaderboard({ sectors }: Props) {
           const isRsPositive = s.rs > 0;
           const rsClass = isRsPositive ? 'text-bull' : 'text-bear';
           const rsSign = isRsPositive ? '+' : '';
+          const shortName = SHORT_NAMES[s.name] || s.name;
 
           // 순위 변동 기호
           let rankChangeEl = <span style={{ color: 'var(--text-muted)' }}>──</span>;
@@ -36,15 +51,15 @@ export default function RSLeaderboard({ sectors }: Props) {
                 </div>
               )}
               <div className="leader-row" style={{ padding: '0.6rem 0', borderBottom: '1px solid var(--glass-border)' }}>
-                <span style={{ width: '30px', textAlign: 'center', fontWeight: 'bold' }}>{medal}</span>
-                <div style={{ flex: 1, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <span style={{ width: '28px', textAlign: 'center', fontWeight: 'bold', flexShrink: 0 }}>{medal}</span>
+                <div className="leader-name">
                   <strong>{s.ticker}</strong>
-                  <span className="text-muted" style={{ fontSize: '0.85rem' }}>{s.name.substring(0, 10)}</span>
+                  <span className="text-muted leader-short-name">{shortName}</span>
                 </div>
-                <div style={{ width: '80px', textAlign: 'right' }} className={rsClass}>
+                <div style={{ width: '78px', textAlign: 'right', flexShrink: 0 }} className={rsClass}>
                   {rsSign}{s.rs.toFixed(2)}%
                 </div>
-                <div style={{ width: '40px', textAlign: 'right', fontSize: '0.9rem' }}>
+                <div style={{ width: '38px', textAlign: 'right', fontSize: '0.9rem', flexShrink: 0 }}>
                   {rankChangeEl}
                 </div>
               </div>
@@ -63,11 +78,26 @@ export default function RSLeaderboard({ sectors }: Props) {
           flex-direction: column;
           font-family: var(--font-mono);
           font-size: 0.95rem;
+          overflow-y: auto;
         }
         .leader-row {
           display: flex;
           align-items: center;
           gap: 0.5rem;
+        }
+        .leader-name {
+          flex: 1;
+          display: flex;
+          gap: 0.4rem;
+          align-items: center;
+          min-width: 0;
+          overflow: hidden;
+        }
+        .leader-short-name {
+          font-size: 0.8rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .divider {
           text-align: center;

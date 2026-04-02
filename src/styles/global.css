@@ -1,45 +1,82 @@
 :root {
   /* ── 배경 ── */
-  --bg-color: #050507;
-  --card-bg: rgba(15, 15, 20, 0.7);
-  --card-bg-hover: rgba(25, 25, 35, 0.8);
+  --bg-color: #0a0a0a;
+  --bg-secondary: #111111;
+  --card-bg: #161616;
+  --card-bg-hover: #1c1c1c;
 
   /* ── 브랜드 컬러 ── */
-  --accent-primary: #00f2ff;        /* 시안 네온 */
-  --accent-secondary: #6366f1;      /* 인디고 */
-  --gradient-brand: linear-gradient(90deg, #00f2ff, #6366f1);
+  --accent-primary: #c89b3c;         /* 클래식 골드 — 터미널 감성 */
+  --accent-secondary: #a07d2e;
+  --accent-subtle: rgba(200, 155, 60, 0.12);
+  --gradient-brand: linear-gradient(135deg, #c89b3c, #e8c468);
 
   /* ── 마켓 컬러 ── */
-  --bull: #00e676;                   /* 상승 - 녹색 */
-  --bear: #ff1744;                   /* 하락 - 빨강 */
-  --neutral: #ffd740;                /* 보합 - 노랑 */
-  --bull-bg: rgba(0, 230, 118, 0.1);
-  --bear-bg: rgba(255, 23, 68, 0.1);
+  --bull: #26a69a;                    /* 채도 낮춘 틸 그린 */
+  --bear: #ef5350;                    /* 채도 낮춘 레드 */
+  --neutral: #f5a623;                 /* 앰버 보합 */
+  --bull-bg: rgba(38, 166, 154, 0.1);
+  --bear-bg: rgba(239, 83, 80, 0.1);
 
   /* ── 텍스트 ── */
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0ab;
-  --text-muted: #5a5a65;
+  --text-primary: #e8e2d6;           /* Warm white — 눈 부시지 않음 */
+  --text-secondary: #8a8580;
+  --text-muted: #4a4845;
 
-  /* ── 보더 & 글래스 ── */
-  --border-color: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.05);
-  --neon-glow: 0 0 20px rgba(0, 242, 255, 0.3);
+  /* ── 보더 ── */
+  --border-color: #2a2a2a;
+  --glass-border: #222222;
+  --border-hover: #3a3a3a;
 
   /* ── 타이포 ── */
-  --font-heading: 'Outfit', sans-serif;
+  --font-heading: 'Space Grotesk', 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
   /* ── 반경 ── */
-  --radius-sm: 8px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
 
   /* ── 간격 ── */
   --gap-sm: 0.75rem;
-  --gap-md: 1.5rem;
+  --gap-md: 1.25rem;
   --gap-lg: 2rem;
+
+  /* ── 트랜지션 ── */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+}
+
+/* ── 라이트 테마 (사용자가 토글 시 전환) ── */
+[data-theme='light'] {
+  --bg-color: #f5f5f7;
+  --bg-secondary: #e5e5e8;
+  --card-bg: #ffffff;
+  --card-bg-hover: #fafafa;
+
+  --accent-primary: #a3751c;         
+  --accent-secondary: #c89b3c;
+  --accent-subtle: rgba(163, 117, 28, 0.12);
+  --gradient-brand: linear-gradient(135deg, #a3751c, #c89b3c);
+
+  --bull: #108043;
+  --bear: #d82c0d;
+  --neutral: #b98900;
+  --bull-bg: rgba(16, 128, 67, 0.1);
+  --bear-bg: rgba(216, 44, 13, 0.1);
+
+  --text-primary: #1d1d1f;
+  --text-secondary: #515154;
+  --text-muted: #86868b;
+
+  --border-color: #d2d2d7;
+  --glass-border: #e5e5ea;
+  --border-hover: #c7c7cc;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
@@ -49,28 +86,74 @@ body {
   color: var(--text-primary);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   margin: 0;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
+/* ── 카드 시스템: 계층별 차등 스타일링 ── */
 .bento-item {
   background: var(--card-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  backdrop-filter: blur(10px);
   padding: var(--gap-md);
-  transition: all 0.2s ease;
+  transition: border-color var(--transition-base), background var(--transition-base);
 }
 
 .bento-item:hover {
-  border-color: var(--accent-primary);
-  box-shadow: var(--neon-glow);
+  border-color: var(--border-hover);
+  background: var(--card-bg-hover);
+}
+
+/* ── 강조 카드 (Market Pulse 등) ── */
+.bento-item.card-hero {
+  border-color: var(--accent-subtle);
+  background: linear-gradient(180deg, rgba(200, 155, 60, 0.04) 0%, var(--card-bg) 100%);
 }
 
 .text-bull { color: var(--bull); }
 .text-bear { color: var(--bear); }
 .bg-bull { background-color: var(--bull-bg); }
 .bg-bear { background-color: var(--bear-bg); }
+
+/* ── Flash 애니메이션 (값 변동 시 시각적 피드백) ── */
+@keyframes flashUp {
+  0%   { background-color: rgba(38, 166, 154, 0.25); }
+  100% { background-color: transparent; }
+}
+@keyframes flashDown {
+  0%   { background-color: rgba(239, 83, 80, 0.25); }
+  100% { background-color: transparent; }
+}
+
+.flash-up {
+  animation: flashUp 0.8s ease-out;
+  border-radius: 4px;
+}
+.flash-down {
+  animation: flashDown 0.8s ease-out;
+  border-radius: 4px;
+}
+
+.h-full { height: 100%; }
+.w-full { width: 100%; }
+
+/* ── 스크롤바 ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}

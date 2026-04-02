@@ -8,6 +8,10 @@ export const INDICES = [
   { ticker: '^RUT', name: 'Russell 2000', symbol: 'IWM', flag: '🇺🇸' },
   { ticker: '^KS11', name: 'KOSPI', symbol: 'KOSPI', flag: '🇰🇷' },
   { ticker: '^KQ11', name: 'KOSDAQ', symbol: 'KOSDAQ', flag: '🇰🇷' },
+  { ticker: '^N225', name: 'Nikkei 225', symbol: 'N225', flag: '🇯🇵' },
+  { ticker: '000300.SS', name: 'CSI 300', symbol: 'CSI300', flag: '🇨🇳' },
+  { ticker: '^STOXX50E', name: 'Euro Stoxx 50', symbol: 'SX5E', flag: '🇪🇺' },
+  { ticker: '^FTSE', name: 'FTSE 100', symbol: 'FTSE', flag: '🇬🇧' },
 ] as const;
 
 export const SECTOR_ETFS = [
@@ -25,22 +29,33 @@ export const SECTOR_ETFS = [
 ] as const;
 
 export const MACRO_TICKERS = [
+  // 변동성
   { ticker: '^VIX', name: 'VIX', category: 'volatility' as const },
-  { ticker: 'DX-Y.NYB', name: 'Dollar Index', category: 'currency' as const },
+  { ticker: '^VVIX', name: 'VVIX', category: 'volatility' as const },
+  // 금리
   { ticker: '^TNX', name: '10Y Yield', category: 'rates' as const },
+  { ticker: '^FVX', name: '5Y Yield', category: 'rates' as const },
+  { ticker: '^IRX', name: '13W T-Bill', category: 'rates' as const },
+  // 통화
+  { ticker: 'DX-Y.NYB', name: 'DXY', category: 'currency' as const },
+  { ticker: 'KRW=X', name: 'USD/KRW', category: 'currency' as const },
+  // 원자재
   { ticker: 'GC=F', name: 'Gold', category: 'commodity' as const },
-  { ticker: 'TLT', name: '20Y Bond ETF', category: 'rates' as const },
+  { ticker: 'CL=F', name: 'WTI Crude', category: 'commodity' as const },
 ] as const;
 
 export const TICKER_STRIP = [
-  { ticker: 'GC=F', name: 'GOLD' },
-  { ticker: '^IXIC', name: 'NASDAQ' },
   { ticker: '^GSPC', name: 'S&P 500' },
+  { ticker: '^IXIC', name: 'NASDAQ' },
   { ticker: '^KS11', name: 'KOSPI' },
   { ticker: '^N225', name: 'NIKKEI' },
   { ticker: 'BTC-USD', name: 'BTC' },
+  { ticker: 'GC=F', name: 'GOLD' },
+  { ticker: 'CL=F', name: 'WTI' },
   { ticker: 'DX-Y.NYB', name: 'DXY' },
+  { ticker: 'KRW=X', name: 'KRW' },
   { ticker: '^TNX', name: 'US10Y' },
+  { ticker: '^VIX', name: 'VIX' },
 ] as const;
 
 // 전체 유니크 티커 목록 — 배치 요청용
@@ -58,23 +73,42 @@ export function getAllTickers(): string[] {
 // 미국 장중 여부 판단 (ET 기준 9:30~16:00)
 export function isUSMarketOpen(): boolean {
   const now = new Date();
-  const etOffset = -5; // EST (DST 미적용 시 -5, 적용 시 -4)
-  const utcHour = now.getUTCHours();
-  const utcMinute = now.getUTCMinutes();
-  const etHour = (utcHour + etOffset + 24) % 24;
-  const etMinutes = etHour * 60 + utcMinute;
+  
+  // 뉴욕 시간대로 변환하여 요일과 시간을 추출
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour12: false,
+    weekday: 'short',
+    hour: 'numeric',
+    minute: 'numeric'
+  });
+  
+  // 운영체제/Node 버전에 따른 문자열 차이를 무시하기 위해 formatToParts 사용
+  const parts = formatter.formatToParts(now);
+  let weekday = '';
+  let hourStr = '0';
+  let minuteStr = '0';
+
+  for (const part of parts) {
+    if (part.type === 'weekday') weekday = part.value;
+    if (part.type === 'hour') hourStr = part.value;
+    if (part.type === 'minute') minuteStr = part.value;
+  }
+  
+  // 주말 제외
+  if (weekday === 'Sat' || weekday === 'Sun') return false;
+  
+  const hour = parseInt(hourStr, 10);
+  const minute = parseInt(minuteStr, 10);
+  const etMinutes = hour * 60 + minute;
   
   const marketOpen = 9 * 60 + 30;  // 9:30 ET
   const marketClose = 16 * 60;     // 16:00 ET
-  const day = now.getUTCDay();
-  
-  // 주말 제외
-  if (day === 0 || day === 6) return false;
   
   return etMinutes >= marketOpen && etMinutes < marketClose;
 }
 
 // 폴링 간격 반환 (ms)
 export function getPollingInterval(): number {
-  return isUSMarketOpen() ? 30_000 : 300_000; // 장중 30초, 장외 5분
+  return isUSMarketOpen() ? 5_000 : 60_000; // 야후파이낸스 차단 안 당하는 최소 한계치: 5초
 }

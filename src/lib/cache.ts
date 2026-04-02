@@ -9,6 +9,12 @@ interface CacheEntry<T> {
 
 class MemoryCache {
   private store = new Map<string, CacheEntry<unknown>>();
+  private readonly MAX_SIZE = 1000;
+
+  constructor() {
+    // 5분마다 만료된 캐시 자동 정리 (메모리 누수 방지)
+    setInterval(() => this.purgeExpired(), 300_000);
+  }
 
   /**
    * 캐시에서 값을 가져옵니다.
@@ -31,6 +37,12 @@ class MemoryCache {
    * @param ttlMs TTL(밀리초). 기본값 30초.
    */
   set<T>(key: string, data: T, ttlMs: number = 30_000): void {
+    // 캐시 고갈 공격(DoS) 방지를 위한 사이즈 제한
+    if (this.store.size >= this.MAX_SIZE) {
+      const firstKey = this.store.keys().next().value;
+      if (firstKey) this.store.delete(firstKey);
+    }
+
     this.store.set(key, {
       data,
       expiry: Date.now() + ttlMs,
@@ -80,7 +92,7 @@ export const cache = new MemoryCache();
 
 // TTL 상수
 export const TTL = {
-  QUOTE: 30_000,     // 시세: 30초
+  QUOTE: 3_000,      // 시세: 3초 (5초 폴링 시 무조건 새 데이터 보장)
   MACRO: 3_600_000,  // 매크로: 1시간
   RS_RANK: 86_400_000, // RS 순위(어제 데이터): 24시간
 } as const;

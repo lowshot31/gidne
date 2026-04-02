@@ -8,7 +8,7 @@ export default function SkeletonCard({ title = "Loading..." }: { title?: string 
         style={{
           flex: 1,
           borderRadius: 'var(--radius-sm)',
-          background: 'linear-gradient(90deg, #0f0f14 25%, #1a1a24 50%, #0f0f14 75%)',
+          background: 'linear-gradient(90deg, #161616 25%, #1c1c1c 50%, #161616 75%)',
           backgroundSize: '200% 100%',
           animation: 'shimmer 1.5s infinite linear'
         }}

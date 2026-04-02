@@ -1,0 +1,17 @@
+{
+  "name": "Gidne Terminal",
+  "short_name": "Gidne",
+  "description": "Real-time financial market analysis dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#c89b3c",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
