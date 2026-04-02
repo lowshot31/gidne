@@ -1,19 +1,40 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { TickerQuote } from '../lib/types';
-import { useFlash } from '../hooks/useFlash';
 
 interface Props {
   quotes: TickerQuote[];
 }
 
 function TickerItem({ q }: { q: TickerQuote }) {
-  const flash = useFlash(q.price); // 퍼센트가 아닌 가격 변동 시 플래시
-  const isUp = q.changePercent >= 0;
-  const colorClass = isUp ? 'text-bull' : 'text-bear';
-  const sign = isUp ? '▲' : '▼';
+  const spanRef = useRef<HTMLSpanElement>(null);
+  const prevPrice = useRef(q.price);
+
+  useEffect(() => {
+    if (q.price === prevPrice.current) return;
+    
+    const isUp = q.price > prevPrice.current;
+    prevPrice.current = q.price;
+
+    const el = spanRef.current;
+    if (el) {
+      // 리액트 DOM 조작 한계를 가장 확실하게 우회하는 Web Animation API 사용
+      const color = isUp ? 'rgba(38, 166, 154, 0.5)' : 'rgba(239, 83, 80, 0.5)';
+      el.animate([
+        { backgroundColor: color },
+        { backgroundColor: 'transparent' }
+      ], {
+        duration: 800,
+        easing: 'ease-out'
+      });
+    }
+  }, [q.price]);
+
+  const isUpTotal = q.changePercent >= 0;
+  const colorClass = isUpTotal ? 'text-bull' : 'text-bear';
+  const sign = isUpTotal ? '▲' : '▼';
   
   return (
-    <span className={`strip-item ${flash}`} style={{ padding: '2px 6px' }}>
+    <span ref={spanRef} className="strip-item" style={{ padding: '2px 6px' }}>
       <strong>{q.name}</strong>
       <span>{q.price.toFixed(2)}</span>
       <span className={colorClass}>
@@ -56,6 +77,7 @@ export default function TickerStrip({ quotes }: Props) {
           gap: 0.5rem;
           font-family: var(--font-mono);
           font-size: 0.95rem;
+          border-radius: 4px;
         }
         @keyframes scroll {
           0% { transform: translateX(0); }

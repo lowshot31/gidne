@@ -19,12 +19,12 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const DEFAULT_LAYOUTS = {
   lg: [
-    { i: 'pulse', x: 0, y: 0, w: 12, h: 3, minW: 6, minH: 3 },
+    { i: 'pulse', x: 0, y: 0, w: 12, h: 3, minW: 2, minH: 3 },
     { i: 'macro', x: 0, y: 3, w: 3, h: 7, minW: 2, minH: 4 },
-    { i: 'chart', x: 3, y: 3, w: 6, h: 7, minW: 4, minH: 4 },
+    { i: 'chart', x: 3, y: 3, w: 6, h: 7, minW: 2, minH: 4 },
     { i: 'rs', x: 9, y: 3, w: 3, h: 7, minW: 2, minH: 6 },
     { i: 'crypto', x: 0, y: 10, w: 3, h: 4, minW: 2, minH: 3 },
-    { i: 'sector', x: 3, y: 10, w: 6, h: 7, minW: 4, minH: 4 },
+    { i: 'sector', x: 3, y: 10, w: 6, h: 7, minW: 2, minH: 4 },
     { i: 'breadth', x: 9, y: 10, w: 3, h: 5, minW: 2, minH: 3 },
     { i: 'watchlist', x: 0, y: 14, w: 3, h: 5, minW: 2, minH: 3 },
   ]
