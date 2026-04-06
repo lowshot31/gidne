@@ -152,16 +152,16 @@ async function pumpDemandQueues() {
   }, 15);
 
   // 2) 요약(Summary) 데이터 처리
-  await processQueue('gidne_queue_summary', 'gidne_summary_', async (ticker: string) => {
+  await processQueue('gidne_queue_summary', 'gidne_summary_v2_', async (ticker: string) => {
     const summary: any = await yahooFinance.quoteSummary(ticker, {
       modules: ['assetProfile', 'financialData', 'defaultKeyStatistics', 'summaryDetail', 'recommendationTrend', 'secFilings'],
     });
     return {
       profile: {
-        sector: summary.assetProfile?.sector || '-',
-        industry: summary.assetProfile?.industry || '-',
+        sector: summary.assetProfile?.sector || 'Unknown',
+        industry: summary.assetProfile?.industry || 'Unknown',
         website: summary.assetProfile?.website || '',
-        description: summary.assetProfile?.longBusinessSummary || '기업 설명이 제공되지 않습니다.',
+        description: summary.assetProfile?.longBusinessSummary || '',
         employees: summary.assetProfile?.fullTimeEmployees || 0,
       },
       financials: {
@@ -172,13 +172,22 @@ async function pumpDemandQueues() {
         numberOfAnalysts: summary.financialData?.numberOfAnalystOpinions || 0,
         totalRevenue: summary.financialData?.totalRevenue || 0,
         ebitda: summary.financialData?.ebitda || 0,
+        debtToEquity: summary.financialData?.debtToEquity || 0,
+        profitMargins: summary.financialData?.profitMargins || 0,
+        operatingMargins: summary.financialData?.operatingMargins || 0,
+        returnOnEquity: summary.financialData?.returnOnEquity || 0,
       },
       statistics: {
         trailingPE: summary.summaryDetail?.trailingPE || 0,
-        forwardPE: summary.summaryDetail?.forwardPE || 0,
+        forwardPE: summary.defaultKeyStatistics?.forwardPE || 0,
         priceToBook: summary.defaultKeyStatistics?.priceToBook || 0,
+        beta: summary.defaultKeyStatistics?.beta || 0,
+        shortRatio: summary.defaultKeyStatistics?.shortRatio || 0,
+        shortPercentOfFloat: summary.defaultKeyStatistics?.shortPercentOfFloat || 0,
+        dividendYield: summary.summaryDetail?.dividendYield || summary.summaryDetail?.trailingAnnualDividendYield || 0,
       },
       trends: summary.recommendationTrend?.trend || [],
+      filings: summary.secFilings?.filings || []
     };
   }, 3600); // 1hr
 
@@ -258,7 +267,12 @@ async function pumpChartData() {
 
 async function pumpCalendar() {
   try {
-    const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.xml');
+    const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.xml', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+        'Accept': 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9',
+      }
+    });
     if (!response.ok) return;
     const xml = await response.text();
     const eventsPattern = /<event>([\s\S]*?)<\/event>/g;
@@ -266,20 +280,24 @@ async function pumpCalendar() {
     let match;
     while ((match = eventsPattern.exec(xml)) !== null) {
       const eventXml = match[1];
-      const extract = (tag: string) => { const m = eventXml.match(new RegExp(`<${tag}>(.*?)</${tag}>`, 'i')); return m ? m[1].trim() : ''; };
+      const extract = (tag: string) => { 
+        const m = eventXml.match(new RegExp(`<${tag}><!\\[CDATA\\[([\\s\\S]*?)\\]\\]></${tag}>`, 'i')) || 
+                  eventXml.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, 'i')); 
+        return m ? m[1].trim() : ''; 
+      };
       const impact = extract('impact');
       const country = extract('country');
 
       if ((impact === 'High' || impact === 'Medium') && ['USD', 'EUR', 'GBP', 'JPY', 'CNY'].includes(country)) {
         events.push({
           id: Math.random().toString(36).substring(2, 11),
-          title: translateEvent(extract('title')),
+          title: translateEvent(extract('title')), // CDATA가 정제된 후 한글 번역
           country: country === 'USD' ? 'US' : country === 'EUR' ? 'EU' : country === 'GBP' ? 'GB' : country === 'JPY' ? 'JP' : 'CN',
           date: extract('date'), time: extract('time'), impact: impact.toLowerCase(), forecast: extract('forecast') || '-', previous: extract('previous') || '-'
         });
       }
     }
-    await redis.set('gidne_calendar_weekly', JSON.stringify(events.slice(0, 15)), { ex: 3600 });
+    await redis.set('gidne_calendar_v2', JSON.stringify(events.slice(0, 15)), { ex: 3600 });
   } catch (err) {}
 }
 

@@ -11,7 +11,7 @@ export const GET: APIRoute = async (context) => {
   }
 
   const redis = getRedis(context);
-  const cacheKey = `gidne_summary_${ticker}`;
+  const cacheKey = `gidne_summary_v2_${ticker}`;
 
   try {
     let cached = await redis.get(cacheKey);

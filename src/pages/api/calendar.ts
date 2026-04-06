@@ -111,7 +111,7 @@ function translateTitle(title: string): string {
 
 export const GET: APIRoute = async (context) => {
   const redis = getRedis(context);
-  const CACHE_KEY = 'gidne_calendar_weekly';
+  const CACHE_KEY = 'gidne_calendar_v2';
 
   try {
     // [Step 1] Redis 캐시 우선 조회
