@@ -1,10 +1,7 @@
 // src/pages/api/search.ts
-// 티커 검색 API — yahoo-finance2 search() 활용
+// 티커 검색 API — Yahoo Finance 공개 검색 엔드포인트 직접 호출
 import type { APIRoute } from 'astro';
-import YahooFinance from 'yahoo-finance2';
 import { getRedis } from '../../lib/redis';
-
-const yahooFinance = new YahooFinance();
 
 export const GET: APIRoute = async (context) => {
   const url = new URL(context.request.url);
@@ -28,7 +25,17 @@ export const GET: APIRoute = async (context) => {
       });
     }
 
-    const result = await yahooFinance.search(query, { newsCount: 0 });
+    // Yahoo Finance 공개 검색 엔드포인트 (npm 패키지 대신 직접 HTTP)
+    const searchUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=8&newsCount=0&listsCount=0&enableFuzzyQuery=false`;
+    const res = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+      },
+    });
+
+    if (!res.ok) throw new Error(`Yahoo search HTTP ${res.status}`);
+
+    const result = await res.json();
 
     const suggestions = (result.quotes || [])
       .filter((q: any) => q.symbol && (q.quoteType === 'EQUITY' || q.quoteType === 'ETF' || q.quoteType === 'CRYPTOCURRENCY' || q.quoteType === 'INDEX'))
@@ -49,7 +56,8 @@ export const GET: APIRoute = async (context) => {
     });
   } catch (error) {
     console.error('[search] error:', error);
-    return new Response(JSON.stringify([]), { status: 500 });
+    return new Response(JSON.stringify([]), { status: 200 }); // 실패해도 200 (클라이언트 로컬 인덱스가 커버)
   }
 };
+
 

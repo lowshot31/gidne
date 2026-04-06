@@ -12,6 +12,95 @@ interface Props {
   onSelect?: (ticker: string, name: string) => void;
 }
 
+// 인기 종목 내장 인덱스 (API 없이도 즉시 자동완성)
+const BUILTIN_INDEX: Suggestion[] = [
+  // 🇺🇸 미국 대형주
+  { symbol: 'AAPL', name: 'Apple Inc.', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'MSFT', name: 'Microsoft Corporation', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'NVDA', name: 'NVIDIA Corporation', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'GOOGL', name: 'Alphabet Inc.', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'AMZN', name: 'Amazon.com Inc.', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'META', name: 'Meta Platforms Inc.', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'TSLA', name: 'Tesla Inc.', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'BRK-B', name: 'Berkshire Hathaway', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'AVGO', name: 'Broadcom Inc.', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'JPM', name: 'JPMorgan Chase & Co.', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'V', name: 'Visa Inc.', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'MA', name: 'Mastercard Inc.', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'UNH', name: 'UnitedHealth Group', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'HD', name: 'Home Depot Inc.', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'JNJ', name: 'Johnson & Johnson', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'WMT', name: 'Walmart Inc.', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'PG', name: 'Procter & Gamble', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'XOM', name: 'Exxon Mobil Corp', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'BAC', name: 'Bank of America', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'KO', name: 'Coca-Cola Company', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'PEP', name: 'PepsiCo Inc.', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'DIS', name: 'Walt Disney Co', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'CRM', name: 'Salesforce Inc.', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'NFLX', name: 'Netflix Inc.', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'AMD', name: 'Advanced Micro Devices', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'INTC', name: 'Intel Corporation', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'PYPL', name: 'PayPal Holdings', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'SHOP', name: 'Shopify Inc.', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'COIN', name: 'Coinbase Global', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'PLTR', name: 'Palantir Technologies', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'UBER', name: 'Uber Technologies', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'SQ', name: 'Block Inc. (Square)', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'SNOW', name: 'Snowflake Inc.', type: 'EQUITY', exchange: 'NYSE' },
+  { symbol: 'ARM', name: 'Arm Holdings', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'SMCI', name: 'Super Micro Computer', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'MU', name: 'Micron Technology', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'SOFI', name: 'SoFi Technologies', type: 'EQUITY', exchange: 'NASDAQ' },
+  { symbol: 'MSTR', name: 'MicroStrategy', type: 'EQUITY', exchange: 'NASDAQ' },
+  // 🇺🇸 ETF
+  { symbol: 'SPY', name: 'SPDR S&P 500 ETF', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'QQQ', name: 'Invesco QQQ Trust', type: 'ETF', exchange: 'NASDAQ' },
+  { symbol: 'IWM', name: 'iShares Russell 2000', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'DIA', name: 'SPDR Dow Jones ETF', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'XLK', name: 'Technology Select Sector', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'XLF', name: 'Financial Select Sector', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'XLV', name: 'Health Care Select Sector', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'XLE', name: 'Energy Select Sector', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'XLI', name: 'Industrial Select Sector', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'XLP', name: 'Consumer Staples Select', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'XLY', name: 'Consumer Discretionary', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'XLU', name: 'Utilities Select Sector', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'XLB', name: 'Materials Select Sector', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'XLRE', name: 'Real Estate Select', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'XLC', name: 'Communication Services', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'TLT', name: 'iShares 20+Yr Treasury', type: 'ETF', exchange: 'NASDAQ' },
+  { symbol: 'HYG', name: 'iShares High Yield Corp', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'GLD', name: 'SPDR Gold Shares', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'ARKK', name: 'ARK Innovation ETF', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'SOXL', name: 'Direxion Semi Bull 3X', type: 'ETF', exchange: 'NYSE' },
+  { symbol: 'TQQQ', name: 'ProShares UltraPro QQQ', type: 'ETF', exchange: 'NASDAQ' },
+  // 🪙 크립토
+  { symbol: 'BTC-USD', name: 'Bitcoin USD', type: 'CRYPTOCURRENCY', exchange: 'CCC' },
+  { symbol: 'ETH-USD', name: 'Ethereum USD', type: 'CRYPTOCURRENCY', exchange: 'CCC' },
+  { symbol: 'SOL-USD', name: 'Solana USD', type: 'CRYPTOCURRENCY', exchange: 'CCC' },
+  { symbol: 'XRP-USD', name: 'XRP USD', type: 'CRYPTOCURRENCY', exchange: 'CCC' },
+  { symbol: 'DOGE-USD', name: 'Dogecoin USD', type: 'CRYPTOCURRENCY', exchange: 'CCC' },
+  { symbol: 'ADA-USD', name: 'Cardano USD', type: 'CRYPTOCURRENCY', exchange: 'CCC' },
+  { symbol: 'AVAX-USD', name: 'Avalanche USD', type: 'CRYPTOCURRENCY', exchange: 'CCC' },
+  // 📊 주요 지수
+  { symbol: '^GSPC', name: 'S&P 500', type: 'INDEX', exchange: 'SNP' },
+  { symbol: '^IXIC', name: 'NASDAQ Composite', type: 'INDEX', exchange: 'NASDAQ' },
+  { symbol: '^DJI', name: 'Dow Jones Industrial', type: 'INDEX', exchange: 'DJI' },
+  { symbol: '^VIX', name: 'CBOE Volatility Index', type: 'INDEX', exchange: 'CBOE' },
+  { symbol: '^KS11', name: 'KOSPI', type: 'INDEX', exchange: 'KSC' },
+  { symbol: '^N225', name: 'Nikkei 225', type: 'INDEX', exchange: 'OSA' },
+];
+
+// 클라이언트 측 로컬 퍼지 검색
+function localSearch(q: string): Suggestion[] {
+  const lower = q.toLowerCase();
+  return BUILTIN_INDEX.filter(item =>
+    item.symbol.toLowerCase().includes(lower) ||
+    item.name.toLowerCase().includes(lower)
+  ).slice(0, 8);
+}
+
 export default function TickerSearch({ onNavigate, onSelect }: Props) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -31,7 +120,7 @@ export default function TickerSearch({ onNavigate, onSelect }: Props) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 디바운스 검색
+  // 하이브리드 검색: 로컬 먼저 → API 보조
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -41,19 +130,37 @@ export default function TickerSearch({ onNavigate, onSelect }: Props) {
       return;
     }
 
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        if (res.ok) {
-          const data = await res.json();
-          setSuggestions(data);
-          setIsOpen(data.length > 0);
-          setSelectedIdx(-1);
+    // 즉시 로컬 인덱스에서 결과 렌더링 (API 없이도 동작)
+    const localResults = localSearch(query);
+    setSuggestions(localResults);
+    setIsOpen(localResults.length > 0);
+    setSelectedIdx(-1);
+
+    // API 폴백: 로컬에서 결과가 부족하면 서버도 시도
+    if (localResults.length < 3) {
+      debounceRef.current = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.length > 0) {
+              // 로컬 결과와 병합 (중복 제거)
+              const combined = [...localResults];
+              const existingSymbols = new Set(localResults.map(s => s.symbol));
+              for (const item of data) {
+                if (!existingSymbols.has(item.symbol)) {
+                  combined.push(item);
+                }
+              }
+              setSuggestions(combined.slice(0, 8));
+              setIsOpen(true);
+            }
+          }
+        } catch {
+          // API 실패해도 로컬 결과는 이미 표시됨 — 무시
         }
-      } catch {
-        setSuggestions([]);
-      }
-    }, 300);
+      }, 400);
+    }
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);

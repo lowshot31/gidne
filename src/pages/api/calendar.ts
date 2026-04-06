@@ -130,7 +130,7 @@ export const GET: APIRoute = async (context) => {
     // [Step 2] 캐시 미스 시 외부 API 호출
     const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.xml', {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
         'Accept': 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9',
         'Accept-Language': 'en-US,en;q=0.9',
       }
