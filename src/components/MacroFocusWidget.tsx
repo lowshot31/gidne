@@ -76,8 +76,8 @@ export default function MacroFocusWidget({ presetData }: Props) {
 
   const renderContent = () => {
     if (activeTab === 'HOT') {
-      // 1. 무슨 일이 있어도 봐야 하는 필수 뼈대 지표
-      const mustHaves = ['^VIX', '^TNX', 'DX-Y.NYB'];
+      // 1. 무슨 일이 있어도 봐야 하는 필수 뼈대 지표 (공포지수 3대장 + 국채금리 + 달러인덱스)
+      const mustHaves = ['^VIX', '^VVIX', '^SKEW', '^TNX', 'DX-Y.NYB'];
       const mustHavesData = presetData.filter(m => mustHaves.includes(m.ticker));
       
       // 2. 나머지 지표 중에서 오늘 하루 변동성이 가장 극심한 '진짜 HOT한' 지표 5개 추출

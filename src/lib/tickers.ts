@@ -14,11 +14,12 @@ export const INDICES = [
   { ticker: '^FTSE', name: 'FTSE 100', symbol: 'FTSE', flag: '🇬🇧' },
 ] as const;
 
+
+
 export const SECTOR_ETFS = [
   { ticker: 'XLK', name: 'Technology', cycle: 'Growth', color: '#22c55e' },
   { ticker: 'XLC', name: 'Communication', cycle: 'Growth', color: '#22c55e' },
   { ticker: 'XLY', name: 'Discretionary', cycle: 'Early', color: '#22c55e' },
-  
   { ticker: 'XLV', name: 'Healthcare', cycle: 'Defensive', color: '#0ea5e9' },
   { ticker: 'XLP', name: 'Staples', cycle: 'Defensive', color: '#0ea5e9' },
   { ticker: 'XLU', name: 'Utilities', cycle: 'Defensive', color: '#0ea5e9' },
