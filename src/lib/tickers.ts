@@ -15,17 +15,19 @@ export const INDICES = [
 ] as const;
 
 export const SECTOR_ETFS = [
-  { ticker: 'XLK', name: 'Technology', cycle: 'Late', color: '#6366f1' },
-  { ticker: 'XLF', name: 'Financials', cycle: 'Early', color: '#22c55e' },
-  { ticker: 'XLV', name: 'Healthcare', cycle: 'Defensive', color: '#06b6d4' },
-  { ticker: 'XLE', name: 'Energy', cycle: 'Mid', color: '#f97316' },
-  { ticker: 'XLI', name: 'Industrials', cycle: 'Early', color: '#eab308' },
-  { ticker: 'XLP', name: 'Staples', cycle: 'Defensive', color: '#84cc16' },
-  { ticker: 'XLY', name: 'Discretionary', cycle: 'Early', color: '#ec4899' },
-  { ticker: 'XLU', name: 'Utilities', cycle: 'Defensive', color: '#a855f7' },
-  { ticker: 'XLB', name: 'Materials', cycle: 'Mid', color: '#14b8a6' },
-  { ticker: 'XLRE', name: 'Real Estate', cycle: 'Rate-Sensitive', color: '#f43f5e' },
-  { ticker: 'XLC', name: 'Communication', cycle: 'Growth', color: '#3b82f6' },
+  { ticker: 'XLK', name: 'Technology', cycle: 'Growth', color: '#22c55e' },
+  { ticker: 'XLC', name: 'Communication', cycle: 'Growth', color: '#22c55e' },
+  { ticker: 'XLY', name: 'Discretionary', cycle: 'Early', color: '#22c55e' },
+  
+  { ticker: 'XLV', name: 'Healthcare', cycle: 'Defensive', color: '#0ea5e9' },
+  { ticker: 'XLP', name: 'Staples', cycle: 'Defensive', color: '#0ea5e9' },
+  { ticker: 'XLU', name: 'Utilities', cycle: 'Defensive', color: '#0ea5e9' },
+  
+  { ticker: 'XLF', name: 'Financials', cycle: 'Rate-Sensitive', color: '#ef4444' },
+  { ticker: 'XLE', name: 'Energy', cycle: 'Late', color: '#ef4444' },
+  { ticker: 'XLI', name: 'Industrials', cycle: 'Late', color: '#ef4444' },
+  { ticker: 'XLB', name: 'Materials', cycle: 'Late', color: '#ef4444' },
+  { ticker: 'XLRE', name: 'Real Estate', cycle: 'Rate-Sensitive', color: '#ef4444' },
 ] as const;
 
 export const MACRO_TICKERS = [
