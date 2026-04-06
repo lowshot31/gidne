@@ -1,22 +1,25 @@
 import type { APIRoute } from 'astro';
 import YahooFinance from 'yahoo-finance2';
-import { cache } from '../../lib/cache';
+import { getRedis } from '../../lib/redis';
 
 const yahooFinance = new YahooFinance();
 
-export const GET: APIRoute = async ({ request }) => {
-  const url = new URL(request.url);
+export const GET: APIRoute = async (context) => {
+  const url = new URL(context.request.url);
   const ticker = url.searchParams.get('ticker');
 
   if (!ticker) return new Response(JSON.stringify({ error: 'invalid ticker' }), { status: 400 });
 
-  const cacheKey = `em_v2_${ticker}`;
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    return new Response(JSON.stringify(cached), { headers: { 'Content-Type': 'application/json' } });
-  }
+  const redis = getRedis(context);
+  const cacheKey = `gidne_em_${ticker}`;
 
   try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      const data = typeof cached === 'string' ? JSON.parse(cached) : cached;
+      return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
+    }
+
     const quote = await yahooFinance.quote(ticker);
     const price = quote.regularMarketPrice;
     if (!price) throw new Error('No price found');
@@ -99,7 +102,7 @@ export const GET: APIRoute = async ({ request }) => {
       monthlyLower: price - finalMonthlyEM,
     };
 
-    cache.set(cacheKey, data, 1800_000); // 30 minutes cache
+    await redis.set(cacheKey, JSON.stringify(data), { ex: 1800 }); // 30분 캐시
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

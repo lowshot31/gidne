@@ -1,26 +1,29 @@
 import type { APIRoute } from 'astro';
 import YahooFinance from 'yahoo-finance2';
-import { cache } from '../../lib/cache';
+import { getRedis } from '../../lib/redis';
 
 const yahooFinance = new YahooFinance();
 
-export const GET: APIRoute = async ({ request }) => {
-  const url = new URL(request.url);
+export const GET: APIRoute = async (context) => {
+  const url = new URL(context.request.url);
   const ticker = url.searchParams.get('ticker');
 
   if (!ticker || ticker.length > 20) {
     return new Response(JSON.stringify({ error: 'invalid ticker' }), { status: 400 });
   }
 
-  const cacheKey = `quote_summary_${ticker}`;
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    return new Response(JSON.stringify(cached), {
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  const redis = getRedis(context);
+  const cacheKey = `gidne_summary_${ticker}`;
 
   try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      const data = typeof cached === 'string' ? JSON.parse(cached) : cached;
+      return new Response(JSON.stringify(data), {
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=600' },
+      });
+    }
+
     const summaryResult = await yahooFinance.quoteSummary(ticker, {
       modules: [
         'assetProfile',
@@ -38,7 +41,6 @@ export const GET: APIRoute = async ({ request }) => {
 
     const summary: any = summaryResult;
 
-    // 데이터 가공 및 안전 추출
     const data = {
       profile: {
         sector: summary.assetProfile?.sector || '-',
@@ -73,14 +75,16 @@ export const GET: APIRoute = async ({ request }) => {
       filings: summary.secFilings?.filings || []
     };
 
-    cache.set(cacheKey, data, 3600_000); // 펀더멘털 데이터는 1시간 캐시 (자주 안 바뀜)
+    // 펀더멘털은 1시간 캐시
+    await redis.set(cacheKey, JSON.stringify(data), { ex: 3600 });
 
     return new Response(JSON.stringify(data), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=600' },
     });
   } catch (error: any) {
     console.error(`[quote-summary] error for ${ticker}:`, error);
-    return new Response(JSON.stringify({ error: 'Failed to fetch quote summary', details: error?.message, stack: error?.stack }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Failed to fetch quote summary', details: error?.message }), { status: 500 });
   }
 };
+

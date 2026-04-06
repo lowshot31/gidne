@@ -2,12 +2,12 @@
 // 티커 검색 API — yahoo-finance2 search() 활용
 import type { APIRoute } from 'astro';
 import YahooFinance from 'yahoo-finance2';
-import { cache } from '../../lib/cache';
+import { getRedis } from '../../lib/redis';
 
 const yahooFinance = new YahooFinance();
 
-export const GET: APIRoute = async ({ request }) => {
-  const url = new URL(request.url);
+export const GET: APIRoute = async (context) => {
+  const url = new URL(context.request.url);
   const query = url.searchParams.get('q')?.trim();
 
   if (!query || query.length < 1 || query.length > 30) {
@@ -16,15 +16,18 @@ export const GET: APIRoute = async ({ request }) => {
     });
   }
 
-  const cacheKey = `search_${query.toLowerCase()}`;
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    return new Response(JSON.stringify(cached), {
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  const redis = getRedis(context);
+  const cacheKey = `gidne_search_${query.toLowerCase()}`;
 
   try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      const data = typeof cached === 'string' ? JSON.parse(cached) : cached;
+      return new Response(JSON.stringify(data), {
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
+      });
+    }
+
     const result = await yahooFinance.search(query, { newsCount: 0 });
 
     const suggestions = (result.quotes || [])
@@ -37,14 +40,16 @@ export const GET: APIRoute = async ({ request }) => {
         exchange: q.exchange || '',
       }));
 
-    cache.set(cacheKey, suggestions, 300_000); // 5분 캐시
+    // 5분 캐시
+    await redis.set(cacheKey, JSON.stringify(suggestions), { ex: 300 });
 
     return new Response(JSON.stringify(suggestions), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
     });
   } catch (error) {
     console.error('[search] error:', error);
     return new Response(JSON.stringify([]), { status: 500 });
   }
 };
+

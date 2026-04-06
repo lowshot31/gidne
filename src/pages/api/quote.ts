@@ -2,27 +2,30 @@
 // 단일 티커 상세 시세 API
 import type { APIRoute } from 'astro';
 import YahooFinance from 'yahoo-finance2';
-import { cache } from '../../lib/cache';
+import { getRedis } from '../../lib/redis';
 
 const yahooFinance = new YahooFinance();
 
-export const GET: APIRoute = async ({ request }) => {
-  const url = new URL(request.url);
+export const GET: APIRoute = async (context) => {
+  const url = new URL(context.request.url);
   const ticker = url.searchParams.get('ticker');
 
   if (!ticker || ticker.length > 20) {
     return new Response(JSON.stringify({ error: 'invalid ticker' }), { status: 400 });
   }
 
-  const cacheKey = `quote_detail_${ticker}`;
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    return new Response(JSON.stringify(cached), {
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  const redis = getRedis(context);
+  const cacheKey = `gidne_quote_${ticker}`;
 
   try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      const data = typeof cached === 'string' ? JSON.parse(cached) : cached;
+      return new Response(JSON.stringify(data), {
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=5' },
+      });
+    }
+
     const q = await yahooFinance.quote(ticker);
     if (!q || !q.symbol) {
       return new Response(JSON.stringify({ error: 'not found' }), { status: 404 });
@@ -47,14 +50,15 @@ export const GET: APIRoute = async ({ request }) => {
       quoteType: q.quoteType || '',
     };
 
-    cache.set(cacheKey, data, 10_000); // 10초 캐시 (Watchlist 실시간성 확보)
+    await redis.set(cacheKey, JSON.stringify(data), { ex: 15 });
 
     return new Response(JSON.stringify(data), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=5' },
     });
   } catch (error) {
     console.error(`[quote] error for ${ticker}:`, error);
     return new Response(JSON.stringify({ error: 'Failed to fetch quote' }), { status: 500 });
   }
 };
+
