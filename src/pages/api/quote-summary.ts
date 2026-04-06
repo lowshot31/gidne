@@ -1,8 +1,7 @@
+// src/pages/api/quote-summary.ts
+// 펀더멘털 데이터 — Yahoo Finance 공개 HTTP 엔드포인트 직접 호출
 import type { APIRoute } from 'astro';
-import YahooFinance from 'yahoo-finance2';
 import { getRedis } from '../../lib/redis';
-
-const yahooFinance = new YahooFinance();
 
 export const GET: APIRoute = async (context) => {
   const url = new URL(context.request.url);
@@ -24,22 +23,22 @@ export const GET: APIRoute = async (context) => {
       });
     }
 
-    const summaryResult = await yahooFinance.quoteSummary(ticker, {
-      modules: [
-        'assetProfile',
-        'financialData',
-        'defaultKeyStatistics',
-        'summaryDetail',
-        'recommendationTrend',
-        'secFilings'
-      ],
+    const modules = 'assetProfile,financialData,defaultKeyStatistics,summaryDetail,recommendationTrend';
+    const yfUrl = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=${modules}`;
+    const res = await fetch(yfUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+      },
     });
 
-    if (!summaryResult) {
+    if (!res.ok) throw new Error(`Yahoo quoteSummary HTTP ${res.status}`);
+
+    const result = await res.json();
+    const summary = result?.quoteSummary?.result?.[0];
+
+    if (!summary) {
       return new Response(JSON.stringify({ error: 'Data not found' }), { status: 404 });
     }
-
-    const summary: any = summaryResult;
 
     const data = {
       profile: {
@@ -50,32 +49,31 @@ export const GET: APIRoute = async (context) => {
         employees: summary.assetProfile?.fullTimeEmployees || 0,
       },
       financials: {
-        targetHigh: summary.financialData?.targetHighPrice || 0,
-        targetLow: summary.financialData?.targetLowPrice || 0,
-        targetMean: summary.financialData?.targetMeanPrice || 0,
+        targetHigh: summary.financialData?.targetHighPrice?.raw || 0,
+        targetLow: summary.financialData?.targetLowPrice?.raw || 0,
+        targetMean: summary.financialData?.targetMeanPrice?.raw || 0,
         recommendationKey: summary.financialData?.recommendationKey || 'none',
-        numberOfAnalysts: summary.financialData?.numberOfAnalystOpinions || 0,
-        totalRevenue: summary.financialData?.totalRevenue || 0,
-        ebitda: summary.financialData?.ebitda || 0,
-        debtToEquity: summary.financialData?.debtToEquity || 0,
-        profitMargins: summary.financialData?.profitMargins || 0,
-        operatingMargins: summary.financialData?.operatingMargins || 0,
-        returnOnEquity: summary.financialData?.returnOnEquity || 0,
+        numberOfAnalysts: summary.financialData?.numberOfAnalystOpinions?.raw || 0,
+        totalRevenue: summary.financialData?.totalRevenue?.raw || 0,
+        ebitda: summary.financialData?.ebitda?.raw || 0,
+        debtToEquity: summary.financialData?.debtToEquity?.raw || 0,
+        profitMargins: summary.financialData?.profitMargins?.raw || 0,
+        operatingMargins: summary.financialData?.operatingMargins?.raw || 0,
+        returnOnEquity: summary.financialData?.returnOnEquity?.raw || 0,
       },
       statistics: {
-        trailingPE: summary.summaryDetail?.trailingPE || 0,
-        forwardPE: summary.summaryDetail?.forwardPE || 0,
-        priceToBook: summary.defaultKeyStatistics?.priceToBook || 0,
-        beta: summary.defaultKeyStatistics?.beta || summary.summaryDetail?.beta || 0,
-        shortRatio: summary.defaultKeyStatistics?.shortRatio || 0,
-        shortPercentOfFloat: summary.defaultKeyStatistics?.shortPercentOfFloat || 0,
-        dividendYield: summary.summaryDetail?.dividendYield || 0,
+        trailingPE: summary.summaryDetail?.trailingPE?.raw || 0,
+        forwardPE: summary.summaryDetail?.forwardPE?.raw || 0,
+        priceToBook: summary.defaultKeyStatistics?.priceToBook?.raw || 0,
+        beta: summary.defaultKeyStatistics?.beta?.raw || summary.summaryDetail?.beta?.raw || 0,
+        shortRatio: summary.defaultKeyStatistics?.shortRatio?.raw || 0,
+        shortPercentOfFloat: summary.defaultKeyStatistics?.shortPercentOfFloat?.raw || 0,
+        dividendYield: summary.summaryDetail?.dividendYield?.raw || 0,
       },
       trends: summary.recommendationTrend?.trend || [],
-      filings: summary.secFilings?.filings || []
+      filings: []
     };
 
-    // 펀더멘털은 1시간 캐시
     await redis.set(cacheKey, JSON.stringify(data), { ex: 3600 });
 
     return new Response(JSON.stringify(data), {
@@ -87,4 +85,3 @@ export const GET: APIRoute = async (context) => {
     return new Response(JSON.stringify({ error: 'Failed to fetch quote summary', details: error?.message }), { status: 500 });
   }
 };
-

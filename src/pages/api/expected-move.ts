@@ -1,8 +1,7 @@
+// src/pages/api/expected-move.ts
+// Expected Move 계산 — Yahoo Finance 공개 HTTP 엔드포인트 직접 호출
 import type { APIRoute } from 'astro';
-import YahooFinance from 'yahoo-finance2';
 import { getRedis } from '../../lib/redis';
-
-const yahooFinance = new YahooFinance();
 
 export const GET: APIRoute = async (context) => {
   const url = new URL(context.request.url);
@@ -20,23 +19,38 @@ export const GET: APIRoute = async (context) => {
       return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
     }
 
-    const quote = await yahooFinance.quote(ticker);
-    const price = quote.regularMarketPrice;
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+    };
+
+    // 시세 + 옵션 데이터 병렬 호출
+    const [quoteRes, optionsRes] = await Promise.all([
+      fetch(`https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}`, { headers }),
+      fetch(`https://query2.finance.yahoo.com/v7/finance/options/${encodeURIComponent(ticker)}`, { headers }),
+    ]);
+
+    if (!quoteRes.ok) throw new Error(`Yahoo quote HTTP ${quoteRes.status}`);
+    if (!optionsRes.ok) throw new Error(`Yahoo options HTTP ${optionsRes.status}`);
+
+    const quoteResult = await quoteRes.json();
+    const optionsResult = await optionsRes.json();
+
+    const quoteData = quoteResult?.quoteResponse?.result?.[0];
+    const price = quoteData?.regularMarketPrice;
     if (!price) throw new Error('No price found');
 
-    const options = await yahooFinance.options(ticker);
-    
-    if (!options || !options.options || options.options.length === 0) {
-       return new Response(JSON.stringify({ error: 'No options data for this symbol' }), { status: 404 });
+    const optionChain = optionsResult?.optionChain?.result?.[0];
+    if (!optionChain || !optionChain.options || optionChain.options.length === 0) {
+      return new Response(JSON.stringify({ error: 'No options data for this symbol' }), { status: 404 });
     }
 
-    const calls = options.options[0].calls || [];
-    const puts = options.options[0].puts || [];
+    const calls = optionChain.options[0].calls || [];
+    const puts = optionChain.options[0].puts || [];
     if (calls.length === 0 || puts.length === 0) {
       return new Response(JSON.stringify({ error: 'Incomplete options chain' }), { status: 404 });
     }
 
-    // 1. 가장 가까운 ATM(At-The-Money) 스트라이크 찾기
+    // 1. ATM 스트라이크 찾기
     let closestStrike = calls[0].strike;
     let minDiff = Math.abs(closestStrike - price);
     
@@ -48,45 +62,39 @@ export const GET: APIRoute = async (context) => {
       }
     }
 
-    // 2. ATM 콜, 풋 객체 추출
-    const atmCall = calls.find(c => c.strike === closestStrike);
-    const atmPut = puts.find(p => p.strike === closestStrike);
+    // 2. ATM 콜/풋
+    const atmCall = calls.find((c: any) => c.strike === closestStrike);
+    const atmPut = puts.find((p: any) => p.strike === closestStrike);
 
     if (!atmCall || !atmPut) {
-       return new Response(JSON.stringify({ error: 'ATM options not found' }), { status: 404 });
+      return new Response(JSON.stringify({ error: 'ATM options not found' }), { status: 404 });
     }
 
-    // 3. 내재변동성(IV) 블렌딩 (Call IV와 Put Skew를 모두 반영하기 위해 평균 사용)
+    // 3. IV 블렌딩
     const callIv = atmCall.impliedVolatility || 0;
     const putIv = atmPut.impliedVolatility || 0;
     const blendedIv = (callIv + putIv) / 2;
 
     if (blendedIv === 0) {
-      return new Response(JSON.stringify({ error: 'Zero IV logic error' }), { status: 404 });
+      return new Response(JSON.stringify({ error: 'Zero IV' }), { status: 404 });
     }
 
-    // 4. 모델 A: 통계적 내재변동성 모델 (1-SD, Black-Scholes 기반)
+    // 4. 통계적 IV 모델
     const statDailyEM = price * blendedIv * Math.sqrt(1 / 252);
-    // const statWeeklyEM = price * blendedIv * Math.sqrt(5 / 252); // Not used
 
-    // 5. 모델 B: 실전 스트래들 프라이싱 (TastyTrade 방식)
-    // 콜 중간가격 + 풋 중간가격 (시장이 실제로 돈을 걸고 있는 프리미엄 합)
+    // 5. 스트래들 프라이싱
     const callPrice = ((atmCall.bid ?? 0) + (atmCall.ask ?? 0)) / 2 || atmCall.lastPrice || 0;
     const putPrice = ((atmPut.bid ?? 0) + (atmPut.ask ?? 0)) / 2 || atmPut.lastPrice || 0;
     const straddlePrice = callPrice + putPrice;
 
-    // 만기일까지 남은 거래일(DTE) 계산을 통한 역산
-    const expDateRaw = options.options[0].expirationDate;
-    const expirationDate = expDateRaw instanceof Date ? expDateRaw : new Date(Number(expDateRaw) * 1000);
-    const today = new Date();
-    const daysToE = Math.max(1, (expirationDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
-    // 스트래들은 기본적으로 해당 만기까지의 범위를 의미하므로, 하루(1-day)로 축소하려면 루트 일수로 나눔
+    const expTimestamp = optionChain.options[0].expirationDate;
+    const expirationDate = new Date(expTimestamp * 1000);
+    const daysToE = Math.max(1, (expirationDate.getTime() - Date.now()) / (1000 * 3600 * 24));
     const straddleDailyEM = straddlePrice * Math.sqrt(1 / daysToE);
 
-    // 두 가지 모델을 평균 내어 극단적 오차를 방지 (프리미엄 쏠림 교정)
     const finalDailyEM = (statDailyEM + straddleDailyEM) / 2;
     const finalWeeklyEM = finalDailyEM * Math.sqrt(5);
-    const finalMonthlyEM = finalDailyEM * Math.sqrt(21); // 한 달은 약 21 거래일
+    const finalMonthlyEM = finalDailyEM * Math.sqrt(21);
 
     const data = {
       price,
@@ -102,13 +110,14 @@ export const GET: APIRoute = async (context) => {
       monthlyLower: price - finalMonthlyEM,
     };
 
-    await redis.set(cacheKey, JSON.stringify(data), { ex: 1800 }); // 30분 캐시
+    await redis.set(cacheKey, JSON.stringify(data), { ex: 1800 });
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err: any) {
-    console.error(`[expected-move error] for ${ticker}:`, err.message);
+    console.error(`[expected-move] error for ${ticker}:`, err.message);
     return new Response(JSON.stringify({ error: 'Failed to calculate expected move' }), { status: 500 });
   }
 };
+

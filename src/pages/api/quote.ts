@@ -1,10 +1,7 @@
 // src/pages/api/quote.ts
-// 단일 티커 상세 시세 API
+// 단일 티커 상세 시세 API — Yahoo Finance 공개 HTTP 엔드포인트 직접 호출
 import type { APIRoute } from 'astro';
-import YahooFinance from 'yahoo-finance2';
 import { getRedis } from '../../lib/redis';
-
-const yahooFinance = new YahooFinance();
 
 export const GET: APIRoute = async (context) => {
   const url = new URL(context.request.url);
@@ -26,7 +23,19 @@ export const GET: APIRoute = async (context) => {
       });
     }
 
-    const q = await yahooFinance.quote(ticker);
+    // Yahoo Finance 공개 HTTP 엔드포인트 (npm 패키지 대신 직접 호출)
+    const yfUrl = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}`;
+    const res = await fetch(yfUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+      },
+    });
+
+    if (!res.ok) throw new Error(`Yahoo quote HTTP ${res.status}`);
+
+    const result = await res.json();
+    const q = result?.quoteResponse?.result?.[0];
+
     if (!q || !q.symbol) {
       return new Response(JSON.stringify({ error: 'not found' }), { status: 404 });
     }
@@ -61,4 +70,5 @@ export const GET: APIRoute = async (context) => {
     return new Response(JSON.stringify({ error: 'Failed to fetch quote' }), { status: 500 });
   }
 };
+
 
