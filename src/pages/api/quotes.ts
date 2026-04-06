@@ -2,12 +2,12 @@
 // 개인 워치리스트용 API — 온디맨드 (Lazy) 서버리스 캐싱
 import type { APIRoute } from 'astro';
 import YahooFinance from 'yahoo-finance2';
-import { redis } from '../../lib/redis';
+import { getRedis } from '../../lib/redis';
 
 const yahooFinance = new YahooFinance();
 
-export const GET: APIRoute = async ({ request }) => {
-  const url = new URL(request.url);
+export const GET: APIRoute = async (context) => {
+  const url = new URL(context.request.url);
   const tickersRaw = url.searchParams.get('tickers');
 
   if (!tickersRaw) {
@@ -32,6 +32,7 @@ export const GET: APIRoute = async ({ request }) => {
 
     // [Step 1] Redis MGET으로 모든 티커 동시 조회 시도
     // MGET은 [data1, null, data3...] 형식으로 반환합니다.
+    const redis = getRedis(context);
     const cachedArray = await redis.mget(...tickers.map(t => `gidne_quote_${t}`));
 
     // [Step 2] 캐시 히트(Hit)와 미스(Miss) 분류

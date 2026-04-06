@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
 import { getGlobalMarketData } from '../../lib/redis';
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async (context) => {
   try {
-    const data = await getGlobalMarketData();
+    const data = await getGlobalMarketData(context);
     
     // 만약 데이터 펌프가 죽어있거나 캐시가 만료된 경우
     if (!data) {
