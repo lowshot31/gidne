@@ -335,14 +335,19 @@ async function main() {
 
   const POLLING_INTERVAL = getPollingInterval(); // 보통 15000ms
 
+  let lastQueuePump = Date.now();
+
   while (true) {
     const now = Date.now();
 
-    // 1. 빠른 큐 폴링 (루프 돌 때마다 수행)
-    try {
-      await pumpDemandQueues();
-    } catch (e) {
-      console.error('[Pump] Demand Queue error:', e);
+    // 1. 빠른 큐 폴링 (5초마다 한 번씩만 확인하여 Upstash 무료 한도 방어)
+    if (now - lastQueuePump >= 5000) {
+      lastQueuePump = now;
+      try {
+        await pumpDemandQueues();
+      } catch (e) {
+        console.error('[Pump] Demand Queue error:', e);
+      }
     }
     
     // 2. 주기적 마켓데이터 전체 펌프 (폴링 인터벌, 약 15초)
@@ -363,7 +368,7 @@ async function main() {
       pumpCalendar().catch(e => console.error(e)); // Non-blocking
     }
 
-    await new Promise(r => setTimeout(r, 1000)); // 항상 1초 대기
+    await new Promise(r => setTimeout(r, 1000)); // 항상 1초 대기 (CPU 절약)
   }
 }
 

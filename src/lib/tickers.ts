@@ -125,5 +125,5 @@ export function isUSMarketOpen(): boolean {
 
 // 폴링 간격 반환 (ms)
 export function getPollingInterval(): number {
-  return isUSMarketOpen() ? 5_000 : 60_000; // 야후파이낸스 차단 안 당하는 최소 한계치: 5초
+  return isUSMarketOpen() ? 5_000 : 60_000; // 
 }
