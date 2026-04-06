@@ -1,19 +1,14 @@
 import { Redis } from '@upstash/redis';
 
-// Upstash는 V8 Edge (Cloudflare Workers) 환경을 기본 지원합니다.
-// @ts-ignore
-const envUrl = typeof process !== 'undefined' ? process.env.UPSTASH_REDIS_REST_URL : '';
-// @ts-ignore
-const envToken = typeof process !== 'undefined' ? process.env.UPSTASH_REDIS_REST_TOKEN : '';
-
+// Cloudflare 런타임 context에서 env를 동적으로 주입받아 Redis 클라이언트를 생성합니다.
 export function getRedis(context?: any) {
   // @ts-ignore
-  const envUrl = typeof process !== 'undefined' ? process.env.UPSTASH_REDIS_REST_URL : '';
+  const pEnvUrl = typeof process !== 'undefined' ? process.env.UPSTASH_REDIS_REST_URL : '';
   // @ts-ignore
-  const envToken = typeof process !== 'undefined' ? process.env.UPSTASH_REDIS_REST_TOKEN : '';
+  const pEnvToken = typeof process !== 'undefined' ? process.env.UPSTASH_REDIS_REST_TOKEN : '';
 
-  const url = context?.locals?.runtime?.env?.UPSTASH_REDIS_REST_URL || import.meta.env.UPSTASH_REDIS_REST_URL || envUrl || '';
-  const token = context?.locals?.runtime?.env?.UPSTASH_REDIS_REST_TOKEN || import.meta.env.UPSTASH_REDIS_REST_TOKEN || envToken || '';
+  const url = context?.locals?.runtime?.env?.UPSTASH_REDIS_REST_URL || import.meta.env.UPSTASH_REDIS_REST_URL || pEnvUrl || '';
+  const token = context?.locals?.runtime?.env?.UPSTASH_REDIS_REST_TOKEN || import.meta.env.UPSTASH_REDIS_REST_TOKEN || pEnvToken || '';
 
   return new Redis({ url, token });
 }
@@ -31,8 +26,9 @@ export async function getGlobalMarketData(context?: any) {
   }
 }
 
-export async function setGlobalMarketData(data: any) {
+export async function setGlobalMarketData(data: any, context?: any) {
   try {
+    const redis = getRedis(context);
     // 15초 TTL 부여 (데이터가 신선하도록 유지)
     await redis.set('gidne_market_data', JSON.stringify(data), { ex: 15 });
   } catch (error) {
