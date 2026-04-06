@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { cache } from '../../lib/cache';
+import { getRedis } from '../../lib/redis';
 
 function extractTag(xml: string, tag: string): string {
   const match = xml.match(new RegExp(`<${tag}><!\\[CDATA\\[(.*?)\\]\\]></${tag}>`, 'i')) || 
@@ -7,19 +7,25 @@ function extractTag(xml: string, tag: string): string {
   return match ? match[1].trim() : '';
 }
 
-export const GET: APIRoute = async () => {
-  const CACHE_KEY = 'economic_calendar_weekly';
-  const cached = cache.get(CACHE_KEY);
-
-  if (cached) {
-    return new Response(JSON.stringify(cached), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+export const GET: APIRoute = async (context) => {
+  const redis = getRedis(context);
+  const CACHE_KEY = 'gidne_calendar_weekly';
 
   try {
-    // ForexFactory 엔진 (faireconomy.media)
+    // [Step 1] Redis 캐시 우선 조회
+    const cached = await redis.get(CACHE_KEY);
+    if (cached) {
+      const data = typeof cached === 'string' ? JSON.parse(cached) : cached;
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=600',
+        },
+      });
+    }
+
+    // [Step 2] 캐시 미스 시 외부 API 호출
     const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.xml', {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
@@ -34,7 +40,7 @@ export const GET: APIRoute = async () => {
     
     const xml = await response.text();
     const eventsPattern = /<event>([\s\S]*?)<\/event>/g;
-    const events = [];
+    const events: any[] = [];
     
     let match;
     while ((match = eventsPattern.exec(xml)) !== null) {
@@ -48,12 +54,11 @@ export const GET: APIRoute = async () => {
       const previous = extractTag(eventXml, 'previous');
 
       const targetCountries = ['USD', 'EUR', 'GBP', 'JPY', 'CNY'];
-      // 달력 UI에서 국가 코드를 매핑합니다.
       const mappedCountry = country === 'USD' ? 'US' : country === 'EUR' ? 'EU' : country === 'GBP' ? 'GB' : country === 'JPY' ? 'JP' : country === 'CNY' ? 'CN' : country;
 
       if ((impact === 'High' || impact === 'Medium') && targetCountries.includes(country)) {
         events.push({
-          id: Math.random().toString(36).substr(2, 9),
+          id: Math.random().toString(36).substring(2, 11),
           title,
           country: mappedCountry,
           date,
@@ -67,18 +72,18 @@ export const GET: APIRoute = async () => {
 
     const sortedEvents = events.slice(0, 15);
 
-    cache.set(CACHE_KEY, sortedEvents, 3600 * 1000); // 1시간 캐시하여 429 IP 밴을 절대적으로 방지
+    // [Step 3] Redis에 1시간(3600초) TTL로 캐싱
+    await redis.set(CACHE_KEY, JSON.stringify(sortedEvents), { ex: 3600 });
 
     return new Response(JSON.stringify(sortedEvents), {
       status: 200,
       headers: { 
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': 'public, max-age=600',
       },
     });
   } catch (error) {
     console.error('[API] /api/calendar error:', error);
-    // 429 또는 403 에러 시 빈 배열을 반환해 클라이언트가 Demo Data를 그리도록 유도
     return new Response(JSON.stringify([]), { status: 200 });
   }
 };
