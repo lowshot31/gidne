@@ -15,8 +15,21 @@ export function getWatchlist(): WatchlistItem[] {
   if (typeof window === 'undefined') return [];
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    
+    const parsed = JSON.parse(stored);
+    
+    // 데이터 무결성 검증 추가
+    if (!Array.isArray(parsed)) {
+      console.warn('Watchlist localStorage data tampered, resetting.');
+      localStorage.removeItem(STORAGE_KEY);
+      return [];
+    }
+    
+    return parsed.filter(item => item && typeof item.ticker === 'string');
   } catch {
+    console.warn('Watchlist localStorage parse error, resetting.');
+    localStorage.removeItem(STORAGE_KEY);
     return [];
   }
 }

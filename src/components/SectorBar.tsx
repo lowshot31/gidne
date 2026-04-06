@@ -53,12 +53,27 @@ export default function SectorBar({ sectors }: Props) {
         .sector-container {
           display: flex;
           flex-direction: column;
+          min-height: 0;
+          overflow: hidden;
         }
         .bars-wrapper {
           display: flex;
           flex-direction: column;
           gap: 0.8rem;
           flex: 1;
+          overflow-y: auto;
+          min-height: 0;
+          padding-right: 4px;
+        }
+        .bars-wrapper::-webkit-scrollbar {
+          width: 4px;
+        }
+        .bars-wrapper::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .bars-wrapper::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 4px;
         }
         .bar-row {
           display: flex;

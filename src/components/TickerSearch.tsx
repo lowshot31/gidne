@@ -9,9 +9,10 @@ interface Suggestion {
 
 interface Props {
   onNavigate?: (ticker: string) => void;
+  onSelect?: (ticker: string, name: string) => void;
 }
 
-export default function TickerSearch({ onNavigate }: Props) {
+export default function TickerSearch({ onNavigate, onSelect }: Props) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -59,10 +60,12 @@ export default function TickerSearch({ onNavigate }: Props) {
     };
   }, [query]);
 
-  const navigate = (symbol: string) => {
+  const navigate = (symbol: string, name: string) => {
     setIsOpen(false);
     setQuery('');
-    if (onNavigate) {
+    if (onSelect) {
+      onSelect(symbol, name);
+    } else if (onNavigate) {
       onNavigate(symbol);
     } else {
       window.location.href = `/chart/${symbol}`;
@@ -80,7 +83,7 @@ export default function TickerSearch({ onNavigate }: Props) {
       setSelectedIdx(prev => Math.max(prev - 1, 0));
     } else if (e.key === 'Enter' && selectedIdx >= 0) {
       e.preventDefault();
-      navigate(suggestions[selectedIdx].symbol);
+      navigate(suggestions[selectedIdx].symbol, suggestions[selectedIdx].name);
     } else if (e.key === 'Escape') {
       setIsOpen(false);
     }
@@ -99,7 +102,12 @@ export default function TickerSearch({ onNavigate }: Props) {
   return (
     <div ref={containerRef} className="ticker-search-container">
       <div className="search-input-wrapper">
-        <span className="search-icon">🔍</span>
+        <span className="search-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </span>
         <input
           type="text"
           value={query}
@@ -111,8 +119,11 @@ export default function TickerSearch({ onNavigate }: Props) {
           autoComplete="off"
         />
         {query && (
-          <button className="search-clear" onClick={() => { setQuery(''); setSuggestions([]); }}>
-            ✕
+          <button className="search-clear" onClick={() => { setQuery(''); setSuggestions([]); }} aria-label="Clear">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         )}
       </div>
@@ -123,7 +134,7 @@ export default function TickerSearch({ onNavigate }: Props) {
             <li
               key={s.symbol}
               className={`search-item ${idx === selectedIdx ? 'selected' : ''}`}
-              onClick={() => navigate(s.symbol)}
+              onClick={() => navigate(s.symbol, s.name)}
               onMouseEnter={() => setSelectedIdx(idx)}
             >
               <div className="search-item-left">
@@ -157,8 +168,13 @@ export default function TickerSearch({ onNavigate }: Props) {
           box-shadow: 0 0 12px rgba(0, 242, 255, 0.15);
         }
         .search-icon {
-          font-size: 0.9rem;
+          display: flex;
+          align-items: center;
+          color: var(--text-muted);
           flex-shrink: 0;
+        }
+        .search-input-wrapper:focus-within .search-icon {
+          color: var(--accent-primary);
         }
         .search-input {
           flex: 1;
@@ -173,15 +189,20 @@ export default function TickerSearch({ onNavigate }: Props) {
           color: var(--text-muted);
         }
         .search-clear {
+          display: flex;
+          align-items: center;
+          justify-content: center;
           background: none;
           border: none;
           color: var(--text-muted);
           cursor: pointer;
-          font-size: 0.85rem;
-          padding: 2px 4px;
+          padding: 2px;
+          border-radius: 4px;
+          transition: background 0.15s ease, color 0.15s ease;
         }
         .search-clear:hover {
           color: var(--text-primary);
+          background: rgba(255, 255, 255, 0.1);
         }
         .search-dropdown {
           position: absolute;

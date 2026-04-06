@@ -29,19 +29,35 @@ export const SECTOR_ETFS = [
 ] as const;
 
 export const MACRO_TICKERS = [
-  // 변동성
-  { ticker: '^VIX', name: 'VIX', category: 'volatility' as const },
-  { ticker: '^VVIX', name: 'VVIX', category: 'volatility' as const },
-  // 금리
-  { ticker: '^TNX', name: '10Y Yield', category: 'rates' as const },
-  { ticker: '^FVX', name: '5Y Yield', category: 'rates' as const },
-  { ticker: '^IRX', name: '13W T-Bill', category: 'rates' as const },
-  // 통화
-  { ticker: 'DX-Y.NYB', name: 'DXY', category: 'currency' as const },
-  { ticker: 'KRW=X', name: 'USD/KRW', category: 'currency' as const },
-  // 원자재
-  { ticker: 'GC=F', name: 'Gold', category: 'commodity' as const },
-  { ticker: 'CL=F', name: 'WTI Crude', category: 'commodity' as const },
+  // 1. 변동성 & 리스크 척도 (HOT)
+  { ticker: '^VIX', name: 'S&P 500 공포 지수 (VIX)', category: 'volatility' as const },
+  { ticker: '^VVIX', name: '공포의 공포 지수 (VVIX)', category: 'volatility' as const },
+  { ticker: '^SKEW', name: '꼬리위험 지수 (SKEW)', category: 'volatility' as const }, // 블랙스완 위험 리스크를 나타냄
+
+  // 2. 금리 & 신용 채권 (RATES)
+  { ticker: '^IRX', name: '미 3개월물 국채 (단기)', category: 'rates' as const },
+  { ticker: '^FVX', name: '미 5년물 국채 (중기)', category: 'rates' as const },
+  { ticker: '^TNX', name: '미 10년물 국채 (장기/기준표)', category: 'rates' as const },
+  { ticker: '^TYX', name: '미 30년물 국채 (초장기)', category: 'rates' as const },
+  { ticker: 'HYG', name: '미 정크본드 채권 ETF (신용위험)', category: 'rates' as const },
+  { ticker: 'LQD', name: '미 투자등급 회사채 ETF', category: 'rates' as const },
+  { ticker: 'TLT', name: '미 20년+ 장기 국채 ETF 가격', category: 'rates' as const },
+
+  // 3. 글로벌 외환 & 유동성 (CURRENCY)
+  { ticker: 'DX-Y.NYB', name: '글로벌 달러 인덱스 (DXY)', category: 'currency' as const },
+  { ticker: 'KRW=X', name: '원/달러 환율', category: 'currency' as const },
+  { ticker: 'JPY=X', name: '엔/달러 환율', category: 'currency' as const },
+  { ticker: 'CNY=X', name: '위안/달러 환율 (중국 리스크)', category: 'currency' as const },
+  { ticker: 'EURUSD=X', name: '유로/달러 환율', category: 'currency' as const },
+
+  // 4. 원자재 & 실물 경기 (COMMODITY)
+  { ticker: 'CL=F', name: 'WTI 국제 원유', category: 'commodity' as const },
+  { ticker: 'BZ=F', name: '브렌트유 (유럽 기준 유가)', category: 'commodity' as const },
+  { ticker: 'NG=F', name: '천연가스 (에너지/난방)', category: 'commodity' as const },
+  { ticker: 'HG=F', name: '닥터 코퍼 (구리 - 실물경기)', category: 'commodity' as const },
+  { ticker: 'GC=F', name: '금 (대표 안전자산)', category: 'commodity' as const },
+  { ticker: 'SI=F', name: '은 (산업/귀금속 혼합)', category: 'commodity' as const },
+  { ticker: 'ZC=F', name: '옥수수 (곡물 인플레이션/애그플레이션)', category: 'commodity' as const },
 ] as const;
 
 export const TICKER_STRIP = [

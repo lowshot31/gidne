@@ -2,12 +2,14 @@
 import '../styles/global.css';
 import TickerStripClient from '../components/TickerStripClient';
 import ThemeToggle from '../components/ThemeToggle';
+import TickerSearch from '../components/TickerSearch';
 
 interface Props {
 	title: string;
 }
 
 const { title } = Astro.props;
+const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -30,19 +32,24 @@ const { title } = Astro.props;
 	<body>
 		<div class="dashboard-container">
 			<!-- Header / Nav -->
-			<header class="app-header">
-				<div class="logo">GIDNE</div>
-				<nav class="tabs">
-					<a href="/" class="active">Equities</a>
-					<a href="/indices">Indices</a>
-					<a href="/macro">Macro</a>
-					<a href="/flows">Flows</a>
-				</nav>
-				<div style="display: flex; gap: 1rem; align-items: center;">
-					<a href="/chart/SPY" class="search-bar">🔍 Search</a>
-					<ThemeToggle client:load />
-				</div>
-			</header>
+			<div class="app-header-wrapper">
+				<header class="app-header">
+					<a href="/" class="logo" style="text-decoration: none; color: inherit; cursor: pointer;">GIDNE</a>
+					<nav class="tabs">
+						<a href="/" class={currentPath === '/' ? "active" : ""}>Equities</a>
+						<a href="/indices" class={currentPath.startsWith('/indices') ? "active" : ""}>Indices</a>
+						<a href="/macro" class={currentPath.startsWith('/macro') ? "active" : ""}>Macro</a>
+						<a href="/flows" class={currentPath.startsWith('/flows') ? "active" : ""}>Flows</a>
+						<a href="https://github.com/lowshot31/gidne" target="_blank" rel="noopener noreferrer">GitHub</a>
+					</nav>
+					<div style="display: flex; gap: 1rem; align-items: center; margin-left: auto;">
+						<div style="width: 280px;">
+							<TickerSearch client:load />
+						</div>
+						<ThemeToggle client:load />
+					</div>
+				</header>
+			</div>
 
 			<!-- Ticker Strip React Island -->
 			<TickerStripClient client:load />
@@ -59,12 +66,19 @@ const { title } = Astro.props;
 				flex-direction: column;
 				min-height: 100vh;
 			}
+			.app-header-wrapper {
+				width: 100%;
+				border-bottom: 1px solid var(--border-color);
+				background: var(--bg-secondary);
+			}
 			.app-header {
 				display: flex;
 				align-items: center;
-				padding: var(--gap-sm) var(--gap-md);
-				border-bottom: 1px solid var(--border-color);
-				background: var(--bg-secondary);
+				gap: 2rem;
+				padding: 0 var(--gap-md);
+				width: 100%;
+				height: 60px;
+				box-sizing: border-box;
 			}
 			.logo {
 				font-family: var(--font-heading);

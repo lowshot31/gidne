@@ -10,10 +10,11 @@ import SectorBar from './SectorBar';
 import RSLeaderboard from './RSLeaderboard';
 import SkeletonCard from './SkeletonCard';
 import PriceChart from './PriceChart';
-import MacroRow from './MacroRow';
+import MacroFocusWidget from './MacroFocusWidget';
 import CryptoLive from './CryptoLive';
 import MarketBreadth from './MarketBreadth';
 import Watchlist from './Watchlist';
+import EconomicCalendar from './EconomicCalendar';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -23,15 +24,38 @@ const DEFAULT_LAYOUTS = {
     { i: 'macro', x: 0, y: 3, w: 3, h: 7, minW: 2, minH: 4 },
     { i: 'chart', x: 3, y: 3, w: 6, h: 7, minW: 2, minH: 4 },
     { i: 'rs', x: 9, y: 3, w: 3, h: 7, minW: 2, minH: 6 },
-    { i: 'crypto', x: 0, y: 10, w: 3, h: 4, minW: 2, minH: 3 },
-    { i: 'sector', x: 3, y: 10, w: 6, h: 7, minW: 2, minH: 4 },
+    { i: 'crypto', x: 0, y: 10, w: 3, h: 6, minW: 2, minH: 3 },
+    { i: 'sector', x: 3, y: 10, w: 6, h: 10, minW: 2, minH: 4 },
     { i: 'breadth', x: 9, y: 10, w: 3, h: 5, minW: 2, minH: 3 },
-    { i: 'watchlist', x: 0, y: 14, w: 3, h: 5, minW: 2, minH: 3 },
+    { i: 'watchlist', x: 0, y: 16, w: 3, h: 6, minW: 2, minH: 3 },
+    { i: 'calendar', x: 9, y: 15, w: 3, h: 6, minW: 2, minH: 4 },
+  ],
+  md: [
+    { i: 'pulse', x: 0, y: 0, w: 10, h: 3, minW: 2, minH: 3 },
+    { i: 'chart', x: 0, y: 3, w: 10, h: 7, minW: 2, minH: 4 },
+    { i: 'macro', x: 0, y: 10, w: 5, h: 7, minW: 2, minH: 4 },
+    { i: 'rs', x: 5, y: 10, w: 5, h: 7, minW: 2, minH: 6 },
+    { i: 'sector', x: 0, y: 17, w: 10, h: 10, minW: 2, minH: 4 },
+    { i: 'crypto', x: 0, y: 27, w: 5, h: 6, minW: 2, minH: 3 },
+    { i: 'breadth', x: 5, y: 27, w: 5, h: 5, minW: 2, minH: 3 },
+    { i: 'watchlist', x: 0, y: 33, w: 10, h: 6, minW: 2, minH: 3 },
+    { i: 'calendar', x: 5, y: 32, w: 5, h: 6, minW: 2, minH: 4 },
+  ],
+  sm: [
+    { i: 'pulse', x: 0, y: 0, w: 6, h: 3 },
+    { i: 'chart', x: 0, y: 3, w: 6, h: 7 },
+    { i: 'rs', x: 0, y: 10, w: 6, h: 7 },
+    { i: 'macro', x: 0, y: 17, w: 6, h: 7 },
+    { i: 'sector', x: 0, y: 24, w: 6, h: 10 },
+    { i: 'crypto', x: 0, y: 34, w: 6, h: 6 },
+    { i: 'breadth', x: 0, y: 40, w: 6, h: 5 },
+    { i: 'watchlist', x: 0, y: 45, w: 6, h: 6 },
+    { i: 'calendar', x: 0, y: 51, w: 6, h: 6 },
   ]
 };
 
 // 레이아웃 버전: DEFAULT_LAYOUTS가 변경될 때마다 이 숫자를 올려야 함
-const LAYOUT_VERSION = 5;
+const LAYOUT_VERSION = 8;
 
 export default function DashboardClient() {
   const { data, loading, error } = useMarketData();
@@ -48,7 +72,19 @@ export default function DashboardClient() {
       localStorage.setItem('gidne_layout_version', String(LAYOUT_VERSION));
       setLayouts(DEFAULT_LAYOUTS);
     } else if (savedLayout) {
-      try { setLayouts(JSON.parse(savedLayout)); } catch(e) {}
+      try {
+        const parsed = JSON.parse(savedLayout);
+        if (parsed && typeof parsed === 'object') {
+          setLayouts(parsed);
+        } else {
+          localStorage.removeItem('gidne_layout');
+          setLayouts(DEFAULT_LAYOUTS);
+        }
+      } catch(e) {
+        console.warn('Layout localStorage corrupted, resetting.');
+        localStorage.removeItem('gidne_layout');
+        setLayouts(DEFAULT_LAYOUTS);
+      }
     }
     setMounted(true);
   }, []);
@@ -95,18 +131,13 @@ export default function DashboardClient() {
         margin={[16, 16]}
       >
         <div key="pulse" className="widget-wrapper">
-          <div className="drag-handle" style={{ position: 'absolute', left: '10px', top: '10px', zIndex: 10 }}>≡</div>
+          <div className="drag-handle"></div>
           <MarketPulse data={data.marketPulse} />
         </div>
         
-        <div key="macro" className="widget-wrapper macro-focus-card bento-item">
-          <div className="drag-handle" style={{ position: 'absolute', right: '10px', top: '10px', zIndex: 10 }}>≡</div>
-          <h3 className="text-secondary mb-md">MACRO FOCUS</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, overflowY: 'auto' }}>
-            {data.macro.map(m => (
-              <MacroRow key={m.ticker} ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
-            ))}
-          </div>
+        <div key="macro" className="widget-wrapper macro-focus-card bento-item" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div className="drag-handle"></div>
+          <MacroFocusWidget presetData={data.macro} />
           <div style={{ marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--glass-border)' }}>
             <p className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.5', margin: 0 }}>
               {new Date(data.meta.lastUpdated).toLocaleTimeString()} · {data.meta.isMarketOpen ? '장중 30s' : '장외 5m'}
@@ -115,33 +146,38 @@ export default function DashboardClient() {
         </div>
 
         <div key="sector" className="widget-wrapper">
-          <div className="drag-handle" style={{ position: 'absolute', right: '10px', top: '10px', zIndex: 10 }}>≡</div>
+          <div className="drag-handle"></div>
           <SectorBar sectors={data.sectors} />
         </div>
 
         <div key="rs" className="widget-wrapper">
-          <div className="drag-handle" style={{ position: 'absolute', right: '10px', top: '10px', zIndex: 10 }}>≡</div>
+          <div className="drag-handle"></div>
           <RSLeaderboard sectors={data.sectors} />
         </div>
 
         <div key="crypto" className="widget-wrapper">
-          <div className="drag-handle" style={{ position: 'absolute', right: '10px', top: '10px', zIndex: 10 }}>≡</div>
+          <div className="drag-handle"></div>
           <CryptoLive />
         </div>
 
         <div key="chart" className="widget-wrapper">
-          <div className="drag-handle" style={{ position: 'absolute', right: '10px', top: '10px', zIndex: 10 }}>≡</div>
-          <PriceChart ticker="SPY" name="S&P 500" />
+          <div className="drag-handle"></div>
+          <PriceChart />
         </div>
 
         <div key="breadth" className="widget-wrapper">
-          <div className="drag-handle" style={{ position: 'absolute', right: '10px', top: '10px', zIndex: 10 }}>≡</div>
+          <div className="drag-handle"></div>
           <MarketBreadth sectors={data.sectors} macro={data.macro} />
         </div>
 
         <div key="watchlist" className="widget-wrapper">
-          <div className="drag-handle" style={{ position: 'absolute', right: '10px', top: '10px', zIndex: 10 }}>≡</div>
+          <div className="drag-handle"></div>
           <Watchlist />
+        </div>
+
+        <div key="calendar" className="widget-wrapper">
+          <div className="drag-handle"></div>
+          <EconomicCalendar />
         </div>
       </ResponsiveGridLayout>
 
@@ -161,18 +197,29 @@ export default function DashboardClient() {
           height: 100%;
         }
         .drag-handle {
+          position: absolute;
+          top: 6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 32px;
+          height: 6px;
+          background-color: var(--text-muted);
+          border-radius: 999px;
           cursor: grab;
-          color: var(--text-muted);
           opacity: 0;
-          transition: opacity 0.2s;
-          padding: 4px;
-          line-height: 1;
+          transition: opacity 0.2s ease, background-color 0.2s ease;
+          z-index: 50;
         }
         .drag-handle:active {
           cursor: grabbing;
+          background-color: var(--accent-primary);
         }
         .widget-wrapper:hover .drag-handle {
-          opacity: 1;
+          opacity: 0.4;
+        }
+        .drag-handle:hover {
+          opacity: 0.8;
+          background-color: var(--accent-primary);
         }
 
         /* FAB — 챗봇 스타일 플로팅 버튼 */
@@ -185,24 +232,22 @@ export default function DashboardClient() {
           align-items: center;
           gap: 6px;
           padding: 10px 16px;
-          background: rgba(30, 30, 40, 0.85);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          background: var(--card-bg);
           border: 1px solid var(--border-color);
           border-radius: 999px;
           color: var(--text-secondary);
           cursor: pointer;
           font-size: 0.8rem;
-          font-family: var(--font-sans);
-          box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+          font-family: var(--font-body);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
           transition: all 0.25s ease;
         }
         .fab-reset:hover {
-          background: rgba(40, 40, 55, 0.95);
+          background: var(--card-bg-hover);
           border-color: var(--accent-primary);
           color: var(--accent-primary);
           transform: translateY(-2px);
-          box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.25);
         }
         .fab-icon {
           font-size: 1.1rem;

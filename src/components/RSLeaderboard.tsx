@@ -93,6 +93,8 @@ export default function RSLeaderboard({ sectors }: Props) {
         .leaderboard-container {
           display: flex;
           flex-direction: column;
+          height: 100%;
+          overflow: hidden;
         }
         .leader-list {
           flex: 1;
@@ -136,12 +138,14 @@ export default function RSLeaderboard({ sectors }: Props) {
           display: flex;
           align-items: baseline;
           gap: 0.3rem;
+          min-width: 0;
         }
         .short-name {
           font-size: 0.75rem;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          min-width: 0;
         }
         .leader-price {
           font-size: 0.75rem;

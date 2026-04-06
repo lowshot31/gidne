@@ -24,7 +24,7 @@ function CryptoRow({ symbol, price, change24h, high24h, low24h }: {
   const name = DISPLAY_NAMES[symbol] || symbol.replace('USDT', '');
 
   return (
-    <div className={`crypto-row ${flash}`}>
+    <a href={`/chart/${encodeURIComponent(symbol.replace('USDT', '-USD'))}`} style={{ textDecoration: 'none' }} className={`crypto-row ${flash}`}>
       <div className="crypto-name">
         <strong>{name}</strong>
       </div>
@@ -36,7 +36,7 @@ function CryptoRow({ symbol, price, change24h, high24h, low24h }: {
       <div className={`crypto-change ${isUp ? 'text-bull' : 'text-bear'}`}>
         {isUp ? '+' : ''}{change24h.toFixed(2)}%
       </div>
-    </div>
+    </a>
   );
 }
 
@@ -82,12 +82,15 @@ export default function CryptoLive() {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
+          height: 100%;
+          overflow: hidden;
         }
         .crypto-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
           margin-bottom: 0.5rem;
+          flex-shrink: 0;
         }
         .live-badge {
           display: flex;
@@ -114,6 +117,8 @@ export default function CryptoLive() {
           display: flex;
           flex-direction: column;
           gap: 0.35rem;
+          overflow-y: auto;
+          flex: 1;
         }
         .crypto-row {
           display: flex;

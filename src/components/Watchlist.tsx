@@ -28,6 +28,7 @@ export default function Watchlist() {
   const [inputValue, setInputValue] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [benchmark, setBenchmark] = useState<'^GSPC' | '^IXIC'>('^GSPC');
 
   // 자동완성 관련
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
@@ -41,11 +42,11 @@ export default function Watchlist() {
     setItems(getWatchlist());
   }, []);
 
-  // 시세 데이터 fetch — 배치 API (한 번에 모든 종목 조회)
   const fetchQuotes = useCallback(async (tickers: string[]) => {
     if (tickers.length === 0) return;
+    const fetchList = Array.from(new Set([...tickers, '^GSPC', '^IXIC']));
     try {
-      const res = await fetch(`/api/quotes?tickers=${tickers.map(encodeURIComponent).join(',')}&_t=${Date.now()}`);
+      const res = await fetch(`/api/quotes?tickers=${fetchList.map(encodeURIComponent).join(',')}&_t=${Date.now()}`);
       if (!res.ok) return;
       const data: Record<string, QuoteData> = await res.json();
       const newQuotes = new Map<string, QuoteData>();
@@ -164,17 +165,41 @@ export default function Watchlist() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const isMarketOpen = () => {
+    return true; 
+  };
+
+  const benchmarkChange = quotes.get(benchmark)?.changePercent || 0;
+  const benchmarkLabel = benchmark === '^GSPC' ? 'SPX' : 'NDX';
+
   return (
     <div className="bento-item watchlist-container">
-      <div className="watchlist-header">
-        <h3 className="text-secondary">WATCHLIST</h3>
-        <button 
-          className="watchlist-add-btn" 
-          onClick={() => setIsAdding(!isAdding)}
-          title="종목 추가"
-        >
-          {isAdding ? '✕' : '+'}
-        </button>
+      <div className="watchlist-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 className="text-secondary" style={{ margin: 0 }}>WATCHLIST</h3>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button 
+            className="text-muted" 
+            style={{ 
+              background: 'transparent', 
+              border: '1px solid var(--border-color)', 
+              borderRadius: '4px', 
+              padding: '0.1rem 0.4rem', 
+              fontSize: '0.7rem',
+              cursor: 'pointer' 
+            }}
+            onClick={() => setBenchmark(b => b === '^GSPC' ? '^IXIC' : '^GSPC')}
+            title="RS 기준 지수 변경"
+          >
+            vs {benchmarkLabel}
+          </button>
+          <button 
+            className="watchlist-add-btn" 
+            onClick={() => setIsAdding(!isAdding)}
+            title="종목 추가"
+          >
+            {isAdding ? '✕' : '+'}
+          </button>
+        </div>
       </div>
 
       {/* 종목 추가 입력 + 자동완성 */}
@@ -226,21 +251,19 @@ export default function Watchlist() {
       ) : (
         <div className="watchlist-list">
           {items.map(item => {
-            const yfQuote = quotes.get(item.ticker);
-            const price = yfQuote?.price || 0;
-            const changePercent = yfQuote?.changePercent || 0;
-            const name = yfQuote?.name || item.ticker;
-            const isUp = changePercent >= 0;
+            const q = quotes.get(item.ticker);
             return (
-              <WatchlistRow 
-                key={item.ticker} 
-                ticker={item.ticker} 
-                name={name} 
-                price={price} 
-                changePercent={changePercent} 
-                isUp={isUp} 
-                onRemove={() => handleRemove(item.ticker)} 
-                isLoading={!yfQuote}
+              <WatchlistRow
+                key={item.ticker}
+                ticker={item.ticker}
+                name={q?.name || item.ticker}
+                price={q?.price || 0}
+                changePercent={q?.changePercent || 0}
+                isUp={(q?.changePercent || 0) >= 0}
+                benchmarkChange={benchmarkChange}
+                benchmarkLabel={benchmarkLabel}
+                onRemove={() => handleRemove(item.ticker)}
+                isLoading={!q}
               />
             );
           })}
@@ -252,6 +275,8 @@ export default function Watchlist() {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
+          height: 100%;
+          overflow: hidden;
         }
         .watchlist-header {
           display: flex;
@@ -390,15 +415,22 @@ export default function Watchlist() {
           display: flex;
           flex-direction: column;
           gap: 0.2rem;
+          flex: 1;
+          overflow-y: auto;
+          overflow-x: hidden;
         }
-        .watchlist-row {
+        .table-row {
           display: flex;
           align-items: center;
-          padding: 0.35rem 0.25rem;
-          border-bottom: 1px solid var(--glass-border);
-          font-family: var(--font-mono);
+          padding: 0.6rem 0.5rem;
+          border-bottom: 1px solid var(--border-color);
+          transition: background 0.2s ease, transform 0.1s ease;
           font-size: 0.85rem;
-          gap: 0.4rem;
+          color: inherit;
+        }
+        .table-row:hover {
+          background: var(--bg-card);
+          transform: translateY(-1px);
         }
         .wl-ticker {
           display: flex;
@@ -412,6 +444,7 @@ export default function Watchlist() {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          min-width: 0;
         }
         .wl-data {
           display: flex;
@@ -442,22 +475,29 @@ export default function Watchlist() {
 }
 
 // 개별 종목 렌더링 (플래시 애니메이션 적용 위해 분리)
-function WatchlistRow({ ticker, name, price, changePercent, isUp, onRemove, isLoading }: any) {
+function WatchlistRow({ ticker, name, price, changePercent, isUp, benchmarkChange, benchmarkLabel, onRemove, isLoading }: any) {
   const flash = useFlash(price, 500);
+  const rs = changePercent - benchmarkChange;
+  const isRsUp = rs >= 0;
   
   return (
-    <div className={`watchlist-row ${flash}`}>
+    <a href={`/chart/${encodeURIComponent(ticker)}`} className={`table-row ${flash}`} style={{ textDecoration: 'none', cursor: 'pointer' }}>
       <div className="wl-ticker">
         <strong>{ticker}</strong>
         {!isLoading && <span className="text-muted wl-name">{name}</span>}
       </div>
-      <div className="wl-data" style={{ padding: '0 0.25rem', borderRadius: '4px' }}>
+      <div className="wl-data" style={{ padding: '0 0.25rem', borderRadius: '4px', gap: '0.75rem' }}>
         {!isLoading ? (
           <>
             <span className="wl-price">{price >= 1000 ? price.toLocaleString('en-US', { maximumFractionDigits: 0 }) : price.toFixed(2)}</span>
-            <span className={isUp ? 'text-bull' : 'text-bear'} style={{ minWidth: '60px', textAlign: 'right' }}>
-              {isUp ? '+' : ''}{changePercent.toFixed(2)}%
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: '0.75rem', minWidth: '65px' }}>
+              <span className={isUp ? 'text-bull' : 'text-bear'} style={{ fontWeight: 500 }}>
+                {isUp ? '+' : ''}{changePercent.toFixed(2)}%
+              </span>
+              <span className={isRsUp ? 'text-bull' : 'text-bear'} style={{ opacity: 0.8, fontSize: '0.65rem', whiteSpace: 'nowrap' }}>
+                RS({benchmarkLabel}): {isRsUp ? '+' : ''}{rs.toFixed(2)}%
+              </span>
+            </div>
           </>
         ) : (
           <span className="text-muted">로딩...</span>
@@ -465,11 +505,11 @@ function WatchlistRow({ ticker, name, price, changePercent, isUp, onRemove, isLo
       </div>
       <button 
         className="wl-remove" 
-        onClick={onRemove}
+        onClick={(e) => { e.preventDefault(); onRemove(); }}
         title="삭제"
       >
         ✕
       </button>
-    </div>
+    </a>
   );
 }
