@@ -1,0 +1,79 @@
+[33mcommit dd647010ff9ce1b138f00380a4de47874b6c0a64[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 05:37:16 2026 +0900
+
+    feat: implement market data pump script and ExpectedMoveWidget component
+
+ 2 files changed, 16 insertions(+), 2 deletions(-)
+
+[33mcommit 83d92249de59ba6ec3e82d50b08b61b2823144b7[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 05:35:56 2026 +0900
+
+    feat: implement MacroFocusWidget with custom ticker tracking and TickerSearch functionality
+
+ 6 files changed, 46 insertions(+), 179 deletions(-)
+
+[33mcommit b81d38a26e58c8419241f18bb6fa95ddd3eac120[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 05:24:42 2026 +0900
+
+    feat: add data-pump script for automated market data synchronization and redis caching
+
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+[33mcommit 77cb729fcd565b39fdce58a6c668983e0f1b3cc5[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 05:20:02 2026 +0900
+
+    feat: implement data-pump script and API endpoints for on-demand quote and summary data fetching
+
+ 3 files changed, 29 insertions(+), 11 deletions(-)
+
+[33mcommit f78bb903260c95f3031409d6883eca3a7964202d[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 05:06:56 2026 +0900
+
+    feat: implement asynchronous data-pump architecture with Redis-backed API endpoints for real-time market data retrieval
+
+ 8 files changed, 322 insertions(+), 397 deletions(-)
+
+[33mcommit 77903f61e829f6c446c32b010d0155ff2bc78fd0[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 04:41:23 2026 +0900
+
+    refactor: replace yahoo-finance2 npm with direct HTTP for Cloudflare compatibility
+
+ 5 files changed, 163 insertions(+), 154 deletions(-)
+
+[33mcommit afa063a4c59ef334b542454717586e67ce9ae8bf[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 04:33:29 2026 +0900
+
+    feat: expand data pump with charts/quotes/calendar, hybrid search with built-in index
+
+ 4 files changed, 293 insertions(+), 32 deletions(-)
+
+[33mcommit 5d33f34ab2c4c988acebb37a6ba5cad2c7c1eab8[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 04:28:42 2026 +0900
+
+    feat: add Korean translation for economic calendar events
+
+ 1 file changed, 103 insertions(+), 1 deletion(-)
+
+[33mcommit 314252a15b7d5745f9b69d02c075ef753bb7fb50[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 04:26:36 2026 +0900
+
+    fix: migrate all API routes from in-memory to Redis cache for Cloudflare compatibility
+
+ 5 files changed, 83 insertions(+), 62 deletions(-)
+
+[33mcommit 27722829a843faf0bbb3c68ce4a514d5ed4559ce[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 04:23:37 2026 +0900
+
+    fix: migrate calendar API from in-memory to Redis cache
+
+ 1 file changed, 23 insertions(+), 18 deletions(-)

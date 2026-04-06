@@ -122,8 +122,15 @@ async function pumpDemandQueues() {
         pipeline.set(`${cachePrefix}${ticker}`, JSON.stringify(data), { ex: ttl });
       } catch (err: any) {
         console.error(`[Pump:Queue] Failed ${queueName} for ${ticker}: ${err.message}`);
+        if (err.message?.includes('429') || err.message?.includes('Too Many')) {
+          console.warn('[Pump] ⚠️ 야후 429 에러 감지! 15초간 펌프 강제 휴식...');
+          await new Promise(r => setTimeout(r, 15000));
+          break; // 현재 큐 진행 중단
+        }
       }
       pipeline.srem(queueName, ticker);
+      // 폭주 방지: 큐 아이템 간 0.5초 딜레이 (Yahoo 차단 방어)
+      await new Promise(r => setTimeout(r, 500));
     }
     await pipeline.exec();
   };
