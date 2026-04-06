@@ -52,13 +52,13 @@ export default function EconomicCalendar() {
         </h3>
         <span style={{ 
           fontSize: '0.7rem', 
-          color: isDemo ? 'var(--text-muted)' : 'var(--accent-primary)', 
-          background: isDemo ? 'rgba(255,255,255,0.05)' : 'rgba(0,180,216,0.1)', 
+          color: isDemo ? 'var(--bear)' : 'var(--accent-primary)', 
+          background: isDemo ? 'rgba(255, 59, 48, 0.1)' : 'rgba(0,180,216,0.1)', 
           padding: '2px 6px', 
           borderRadius: '4px',
-          fontWeight: isDemo ? 400 : 600
+          fontWeight: isDemo ? 500 : 600
         }}>
-          {isDemo ? 'Demo Data' : 'Live'}
+          {isDemo ? '⚠️ Offline' : 'Live'}
         </span>
       </div>
 

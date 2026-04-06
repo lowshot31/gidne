@@ -10,6 +10,7 @@ interface Suggestion {
 interface Props {
   onNavigate?: (ticker: string) => void;
   onSelect?: (ticker: string, name: string) => void;
+  mode?: 'default' | 'macro';
 }
 
 // 인기 종목 내장 인덱스 (API 없이도 즉시 자동완성)
@@ -92,16 +93,28 @@ const BUILTIN_INDEX: Suggestion[] = [
   { symbol: '^N225', name: 'Nikkei 225', type: 'INDEX', exchange: 'OSA' },
 ];
 
+const MACRO_BUILTIN: Suggestion[] = [
+  { symbol: '^TNX', name: 'US 10-Yr Treasury', type: 'INDEX', exchange: 'SNP' },
+  { symbol: '^VIX', name: 'CBOE Volatility Index', type: 'INDEX', exchange: 'CBOE' },
+  { symbol: 'CL=F', name: 'Crude Oil WTI', type: 'FUTURE', exchange: 'NYM' },
+  { symbol: 'GC=F', name: 'Gold', type: 'FUTURE', exchange: 'CMX' },
+  { symbol: 'DX-Y.NYB', name: 'US Dollar Index', type: 'INDEX', exchange: 'ICE' },
+  { symbol: 'KRW=X', name: 'USD/KRW', type: 'CURRENCY', exchange: 'CCY' },
+  { symbol: 'TLT', name: 'iShares 20+Yr Treasury ETF', type: 'ETF', exchange: 'NASDAQ' },
+  { symbol: 'M2', name: 'M2 Money Supply (Approx via Proxy)', type: 'INDEX', exchange: '' }, // For UX, though Yahoo has limited M2
+];
+
 // 클라이언트 측 로컬 퍼지 검색
-function localSearch(q: string): Suggestion[] {
+function localSearch(q: string, mode: 'default' | 'macro'): Suggestion[] {
   const lower = q.toLowerCase();
-  return BUILTIN_INDEX.filter(item =>
+  const targetIndex = mode === 'macro' ? [...MACRO_BUILTIN, ...BUILTIN_INDEX] : BUILTIN_INDEX;
+  return targetIndex.filter(item =>
     item.symbol.toLowerCase().includes(lower) ||
     item.name.toLowerCase().includes(lower)
   ).slice(0, 8);
 }
 
-export default function TickerSearch({ onNavigate, onSelect }: Props) {
+export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }: Props) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -131,7 +144,7 @@ export default function TickerSearch({ onNavigate, onSelect }: Props) {
     }
 
     // 즉시 로컬 인덱스에서 결과 렌더링 (API 없이도 동작)
-    const localResults = localSearch(query);
+    const localResults = localSearch(query, mode);
     setSuggestions(localResults);
     setIsOpen(localResults.length > 0);
     setSelectedIdx(-1);
@@ -202,6 +215,8 @@ export default function TickerSearch({ onNavigate, onSelect }: Props) {
       case 'ETF': return 'ETF';
       case 'CRYPTOCURRENCY': return '크립토';
       case 'INDEX': return '지수';
+      case 'CURRENCY': return '환율';
+      case 'FUTURE': return '선물';
       default: return type;
     }
   };
@@ -221,7 +236,7 @@ export default function TickerSearch({ onNavigate, onSelect }: Props) {
           onChange={e => setQuery(e.target.value)}
           onFocus={() => suggestions.length > 0 && setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="종목 검색 (예: AAPL, 비트코인, 삼성전자)"
+          placeholder={mode === 'macro' ? "매크로 지표, 환율 (예: ^VIX, KRW=X, CL=F)" : "종목 검색 (예: AAPL, 비트코인, 삼성전자)"}
           className="search-input"
           autoComplete="off"
         />

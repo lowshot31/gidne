@@ -38,7 +38,7 @@ export const GET: APIRoute = async (context) => {
     const result = await res.json();
 
     const suggestions = (result.quotes || [])
-      .filter((q: any) => q.symbol && (q.quoteType === 'EQUITY' || q.quoteType === 'ETF' || q.quoteType === 'CRYPTOCURRENCY' || q.quoteType === 'INDEX'))
+      .filter((q: any) => q.symbol && ['EQUITY', 'ETF', 'CRYPTOCURRENCY', 'INDEX', 'CURRENCY', 'FUTURE'].includes(q.quoteType))
       .slice(0, 8)
       .map((q: any) => ({
         symbol: q.symbol,

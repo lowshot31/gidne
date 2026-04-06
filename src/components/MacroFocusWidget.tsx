@@ -172,6 +172,7 @@ export default function MacroFocusWidget({ presetData }: Props) {
       {isAdding && activeTab === 'CUSTOM' && (
         <div style={{ marginBottom: '0.5rem', flexShrink: 0 }}>
           <TickerSearch 
+            mode="macro"
             onSelect={(ticker, name) => handleAddCustom(ticker, name)} 
           />
         </div>
