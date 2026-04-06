@@ -57,8 +57,8 @@ export default function ExpectedMoveWidget({ ticker, currentPrice }: { ticker: s
     move = data.monthlyExpectedMove;
   }
 
-  const emStr = `±$${move.toFixed(2)}`;
-  const range = upper - lower;
+  const emStr = move != null && !isNaN(move) ? `±$${move.toFixed(2)}` : 'N/A';
+  const range = upper != null && lower != null ? upper - lower : 0;
   let pct = 50;
   if (range > 0) {
     pct = ((p - lower) / range) * 100;

@@ -232,8 +232,16 @@ async function pumpDemandQueues() {
     
     // stat + straddle blend
     const statDailyEM = price * blendedIv * Math.sqrt(1 / 252);
+    const statWeeklyEM = price * blendedIv * Math.sqrt(5 / 252);
+    const statMonthlyEM = price * blendedIv * Math.sqrt(21 / 252);
+
     const straddleDailyEM = (callPrice + putPrice) * Math.sqrt(1 / daysToE);
+    const straddleWeeklyEM = (callPrice + putPrice) * Math.sqrt(5 / daysToE);
+    const straddleMonthlyEM = (callPrice + putPrice) * Math.sqrt(21 / daysToE);
+
     const finalDailyEM = (statDailyEM + straddleDailyEM) / 2;
+    const finalWeeklyEM = (statWeeklyEM + straddleWeeklyEM) / 2;
+    const finalMonthlyEM = (statMonthlyEM + straddleMonthlyEM) / 2;
 
     return {
       price,
@@ -241,6 +249,12 @@ async function pumpDemandQueues() {
       dailyExpectedMove: finalDailyEM,
       dailyUpper: price + finalDailyEM,
       dailyLower: price - finalDailyEM,
+      weeklyExpectedMove: finalWeeklyEM,
+      weeklyUpper: price + finalWeeklyEM,
+      weeklyLower: price - finalWeeklyEM,
+      monthlyExpectedMove: finalMonthlyEM,
+      monthlyUpper: price + finalMonthlyEM,
+      monthlyLower: price - finalMonthlyEM,
     };
   }, 1800);
 }
