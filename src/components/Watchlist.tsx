@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getWatchlist, addToWatchlist, removeFromWatchlist } from '../lib/watchlist';
 import type { WatchlistItem } from '../lib/watchlist';
-import { useFinnhubStream } from '../hooks/useFinnhubStream';
 import { useFlash } from '../hooks/useFlash';
 
 interface QuoteData {
@@ -42,14 +41,11 @@ export default function Watchlist() {
     setItems(getWatchlist());
   }, []);
 
-  // Finnhub 실시간 스트림 연동
-  const finnhubPrices = useFinnhubStream(items.map(i => i.ticker));
-
   // 시세 데이터 fetch — 배치 API (한 번에 모든 종목 조회)
   const fetchQuotes = useCallback(async (tickers: string[]) => {
     if (tickers.length === 0) return;
     try {
-      const res = await fetch(`/api/quotes?tickers=${tickers.map(encodeURIComponent).join(',')}`);
+      const res = await fetch(`/api/quotes?tickers=${tickers.map(encodeURIComponent).join(',')}&_t=${Date.now()}`);
       if (!res.ok) return;
       const data: Record<string, QuoteData> = await res.json();
       const newQuotes = new Map<string, QuoteData>();
@@ -231,9 +227,8 @@ export default function Watchlist() {
         <div className="watchlist-list">
           {items.map(item => {
             const yfQuote = quotes.get(item.ticker);
-            const fhQuote = finnhubPrices.get(item.ticker);
-            const price = fhQuote?.price || yfQuote?.price || 0;
-            const changePercent = fhQuote?.changePercent || yfQuote?.changePercent || 0;
+            const price = yfQuote?.price || 0;
+            const changePercent = yfQuote?.changePercent || 0;
             const name = yfQuote?.name || item.ticker;
             const isUp = changePercent >= 0;
             return (
@@ -245,7 +240,7 @@ export default function Watchlist() {
                 changePercent={changePercent} 
                 isUp={isUp} 
                 onRemove={() => handleRemove(item.ticker)} 
-                isLoading={!yfQuote && !fhQuote}
+                isLoading={!yfQuote}
               />
             );
           })}

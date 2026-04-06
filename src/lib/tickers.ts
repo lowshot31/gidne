@@ -49,7 +49,6 @@ export const TICKER_STRIP = [
   { ticker: '^IXIC', name: 'NASDAQ' },
   { ticker: '^KS11', name: 'KOSPI' },
   { ticker: '^N225', name: 'NIKKEI' },
-  { ticker: 'BTC-USD', name: 'BTC' },
   { ticker: 'GC=F', name: 'GOLD' },
   { ticker: 'CL=F', name: 'WTI' },
   { ticker: 'DX-Y.NYB', name: 'DXY' },

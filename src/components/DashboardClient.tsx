@@ -31,7 +31,7 @@ const DEFAULT_LAYOUTS = {
 };
 
 // 레이아웃 버전: DEFAULT_LAYOUTS가 변경될 때마다 이 숫자를 올려야 함
-const LAYOUT_VERSION = 4;
+const LAYOUT_VERSION = 5;
 
 export default function DashboardClient() {
   const { data, loading, error } = useMarketData();

@@ -11,7 +11,7 @@ export function useMarketData() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/market-data');
+        const res = await fetch(`/api/market-data?_t=${Date.now()}`);
         if (!res.ok) throw new Error('Failed to fetch market data');
         const json = await res.json();
         setData(json);

@@ -29,27 +29,36 @@ export async function fetchQuotes(tickers: string[]): Promise<Map<string, Ticker
       chunks.push(tickers.slice(i, i + CHUNK_SIZE));
     }
 
-    // 모든 청크를 병렬 요청
+    // 모든 청크를 병렬 요청 — 원래 요청 티커도 함께 전달
     const chunkResults = await Promise.allSettled(
       chunks.map(async (chunk) => {
         const quotes = await yahooFinance.quote(chunk);
-        return Array.isArray(quotes) ? quotes : [quotes];
+        const arr = Array.isArray(quotes) ? quotes : [quotes];
+        return { requestedTickers: chunk, quotes: arr };
       })
     );
 
     // 결과 합치기 (실패한 청크는 무시)
     for (const res of chunkResults) {
       if (res.status === 'fulfilled') {
-        for (const q of res.value) {
+        const { requestedTickers, quotes } = res.value;
+        for (let i = 0; i < quotes.length; i++) {
+          const q = quotes[i];
           if (!q || !q.symbol) continue;
-          result.set(q.symbol, {
+          const quoteData: TickerQuote = {
             symbol: q.symbol,
             name: q.shortName || q.longName || q.symbol,
             price: q.regularMarketPrice ?? 0,
             change: q.regularMarketChange ?? 0,
             changePercent: q.regularMarketChangePercent ?? 0,
             previousClose: q.regularMarketPreviousClose ?? 0,
-          });
+          };
+          // 반환된 심볼로 저장
+          result.set(q.symbol, quoteData);
+          // 원래 요청 티커로도 저장 (심볼 불일치 대비: KRW=X → USDKRW=X 등)
+          if (i < requestedTickers.length && requestedTickers[i] !== q.symbol) {
+            result.set(requestedTickers[i], quoteData);
+          }
         }
       } else {
         console.error('[yahoo-finance] chunk failed:', res.reason);

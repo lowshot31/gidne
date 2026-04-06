@@ -25,7 +25,7 @@ export default function RSLeaderboard({ sectors }: Props) {
     <div className="bento-item h-full leaderboard-container">
       <h3 className="text-secondary mb-md" style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span>RS LEADERBOARD</span>
-        <span style={{ fontSize: '0.75rem', fontWeight: 'normal' }}>vs SPY 500</span>
+        <span style={{ fontSize: '0.75rem', fontWeight: 'normal' }}>vs SPX</span>
       </h3>
       <div className="leader-list">
         {sectors.map((s, idx) => {
@@ -58,7 +58,7 @@ export default function RSLeaderboard({ sectors }: Props) {
             <React.Fragment key={s.ticker}>
               {renderDivider && (
                 <div className="divider">
-                  <span>UNDERPERFORM vs SPY</span>
+                  <span>UNDERPERFORM vs SPX</span>
                 </div>
               )}
               <a href={`/chart/${s.ticker}`} className="leader-row">

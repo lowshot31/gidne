@@ -12,8 +12,8 @@ import type { TickerQuote, SectorData } from './types';
  * 양수 = 시장 대비 강함 (Outperform)
  * 음수 = 시장 대비 약함 (Underperform)
  */
-export function calculateRS(tickerChangePercent: number, spyChangePercent: number): number {
-  return Number((tickerChangePercent - spyChangePercent).toFixed(4));
+export function calculateRS(tickerChangePercent: number, baselineChangePercent: number): number {
+  return Number((tickerChangePercent - baselineChangePercent).toFixed(4));
 }
 
 /**
@@ -23,8 +23,8 @@ export function calculateRS(tickerChangePercent: number, spyChangePercent: numbe
 export function buildSectorData(
   quotes: Map<string, TickerQuote>,
 ): SectorData[] {
-  const spyQuote = quotes.get('SPY');
-  const spyChangePercent = spyQuote?.changePercent ?? 0;
+  const baselineQuote = quotes.get('^GSPC');
+  const baselineChangePercent = baselineQuote?.changePercent ?? 0;
 
   // 섹터별 RS 계산
   const sectors: SectorData[] = SECTOR_ETFS.map(etf => {
@@ -38,7 +38,7 @@ export function buildSectorData(
       price: quote?.price ?? 0,
       change: quote?.change ?? 0,
       changePercent: quote?.changePercent ?? 0,
-      rs: calculateRS(quote?.changePercent ?? 0, spyChangePercent),
+      rs: calculateRS(quote?.changePercent ?? 0, baselineChangePercent),
       rsRank: 0,       // 아래에서 계산
       rsRankChange: 0,  // 아래에서 계산
     };
