@@ -1,9 +1,14 @@
 import { Redis } from '@upstash/redis';
 
 // Upstash는 V8 Edge (Cloudflare Workers) 환경을 기본 지원합니다.
+// @ts-ignore
+const envUrl = typeof process !== 'undefined' ? process.env.UPSTASH_REDIS_REST_URL : '';
+// @ts-ignore
+const envToken = typeof process !== 'undefined' ? process.env.UPSTASH_REDIS_REST_TOKEN : '';
+
 export const redis = new Redis({
-  url: import.meta.env.UPSTASH_REDIS_REST_URL || process.env.UPSTASH_REDIS_REST_URL || '',
-  token: import.meta.env.UPSTASH_REDIS_REST_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '',
+  url: import.meta.env.UPSTASH_REDIS_REST_URL || envUrl || '',
+  token: import.meta.env.UPSTASH_REDIS_REST_TOKEN || envToken || '',
 });
 
 /**

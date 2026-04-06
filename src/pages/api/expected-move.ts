@@ -64,16 +64,17 @@ export const GET: APIRoute = async ({ request }) => {
 
     // 4. 모델 A: 통계적 내재변동성 모델 (1-SD, Black-Scholes 기반)
     const statDailyEM = price * blendedIv * Math.sqrt(1 / 252);
-    const statWeeklyEM = price * blendedIv * Math.sqrt(5 / 252);
+    // const statWeeklyEM = price * blendedIv * Math.sqrt(5 / 252); // Not used
 
     // 5. 모델 B: 실전 스트래들 프라이싱 (TastyTrade 방식)
     // 콜 중간가격 + 풋 중간가격 (시장이 실제로 돈을 걸고 있는 프리미엄 합)
-    const callPrice = (atmCall.bid + atmCall.ask) / 2 || atmCall.lastPrice || 0;
-    const putPrice = (atmPut.bid + atmPut.ask) / 2 || atmPut.lastPrice || 0;
+    const callPrice = ((atmCall.bid ?? 0) + (atmCall.ask ?? 0)) / 2 || atmCall.lastPrice || 0;
+    const putPrice = ((atmPut.bid ?? 0) + (atmPut.ask ?? 0)) / 2 || atmPut.lastPrice || 0;
     const straddlePrice = callPrice + putPrice;
 
     // 만기일까지 남은 거래일(DTE) 계산을 통한 역산
-    const expirationDate = new Date(options.options[0].expirationDate * 1000);
+    const expDateRaw = options.options[0].expirationDate;
+    const expirationDate = expDateRaw instanceof Date ? expDateRaw : new Date(Number(expDateRaw) * 1000);
     const today = new Date();
     const daysToE = Math.max(1, (expirationDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
     // 스트래들은 기본적으로 해당 만기까지의 범위를 의미하므로, 하루(1-day)로 축소하려면 루트 일수로 나눔
