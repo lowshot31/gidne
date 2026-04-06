@@ -39,8 +39,7 @@ export default function MacroClient() {
               { id: 'HOT', label: '🔥 필수 감시' },
               { id: 'RATES', label: '🏦 금리/채권' },
               { id: 'CURRENCY', label: '💵 외환' },
-              { id: 'COMMODITY', label: '🛢️ 원자재' },
-              { id: 'CUSTOM', label: '⭐️ 내 커스텀' }
+              { id: 'COMMODITY', label: '🛢️ 원자재' }
             ].map(tab => (
               <button 
                 key={tab.id}
@@ -61,11 +60,6 @@ export default function MacroClient() {
 
           {/* List Content */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', background: 'rgba(0,0,0,0.2)' }}>
-            {activeTab === 'CUSTOM' ? (
-              <div style={{ height: '100%' }}>
-                <Watchlist />
-              </div>
-            ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                 {listData.map(m => {
                   const isSelected = selectedTicker === m.ticker;
@@ -87,7 +81,6 @@ export default function MacroClient() {
                   );
                 })}
               </div>
-            )}
           </div>
         </div>
       </div>
@@ -95,7 +88,7 @@ export default function MacroClient() {
       {/* ── Right Column: Chart + Calendar ── */}
       <div style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         <div className="bento-item" style={{ height: '400px', padding: '1rem' }}>
-          <PriceChart ticker={selectedTicker} />
+          <PriceChart ticker={selectedTicker} name={data.macro.find(m => m.ticker === selectedTicker)?.name || 'Macro Data'} />
         </div>
         <div style={{ flex: 1, minHeight: '400px' }}>
           <EconomicCalendar />

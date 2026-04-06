@@ -1,5 +1,4 @@
 // src/pages/api/quote.ts
-// 단일 티커 상세 시세 API — Yahoo Finance 공개 HTTP 엔드포인트 직접 호출
 import type { APIRoute } from 'astro';
 import { getRedis } from '../../lib/redis';
 
@@ -15,7 +14,8 @@ export const GET: APIRoute = async (context) => {
   const cacheKey = `gidne_quote_${ticker}`;
 
   try {
-    const cached = await redis.get(cacheKey);
+    // 1. 캐시 확인
+    let cached = await redis.get(cacheKey);
     if (cached) {
       const data = typeof cached === 'string' ? JSON.parse(cached) : cached;
       return new Response(JSON.stringify(data), {
@@ -23,51 +23,27 @@ export const GET: APIRoute = async (context) => {
       });
     }
 
-    // Yahoo Finance 공개 HTTP 엔드포인트 (npm 패키지 대신 직접 호출)
-    const yfUrl = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}`;
-    const res = await fetch(yfUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
-      },
-    });
+    // 2. 캐시 미스 → Data Pump 큐에 추가
+    await redis.sadd('gidne_queue_quote', ticker);
 
-    if (!res.ok) throw new Error(`Yahoo quote HTTP ${res.status}`);
-
-    const result = await res.json();
-    const q = result?.quoteResponse?.result?.[0];
-
-    if (!q || !q.symbol) {
-      return new Response(JSON.stringify({ error: 'not found' }), { status: 404 });
+    // 3. 지수 백오프 폴링 (최대 약 5초 대기)
+    for (let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 500));
+      cached = await redis.get(cacheKey);
+      if (cached) {
+        const data = typeof cached === 'string' ? JSON.parse(cached) : cached;
+        return new Response(JSON.stringify(data), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=5' },
+        });
+      }
     }
 
-    const data = {
-      symbol: q.symbol,
-      name: q.shortName || q.longName || q.symbol,
-      price: q.regularMarketPrice ?? 0,
-      change: q.regularMarketChange ?? 0,
-      changePercent: q.regularMarketChangePercent ?? 0,
-      previousClose: q.regularMarketPreviousClose ?? 0,
-      open: q.regularMarketOpen ?? 0,
-      dayHigh: q.regularMarketDayHigh ?? 0,
-      dayLow: q.regularMarketDayLow ?? 0,
-      volume: q.regularMarketVolume ?? 0,
-      avgVolume: q.averageDailyVolume3Month ?? 0,
-      marketCap: q.marketCap ?? 0,
-      fiftyTwoWeekHigh: q.fiftyTwoWeekHigh ?? 0,
-      fiftyTwoWeekLow: q.fiftyTwoWeekLow ?? 0,
-      exchange: q.fullExchangeName || q.exchange || '',
-      quoteType: q.quoteType || '',
-    };
-
-    await redis.set(cacheKey, JSON.stringify(data), { ex: 15 });
-
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=5' },
-    });
+    // 4. 시간 초과
+    return new Response(JSON.stringify({ error: 'Data pump fetch timeout' }), { status: 504 });
   } catch (error) {
     console.error(`[quote] error for ${ticker}:`, error);
-    return new Response(JSON.stringify({ error: 'Failed to fetch quote' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal edge error' }), { status: 500 });
   }
 };
 

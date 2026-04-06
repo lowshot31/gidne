@@ -45,6 +45,14 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
   const [currentName, setCurrentName] = useState(initialName || 'S&P 500');
   const showTabs = !initialTicker; // 외부에서 티커가 지정되지 않은 메인 화면의 경우에만 탭 표시
 
+  useEffect(() => {
+    if (initialTicker) setCurrentTicker(initialTicker);
+  }, [initialTicker]);
+
+  useEffect(() => {
+    if (initialName) setCurrentName(initialName);
+  }, [initialName]);
+
   const [containerId] = useState(() => {
     const symbol = getTVSymbol(initialTicker || 'SPY');
     return `tv_chart_${symbol.replace(/[^a-zA-Z0-9]/g, '_')}_${Math.random().toString(36).substring(7)}`;

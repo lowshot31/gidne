@@ -1,5 +1,5 @@
 // scripts/data-pump.ts
-import { fetchQuotes } from '../src/lib/yahoo-finance';
+import { fetchQuotes, yahooFinance } from '../src/lib/yahoo-finance';
 import { buildSectorData } from '../src/lib/indicators';
 import { calculateMarketPulse } from '../src/lib/market-pulse';
 import {
@@ -12,7 +12,6 @@ import {
   getPollingInterval,
 } from '../src/lib/tickers';
 import { Redis } from '@upstash/redis';
-import YahooFinance from 'yahoo-finance2';
 import type { MarketDataResponse, TickerQuote, MacroData } from '../src/lib/types';
 
 const redis = new Redis({
@@ -20,9 +19,6 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 });
 
-const yahooFinance = new YahooFinance();
-
-// 차트 데이터를 캐싱할 주요 종목 리스트
 const CHART_TICKERS = [
   ...SECTOR_ETFS.map(t => t.ticker),
   ...INDICES.map(t => t.ticker),
@@ -30,220 +26,305 @@ const CHART_TICKERS = [
   'BTC-USD', 'ETH-USD',
 ];
 
+const EVENT_TRANSLATIONS: Record<string, string> = {
+  'CPI': '소비자물가지수(CPI)',
+  'Core CPI': '근원 소비자물가지수(CPI)',
+  'PPI': '생산자물가지수(PPI)',
+  'Core PPI': '근원 생산자물가지수(PPI)',
+  'Interest Rate Decision': '기준금리 결정',
+  'Federal Funds Rate': '연준(Fed) 기준금리',
+  'Non-Farm Employment Change': '비농업 고용지수',
+  'Unemployment Rate': '실업률',
+  'GDP': '국내총생산(GDP)',
+  'Retail Sales': '소매판매',
+  'Core Retail Sales': '근원 소매판매',
+  'ISM Manufacturing PMI': 'ISM 제조업 PMI',
+  'ISM Services PMI': 'ISM 서비스업 PMI',
+  'Initial Jobless Claims': '신규 실업수당 청구건수',
+  'Continuing Jobless Claims': '연속 실업수당 청구건수',
+  'FOMC Statement': 'FOMC 성명서 발표',
+  'FOMC Press Conference': '파월 의장 기자회견',
+  'JOLTs Job Openings': 'JOLTs 구인배율',
+  'Chicago PMI': '시카고 PMI',
+  'CB Consumer Confidence': 'CB 소비자신뢰지수',
+  'Michigan Consumer Sentiment': '미시간대 소비자심리지수',
+};
+
+function translateEvent(title: string): string {
+  for (const [eng, kor] of Object.entries(EVENT_TRANSLATIONS)) {
+    if (title.includes(eng)) return title.replace(eng, kor);
+  }
+  if (title.toLowerCase().includes('fed chair') && title.toLowerCase().includes('speaks')) {
+    return '연준(Fed) 의장 연설';
+  }
+  return title;
+}
+
 // ========== 1. 메인 대시보드 데이터 펌프 ==========
 async function pumpMarketData() {
-  console.log(`[Pump] Starting market data cycle at ${new Date().toISOString()}`);
-  
   try {
     const allTickers = getAllTickers();
     const quotes = await fetchQuotes(allTickers);
 
     const tickerStrip: TickerQuote[] = TICKER_STRIP.map(t => {
       const q = quotes.get(t.ticker);
-      return {
-        symbol: t.ticker,
-        name: t.name,
-        price: q?.price ?? 0,
-        change: q?.change ?? 0,
-        changePercent: q?.changePercent ?? 0,
-        previousClose: q?.previousClose ?? 0,
-      };
+      return { symbol: t.ticker, name: t.name, price: q?.price ?? 0, change: q?.change ?? 0, changePercent: q?.changePercent ?? 0, previousClose: q?.previousClose ?? 0 };
     });
 
     const sectors = buildSectorData(quotes);
-
     const macro: MacroData[] = MACRO_TICKERS.map(t => {
       const q = quotes.get(t.ticker);
-      return {
-        ticker: t.ticker,
-        name: t.name,
-        category: t.category,
-        price: q?.price ?? 0,
-        change: q?.change ?? 0,
-        changePercent: q?.changePercent ?? 0,
-      };
+      return { ticker: t.ticker, name: t.name, category: t.category, price: q?.price ?? 0, change: q?.change ?? 0, changePercent: q?.changePercent ?? 0 };
     });
 
     const indices: TickerQuote[] = INDICES.map(t => {
       const q = quotes.get(t.ticker);
-      return {
-        symbol: t.ticker,
-        name: t.name,
-        price: q?.price ?? 0,
-        change: q?.change ?? 0,
-        changePercent: q?.changePercent ?? 0,
-        previousClose: q?.previousClose ?? 0,
-      };
+      return { symbol: t.ticker, name: t.name, price: q?.price ?? 0, change: q?.change ?? 0, changePercent: q?.changePercent ?? 0, previousClose: q?.previousClose ?? 0 };
     });
 
     const vixQuote = quotes.get('^VIX') ?? undefined;
     const marketPulse = calculateMarketPulse({ sectors, vixQuote });
 
     const response: MarketDataResponse = {
-      tickerStrip,
-      sectors,
-      marketPulse,
-      macro,
-      indices,
-      meta: {
-        isMarketOpen: isUSMarketOpen(),
-        lastUpdated: new Date().toISOString(),
-        pollingInterval: getPollingInterval(),
-      },
+      tickerStrip, sectors, marketPulse, macro, indices,
+      meta: { isMarketOpen: isUSMarketOpen(), lastUpdated: new Date().toISOString(), pollingInterval: getPollingInterval() },
     };
 
-    const jsonStr = JSON.stringify(response);
-    await redis.set('gidne_market_data', jsonStr, { ex: 20 });
-    console.log(`[Pump] Market data uploaded: ${jsonStr.length} chars`);
+    await redis.set('gidne_market_data', JSON.stringify(response), { ex: 60 });
 
-    // 개별 종목 시세도 Redis에 미리 적재 (quote.ts 및 quotes.ts용)
     const pipeline = redis.pipeline();
     for (const [ticker, q] of quotes.entries()) {
       if (q) {
-        const quoteData = {
-          symbol: ticker,
-          name: q.name || ticker,
-          price: q.price ?? 0,
-          change: q.change ?? 0,
-          changePercent: q.changePercent ?? 0,
-          previousClose: q.previousClose ?? 0,
-          volume: q.volume ?? 0,
-          exchange: q.exchange || '',
-        };
-        pipeline.set(`gidne_quote_${ticker}`, JSON.stringify(quoteData), { ex: 30 });
+         pipeline.set(`gidne_quote_${ticker}`, JSON.stringify({
+          symbol: ticker, name: q.name || ticker, price: q.price ?? 0, change: q.change ?? 0, changePercent: q.changePercent ?? 0, previousClose: q.previousClose ?? 0, volume: (q as any).volume ?? 0, exchange: (q as any).exchange || ''
+        }), { ex: 30 });
       }
     }
     await pipeline.exec();
-    console.log(`[Pump] Individual quotes cached: ${quotes.size} tickers`);
-
   } catch (error) {
     console.error('[Pump] Market data error:', error);
   }
 }
 
-// ========== 2. 차트 데이터 펌프 (5분마다) ==========
+// ========== 2. 온디맨드 큐(Demand Queue) 처리기 ==========
+async function pumpDemandQueues() {
+  // 개별 티커 단위 처리
+  const processQueue = async (queueName: string, cachePrefix: string, fetchFn: (t: string) => Promise<any>, ttl: number) => {
+    const tickers = await redis.smembers(queueName);
+    if (!tickers || tickers.length === 0) return;
+    
+    console.log(`[Pump:Queue] Processing ${tickers.length} demands from ${queueName}`);
+    const pipeline = redis.pipeline();
+    
+    for (const ticker of tickers) {
+      try {
+        const data = await fetchFn(ticker);
+        pipeline.set(`${cachePrefix}${ticker}`, JSON.stringify(data), { ex: ttl });
+      } catch (err: any) {
+        console.error(`[Pump:Queue] Failed ${queueName} for ${ticker}: ${err.message}`);
+      }
+      pipeline.srem(queueName, ticker);
+    }
+    await pipeline.exec();
+  };
+
+  // 1) Quotes (워치리스트) 처리
+  await processQueue('gidne_queue_quote', 'gidne_quote_', async (ticker: string) => {
+    const q: any = await yahooFinance.quote(ticker);
+    return {
+      symbol: q.symbol,
+      name: q.shortName || q.longName || q.symbol,
+      price: q.regularMarketPrice ?? 0,
+      change: q.regularMarketChange ?? 0,
+      changePercent: q.regularMarketChangePercent ?? 0,
+      previousClose: q.regularMarketPreviousClose ?? 0,
+      open: q.regularMarketOpen ?? 0,
+      dayHigh: q.regularMarketDayHigh ?? 0,
+      dayLow: q.regularMarketDayLow ?? 0,
+      volume: q.regularMarketVolume ?? 0,
+      avgVolume: q.averageDailyVolume3Month ?? 0,
+      marketCap: q.marketCap ?? 0,
+      fiftyTwoWeekHigh: q.fiftyTwoWeekHigh ?? 0,
+      fiftyTwoWeekLow: q.fiftyTwoWeekLow ?? 0,
+      exchange: q.fullExchangeName || q.exchange || '',
+      quoteType: q.quoteType || '',
+    };
+  }, 15);
+
+  // 2) 요약(Summary) 데이터 처리
+  await processQueue('gidne_queue_summary', 'gidne_summary_', async (ticker: string) => {
+    const summary: any = await yahooFinance.quoteSummary(ticker, {
+      modules: ['assetProfile', 'financialData', 'defaultKeyStatistics', 'summaryDetail', 'recommendationTrend', 'secFilings'],
+    });
+    return {
+      profile: {
+        sector: summary.assetProfile?.sector || '-',
+        industry: summary.assetProfile?.industry || '-',
+        website: summary.assetProfile?.website || '',
+        description: summary.assetProfile?.longBusinessSummary || '기업 설명이 제공되지 않습니다.',
+        employees: summary.assetProfile?.fullTimeEmployees || 0,
+      },
+      financials: {
+        targetHigh: summary.financialData?.targetHighPrice || 0,
+        targetLow: summary.financialData?.targetLowPrice || 0,
+        targetMean: summary.financialData?.targetMeanPrice || 0,
+        recommendationKey: summary.financialData?.recommendationKey || 'none',
+        numberOfAnalysts: summary.financialData?.numberOfAnalystOpinions || 0,
+        totalRevenue: summary.financialData?.totalRevenue || 0,
+        ebitda: summary.financialData?.ebitda || 0,
+      },
+      statistics: {
+        trailingPE: summary.summaryDetail?.trailingPE || 0,
+        forwardPE: summary.summaryDetail?.forwardPE || 0,
+        priceToBook: summary.defaultKeyStatistics?.priceToBook || 0,
+      },
+      trends: summary.recommendationTrend?.trend || [],
+    };
+  }, 3600); // 1hr
+
+  // 3) Expected Move (임플라이드 볼라틸리티) 데이터 처리
+  await processQueue('gidne_queue_em', 'gidne_em_', async (ticker: string) => {
+    const quote: any = await yahooFinance.quote(ticker);
+    const price = quote.regularMarketPrice;
+    if (!price) throw new Error('No price found');
+
+    const optionsResponse: any = await yahooFinance.options(ticker);
+    if (!optionsResponse || !optionsResponse.options || optionsResponse.options.length === 0) {
+      throw new Error('No options data');
+    }
+    const closestExpiration = optionsResponse.options[0];
+    const calls = closestExpiration.calls || [];
+    const puts = closestExpiration.puts || [];
+
+    // Find ATM strike (closest to current price)
+    let closestStrike = -1;
+    let minDiff = Infinity;
+    const allStrikes = [...new Set([...calls.map((c: any) => c.strike), ...puts.map((p: any) => p.strike)])];
+    for (const strike of allStrikes) {
+      const diff = Math.abs((strike as number) - price);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestStrike = strike as number;
+      }
+    }
+
+    const atmCall = calls.find((c: any) => c.strike === closestStrike);
+    const atmPut = puts.find((p: any) => p.strike === closestStrike);
+    if (!atmCall || !atmPut) throw new Error('ATM missing');
+
+    const blendedIv = ((atmCall.impliedVolatility || 0) + (atmPut.impliedVolatility || 0)) / 2;
+    const callPrice = ((atmCall.bid ?? 0) + (atmCall.ask ?? 0)) / 2 || atmCall.lastPrice || 0;
+    const putPrice = ((atmPut.bid ?? 0) + (atmPut.ask ?? 0)) / 2 || atmPut.lastPrice || 0;
+
+    const expirationDate = optionsResponse.expirationDates && optionsResponse.expirationDates.length > 0 
+      ? new Date(optionsResponse.expirationDates[0] * 1000) 
+      : new Date();
+    const daysToE = Math.max(1, (expirationDate.getTime() - Date.now()) / (1000 * 3600 * 24));
+    
+    // stat + straddle blend
+    const statDailyEM = price * blendedIv * Math.sqrt(1 / 252);
+    const straddleDailyEM = (callPrice + putPrice) * Math.sqrt(1 / daysToE);
+    const finalDailyEM = (statDailyEM + straddleDailyEM) / 2;
+
+    return {
+      price,
+      impliedVolatility: blendedIv,
+      dailyExpectedMove: finalDailyEM,
+      dailyUpper: price + finalDailyEM,
+      dailyLower: price - finalDailyEM,
+    };
+  }, 1800);
+}
+
+// ========== 3. 기타 배치 (차트, 캘린더) ==========
 async function pumpChartData() {
-  console.log(`[Pump:Chart] Starting chart cache cycle...`);
-  let success = 0;
-  
   for (const ticker of CHART_TICKERS) {
     try {
       const cacheKey = `gidne_chart_${ticker}_1d`;
-      
-      // 이미 캐시가 있으면 스킵
-      const existing = await redis.exists(cacheKey);
-      if (existing) continue;
+      if (await redis.exists(cacheKey)) continue;
 
-      const period1 = new Date();
-      period1.setMonth(period1.getMonth() - 6);
-
-      const result = await yahooFinance.chart(ticker, { period1, interval: '1d' as any });
+      const period1 = new Date(); period1.setMonth(period1.getMonth() - 6);
+      const result: any = await yahooFinance.chart(ticker, { period1, interval: '1d' as any });
       
       const chartData = result.quotes
         .filter((q: any) => q.close !== null && q.close !== undefined)
-        .map((q: any) => ({
-          time: q.date.toISOString().split('T')[0],
-          open: q.open,
-          high: q.high,
-          low: q.low,
-          close: q.close,
-          volume: q.volume || 0,
-        }));
+        .map((q: any) => ({ time: q.date.toISOString().split('T')[0], open: q.open, high: q.high, low: q.low, close: q.close }));
 
-      await redis.set(cacheKey, JSON.stringify(chartData), { ex: 300 }); // 5분 TTL
-      success++;
-
-      // Rate limit 방지
+      await redis.set(cacheKey, JSON.stringify(chartData), { ex: 300 });
       await new Promise(r => setTimeout(r, 500));
-    } catch (err) {
-      console.error(`[Pump:Chart] Failed for ${ticker}:`, (err as Error).message);
-    }
+    } catch (err) {}
   }
-  console.log(`[Pump:Chart] Cached ${success} new charts`);
 }
 
-// ========== 3. 캘린더 데이터 펌프 (1시간마다) ==========
 async function pumpCalendar() {
-  console.log(`[Pump:Calendar] Fetching economic calendar...`);
   try {
-    const existing = await redis.exists('gidne_calendar_weekly');
-    if (existing) {
-      console.log(`[Pump:Calendar] Cache still valid, skipping.`);
-      return;
-    }
-
-    const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.xml', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      }
-    });
-
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
+    const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.xml');
+    if (!response.ok) return;
     const xml = await response.text();
     const eventsPattern = /<event>([\s\S]*?)<\/event>/g;
     const events: any[] = [];
-    
     let match;
     while ((match = eventsPattern.exec(xml)) !== null) {
       const eventXml = match[1];
-      const extractTag = (tag: string) => {
-        const m = eventXml.match(new RegExp(`<${tag}>(.*?)</${tag}>`, 'i'));
-        return m ? m[1].trim() : '';
-      };
+      const extract = (tag: string) => { const m = eventXml.match(new RegExp(`<${tag}>(.*?)</${tag}>`, 'i')); return m ? m[1].trim() : ''; };
+      const impact = extract('impact');
+      const country = extract('country');
 
-      const title = extractTag('title');
-      const country = extractTag('country');
-      const impact = extractTag('impact');
-      const targetCountries = ['USD', 'EUR', 'GBP', 'JPY', 'CNY'];
-
-      if ((impact === 'High' || impact === 'Medium') && targetCountries.includes(country)) {
-        const mappedCountry = country === 'USD' ? 'US' : country === 'EUR' ? 'EU' : country === 'GBP' ? 'GB' : country === 'JPY' ? 'JP' : country === 'CNY' ? 'CN' : country;
+      if ((impact === 'High' || impact === 'Medium') && ['USD', 'EUR', 'GBP', 'JPY', 'CNY'].includes(country)) {
         events.push({
           id: Math.random().toString(36).substring(2, 11),
-          title,
-          country: mappedCountry,
-          date: extractTag('date'),
-          time: extractTag('time'),
-          impact: impact.toLowerCase(),
-          forecast: extractTag('forecast') || '-',
-          previous: extractTag('previous') || '-',
+          title: translateEvent(extract('title')),
+          country: country === 'USD' ? 'US' : country === 'EUR' ? 'EU' : country === 'GBP' ? 'GB' : country === 'JPY' ? 'JP' : 'CN',
+          date: extract('date'), time: extract('time'), impact: impact.toLowerCase(), forecast: extract('forecast') || '-', previous: extract('previous') || '-'
         });
       }
     }
-
     await redis.set('gidne_calendar_weekly', JSON.stringify(events.slice(0, 15)), { ex: 3600 });
-    console.log(`[Pump:Calendar] Cached ${events.length} events`);
-  } catch (err) {
-    console.error(`[Pump:Calendar] Error:`, (err as Error).message);
-  }
+  } catch (err) {}
 }
 
 // ========== Main Loop ==========
 async function main() {
   console.log('[Pump] 🚀 Data Pump Bot initialized.');
-
-  // 최초 실행 시 차트 + 캘린더도 한번 돌림
   await pumpCalendar();
+  await pumpMarketData(); // 즉시 1회 실행하여 UI 표시 준비
   await pumpChartData();
 
-  let cycleCount = 0;
+  let lastMarketPump = Date.now();
+  let lastChartPump = Date.now();
+  let lastCalendarPump = Date.now();
+
+  const POLLING_INTERVAL = getPollingInterval(); // 보통 15000ms
+
   while (true) {
-    await pumpMarketData();
-    cycleCount++;
+    const now = Date.now();
 
-    // 차트는 60사이클(약 5분)마다 갱신
-    if (cycleCount % 60 === 0) {
-      await pumpChartData();
+    // 1. 빠른 큐 폴링 (루프 돌 때마다 수행)
+    try {
+      await pumpDemandQueues();
+    } catch (e) {
+      console.error('[Pump] Demand Queue error:', e);
     }
-    // 캘린더는 720사이클(약 1시간)마다 갱신
-    if (cycleCount % 720 === 0) {
-      await pumpCalendar();
+    
+    // 2. 주기적 마켓데이터 전체 펌프 (폴링 인터벌, 약 15초)
+    if (now - lastMarketPump >= POLLING_INTERVAL) {
+      lastMarketPump = now;
+      pumpMarketData().catch(e => console.error(e)); // Non-blocking
+    }
+    
+    // 3. 차트 (5분)
+    if (now - lastChartPump >= 300000) {
+      lastChartPump = now;
+      pumpChartData().catch(e => console.error(e)); // Non-blocking
+    }
+    
+    // 4. 캘린더 (1시간)
+    if (now - lastCalendarPump >= 3600000) {
+      lastCalendarPump = now;
+      pumpCalendar().catch(e => console.error(e)); // Non-blocking
     }
 
-    const delay = getPollingInterval();
-    console.log(`[Pump] Waiting ${delay / 1000}s until next cycle...`);
-    await new Promise(r => setTimeout(r, delay));
+    await new Promise(r => setTimeout(r, 1000)); // 항상 1초 대기
   }
 }
 

@@ -7,7 +7,7 @@ import { cache, TTL } from './cache';
 import type { TickerQuote } from './types';
 
 // yahoo-finance2 v3 이상부터는 인스턴스화가 필요합니다
-const yahooFinance = new YahooFinance();
+export const yahooFinance = new YahooFinance();
 
 /**
  * 여러 티커의 실시간 시세를 청크 병렬로 가져옵니다.
@@ -42,9 +42,17 @@ export async function fetchQuotes(tickers: string[]): Promise<Map<string, Ticker
     for (const res of chunkResults) {
       if (res.status === 'fulfilled') {
         const { requestedTickers, quotes } = res.value;
-        for (let i = 0; i < quotes.length; i++) {
-          const q = quotes[i];
+        
+        // 결과 합치기: Yahoo Finance 응답 배열(quotes)은 요청 순서와 일치하지 않으므로 심볼 기반으로 찾아서 매핑합니다.
+        for (const reqTicker of requestedTickers) {
+          // 배열에서 요청한 티커(원본 혹은 Yahoo가 변환한 심볼) 찾기
+          const q = quotes.find((quote: any) => 
+            quote.symbol === reqTicker || 
+            (reqTicker === 'KRW=X' && quote.symbol === 'USDKRW=X')
+          );
+          
           if (!q || !q.symbol) continue;
+          
           const quoteData: TickerQuote = {
             symbol: q.symbol,
             name: q.shortName || q.longName || q.symbol,
@@ -53,11 +61,11 @@ export async function fetchQuotes(tickers: string[]): Promise<Map<string, Ticker
             changePercent: q.regularMarketChangePercent ?? 0,
             previousClose: q.regularMarketPreviousClose ?? 0,
           };
-          // 반환된 심볼로 저장
+          
+          // 반환된 심볼과 요청한 심볼 양쪽 모두로 캐싱
           result.set(q.symbol, quoteData);
-          // 원래 요청 티커로도 저장 (심볼 불일치 대비: KRW=X → USDKRW=X 등)
-          if (i < requestedTickers.length && requestedTickers[i] !== q.symbol) {
-            result.set(requestedTickers[i], quoteData);
+          if (reqTicker !== q.symbol) {
+            result.set(reqTicker, quoteData);
           }
         }
       } else {

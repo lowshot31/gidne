@@ -1,5 +1,4 @@
 // src/pages/api/quotes.ts
-// 개인 워치리스트용 API — Yahoo Finance 공개 HTTP 엔드포인트 직접 호출
 import type { APIRoute } from 'astro';
 import { getRedis } from '../../lib/redis';
 
@@ -24,16 +23,15 @@ export const GET: APIRoute = async (context) => {
 
   try {
     const data: Record<string, any> = {};
-    const missingTickers: string[] = [];
-
-    // [Step 1] Redis MGET으로 모든 티커 동시 조회
     const redis = getRedis(context);
-    const cachedArray = await redis.mget(...tickers.map(t => `gidne_quote_${t}`));
+
+    // 1. 처음 캐시 확인
+    let cachedArray = await redis.mget(...tickers.map(t => `gidne_quote_${t}`));
+    let missingTickers: string[] = [];
 
     for (let i = 0; i < tickers.length; i++) {
       const ticker = tickers[i];
       const cachedData = cachedArray[i];
-
       if (cachedData) {
         data[ticker] = typeof cachedData === 'string' ? JSON.parse(cachedData) : cachedData;
       } else {
@@ -41,44 +39,30 @@ export const GET: APIRoute = async (context) => {
       }
     }
 
-    // [Step 2] 캐시 미스 → Yahoo Finance 공개 HTTP 엔드포인트로 직접 호출
+    // 2. 누락된 티커가 있다면 Data Pump 큐에 등록하고 폴링
     if (missingTickers.length > 0) {
-      console.log(`[Cache Miss] Fetching ${missingTickers.length} tickers via HTTP...`);
+      const remainingTickers = missingTickers.slice(1);
+      await redis.sadd('gidne_queue_quote', missingTickers[0], ...remainingTickers);
 
-      const yfUrl = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(missingTickers.join(','))}`;
-      const res = await fetch(yfUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
-        },
-      });
-
-      if (res.ok) {
-        const result = await res.json();
-        const quotes = result?.quoteResponse?.result || [];
-        const pipeline = redis.pipeline();
-
-        for (const q of quotes) {
-          if (q && q.symbol) {
-            const quoteData = {
-              symbol: q.symbol,
-              name: q.shortName || q.longName || q.symbol,
-              price: q.regularMarketPrice ?? 0,
-              change: q.regularMarketChange ?? 0,
-              changePercent: q.regularMarketChangePercent ?? 0,
-              previousClose: q.regularMarketPreviousClose ?? 0,
-              volume: q.regularMarketVolume ?? 0,
-              exchange: q.fullExchangeName || q.exchange || '',
-            };
-            data[q.symbol] = quoteData;
-            pipeline.set(`gidne_quote_${q.symbol}`, JSON.stringify(quoteData), { ex: 15 });
+      // 최대 10번 (약 5초) 대기하며 폴링
+      for (let attempt = 0; attempt < 10; attempt++) {
+        await new Promise(r => setTimeout(r, 500));
+        
+        const newCachedArray = await redis.mget(...missingTickers.map(t => `gidne_quote_${t}`));
+        const stillMissing: string[] = [];
+        
+        for (let i = 0; i < missingTickers.length; i++) {
+          const ticker = missingTickers[i];
+          const cachedData = newCachedArray[i];
+          if (cachedData) {
+            data[ticker] = typeof cachedData === 'string' ? JSON.parse(cachedData) : cachedData;
+          } else {
+            stillMissing.push(ticker);
           }
         }
-
-        try {
-          await pipeline.exec();
-        } catch (err) {
-          console.error('[quotes] Redis pipeline error:', err);
-        }
+        
+        missingTickers = stillMissing;
+        if (missingTickers.length === 0) break; // 모두 찾음
       }
     }
 
