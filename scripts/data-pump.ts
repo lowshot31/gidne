@@ -154,7 +154,7 @@ async function pumpDemandQueues() {
   // 2) 요약(Summary) 데이터 처리
   await processQueue('gidne_queue_summary', 'gidne_summary_v2_', async (ticker: string) => {
     const summary: any = await yahooFinance.quoteSummary(ticker, {
-      modules: ['assetProfile', 'financialData', 'defaultKeyStatistics', 'summaryDetail', 'recommendationTrend', 'secFilings'],
+      modules: ['assetProfile', 'financialData', 'defaultKeyStatistics', 'summaryDetail', 'recommendationTrend'],
     });
     return {
       profile: {
