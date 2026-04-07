@@ -69,13 +69,15 @@ function parseFFDateTimeToKST(dateStr?: string, timeStr?: string) {
     const kstM = (d.getMonth() + 1).toString().padStart(2, '0');
     const kstD = d.getDate().toString().padStart(2, '0');
     const dow = ['일','월','화','수','목','금','토'][d.getDay()];
-    const kstH = d.getHours().toString().padStart(2, '0');
+    const kstH_num = d.getHours();
     const kstMin = d.getMinutes().toString().padStart(2, '0');
+    const ampm = kstH_num >= 12 ? '오후' : '오전';
+    const displayH = kstH_num % 12 || 12;
 
     return {
       rawDateObj: d,
       date: `${kstM}.${kstD}(${dow})`,
-      time: `${kstH}:${kstMin}`
+      time: `${ampm} ${displayH}:${kstMin}`
     };
   } catch (e) {
     return { rawDateObj: new Date(), date: `${mm}.${dd}`, time: timeStr };
@@ -108,6 +110,7 @@ export default function EconomicCalendar() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexShrink: 0 }}>
         <h3 className="text-secondary" style={{ margin: 0, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
           <span>🗓️</span> MAJOR EVENTS
+          <span style={{ fontSize: '0.65rem', fontWeight: 400, color: 'var(--text-muted)' }}>(한국시간 기준)</span>
         </h3>
         <span style={{ 
           fontSize: '0.7rem', 

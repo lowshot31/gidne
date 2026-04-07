@@ -5,9 +5,10 @@ import type { IChartApi, ISeriesApi, Time } from 'lightweight-charts';
 interface Props {
   ticker: string;
   name: string;
+  hideWrapper?: boolean;
 }
 
-function CustomLightweightChart({ ticker, name }: Props) {
+function CustomLightweightChart({ ticker, name, hideWrapper }: Props) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Area"> | null>(null);
@@ -135,6 +136,22 @@ function CustomLightweightChart({ ticker, name }: Props) {
     };
   }, [ticker]);
 
+  const chartContent = (
+    <>
+      {loading && <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Loading Chart Data...</div>}
+      {error && <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }} className="text-bear">Fail: {error}</div>}
+      <div ref={chartContainerRef} style={{ flex: 1, width: '100%', minHeight: hideWrapper ? '100%' : '350px', padding: hideWrapper ? '0' : '0 1rem 1rem 1rem' }} />
+    </>
+  );
+
+  if (hideWrapper) {
+    return (
+      <div className="price-chart-container" style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', overflow: 'hidden' }}>
+        {chartContent}
+      </div>
+    );
+  }
+
   return (
     <div className="bento-item h-full price-chart-container" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem', padding: '1rem 1rem 0 1rem' }}>
@@ -146,10 +163,7 @@ function CustomLightweightChart({ ticker, name }: Props) {
         </div>
       </div>
       
-      {loading && <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Loading Chart Data...</div>}
-      {error && <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }} className="text-bear">Fail: {error}</div>}
-      
-      <div ref={chartContainerRef} style={{ flex: 1, width: '100%', minHeight: '350px', padding: '0 1rem 1rem 1rem' }} />
+      {chartContent}
     </div>
   );
 }

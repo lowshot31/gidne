@@ -38,16 +38,19 @@ const TV_TICKER_MAP: Record<string, string> = {
   '^FVX': 'US05Y',
   '^IRX': 'US03M',
   'DX-Y.NYB': 'DXY',
-  'GC=F': 'GC1!',
-  'SI=F': 'SI1!',
-  'CL=F': 'CL1!',
-  'NG=F': 'NG1!',
-  'HG=F': 'HG1!',
-  'BTC-USD': 'BTCUSD',
-  'ETH-USD': 'ETHUSD',
-  'KRW=X': 'USDKRW',
-  'JPY=X': 'USDJPY',
-  'EUR=X': 'EURUSD'
+  'GC=F': 'XAU/USD',
+  'SI=F': 'XAG/USD',
+  'CL=F': 'WTI Crude',
+  'BZ=F': 'Brent Crude',
+  'NG=F': 'NatGas',
+  'HG=F': 'Copper',
+  'ZC=F': 'Corn',
+  'BTC-USD': 'BTC-USD',
+  'ETH-USD': 'ETH-USD',
+  'KRW=X': 'USD/KRW',
+  'JPY=X': 'USD/JPY',
+  'EUR=X': 'EUR/USD',
+  'CNY=X': 'USD/CNY'
 };
 
 /**

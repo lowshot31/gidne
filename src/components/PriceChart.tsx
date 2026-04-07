@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, memo } from 'react';
+import CustomLightweightChart from './CustomLightweightChart';
 
 interface Props {
   ticker?: string;
@@ -36,24 +37,42 @@ const getTVSymbol = (ticker: string) => {
   if (ticker === '^BVSP') return 'AMEX:EWZ'; // 브라질 -> 브라질 ETF
   if (ticker === '^MXX') return 'AMEX:EWW'; // 멕시코 -> 멕시코 ETF
 
-  // 기타 매크로 / 원자재
+  // 매크로 지수 & 채권 금리
   if (ticker === '^VIX') return 'CBOE:VIX';
   if (ticker === '^VVIX') return 'CBOE:VVIX';
-  if (ticker === '^TNX') return 'FRED:DGS10';
+  if (ticker === '^SKEW') return 'CBOE:SKEW';
+  if (ticker === '^IRX') return 'FRED:DGS3MO';
   if (ticker === '^FVX') return 'FRED:DGS5';
+  if (ticker === '^TNX') return 'FRED:DGS10';
+  if (ticker === '^TYX') return 'FRED:DGS30';
+  if (ticker === 'HYG') return 'AMEX:HYG';
+  if (ticker === 'LQD') return 'AMEX:LQD';
+  if (ticker === 'TLT') return 'NASDAQ:TLT';
+
+  // 원자재 & 실물 코어 (CME/NYMEX 차단 우회 -> OANDA/CFD 무료 실시간 심볼 적용)
+  if (ticker === 'CL=F') return 'OANDA:WTICOUSD'; // WTI 원유
+  if (ticker === 'BZ=F') return 'OANDA:BCOUSD';   // 브렌트유
+  if (ticker === 'NG=F') return 'OANDA:NATGASUSD';// 천연가스
+  if (ticker === 'HG=F') return 'OANDA:XCUUSD';   // 구리
+  if (ticker === 'GC=F') return 'OANDA:XAUUSD';   // 금
+  if (ticker === 'SI=F') return 'OANDA:XAGUSD';   // 은
+  if (ticker === 'ZC=F') return 'CAPITALCOM:CORN';// 옥수수
   
+  // 환율 통화
+  if (ticker === 'KRW=X') return 'FX_IDC:USDKRW';
+  if (ticker === 'JPY=X') return 'FX_IDC:USDJPY';
+  if (ticker === 'CNY=X') return 'FX_IDC:USDCNY';
+  if (ticker === 'EURUSD=X') return 'FX_IDC:EURUSD';
+  if (ticker === 'DX-Y.NYB') return 'CAPITALCOM:DXY'; // ICE 차단 우회
+
+  // 크립토 / 주요 ETF
   if (ticker === 'SPY') return 'AMEX:SPY';
   if (ticker === 'QQQ') return 'NASDAQ:QQQ';
-  
   if (ticker === 'BTC-USD') return 'BINANCE:BTCUSD';
   if (ticker === 'ETH-USD') return 'BINANCE:ETHUSD';
   if (ticker === 'SOL-USD') return 'BINANCE:SOLUSD';
   if (ticker === 'DOGE-USD') return 'BINANCE:DOGEUSD';
-  if (ticker === 'GC=F') return 'COMEX:GC1!';
-  if (ticker === 'CL=F') return 'NYMEX:CL1!';
-  
-  if (ticker === 'KRW=X') return 'FX:USDKRW';
-  if (ticker === 'DX-Y.NYB') return 'TVC:DXY';
+
   if (/^XL[A-Z]$/.test(ticker)) return `AMEX:${ticker}`;
 
   return ticker.includes(':') ? ticker : ticker;
@@ -67,6 +86,9 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
   const currentSymbol = getTVSymbol(currentTicker);
   const [visitedSymbols, setVisitedSymbols] = useState<Set<string>>(new Set([currentSymbol]));
   const initializedWidgets = useRef<Set<string>>(new Set());
+
+  // TradingView 위젯 임베딩이 차단되는 CBOE 특정 지수들만 정밀 타격하여 Native 백엔드 차트로 우회
+  const isRestrictedSymbol = currentSymbol.startsWith('CBOE:');
 
   useEffect(() => {
     if (initialTicker) setCurrentTicker(initialTicker);
@@ -86,6 +108,8 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
   }, [currentSymbol]);
 
   useEffect(() => {
+    // 제한된 심볼은 위젯 초기화를 아예 시도하지 않음
+    if (isRestrictedSymbol) return;
     if (initializedWidgets.current.has(currentSymbol)) return;
 
     let debounceTimer: ReturnType<typeof setTimeout>;
@@ -210,19 +234,29 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
       
       {/* TradingView 위젯 컨테이너 (Zero-Flash Dynamic Caching) */}
       <div className="tradingview-widget-container" style={{ position: 'relative', flex: 1, minHeight: '350px', width: '100%', borderRadius: '4px', overflow: 'hidden' }}>
-        {Array.from(visitedSymbols).map((sym) => (
-          <div 
-            key={sym}
-            id={`tv_chart_${sym.replace(/[^a-zA-Z0-9]/g, '_')}`}
-            style={{ 
-              position: 'absolute', 
-              inset: 0, 
-              opacity: sym === currentSymbol ? 1 : 0, 
-              pointerEvents: sym === currentSymbol ? 'auto' : 'none',
-              zIndex: sym === currentSymbol ? 10 : 1
-            }} 
-          />
-        ))}
+        {isRestrictedSymbol ? (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 20, backgroundColor: 'var(--bg-secondary)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <CustomLightweightChart ticker={currentTicker} name={currentName} hideWrapper={true} />
+            {/* Added a subtle overlay indicating this is the native bypass rendering */}
+            <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '0.65rem', padding: '2px 6px', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--bull)', border: '1px solid rgba(34, 197, 94, 0.2)', borderRadius: '4px', zIndex: 30 }}>
+              ✅ Gidne Native 우회
+            </div>
+          </div>
+        ) : (
+          Array.from(visitedSymbols).map((sym) => (
+            <div 
+              key={sym}
+              id={`tv_chart_${sym.replace(/[^a-zA-Z0-9]/g, '_')}`}
+              style={{ 
+                position: 'absolute', 
+                inset: 0, 
+                opacity: sym === currentSymbol ? 1 : 0, 
+                pointerEvents: sym === currentSymbol ? 'auto' : 'none',
+                zIndex: sym === currentSymbol ? 10 : 1
+              }} 
+            />
+          ))
+        )}
       </div>
     </div>
   );
