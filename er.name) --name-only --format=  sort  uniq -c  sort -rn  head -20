@@ -77,3 +77,106 @@ Date:   Tue Apr 7 04:23:37 2026 +0900
     fix: migrate calendar API from in-memory to Redis cache
 
  1 file changed, 23 insertions(+), 18 deletions(-)
+
+[33mcommit 9ef7824bf438793d5166384abbd201c6245f2577[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 04:19:43 2026 +0900
+
+    fix: resolve redis undefined reference in setGlobalMarketData
+
+ 1 file changed, 7 insertions(+), 11 deletions(-)
+
+[33mcommit 62fa984a26ee00cf612f892f601983e1fe9e6fcf[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 04:17:06 2026 +0900
+
+    fix: inject cloudflare runtime env variables dynamically
+
+ 3 files changed, 19 insertions(+), 10 deletions(-)
+
+[33mcommit 9ed031c8a61a89a9fa7906f85f2484cfd8f7aec9[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 04:00:42 2026 +0900
+
+    fix: resolve typescript build errors for cloudflare compatibility
+
+ 2 files changed, 12 insertions(+), 6 deletions(-)
+
+[33mcommit 07dc0236cff9e8e0b4b6d687aba6a1b4e5b7ac31[m[33m ([m[1;32mfeat/value-up-tabs[m[33m)[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Tue Apr 7 03:58:42 2026 +0900
+
+    feat: redesign macro dashboard and implement redis global cache layer
+
+ 42 files changed, 4208 insertions(+), 1277 deletions(-)
+
+[33mcommit 04808b2600daaa23b08ede9c0eb25c7f5e132952[m[33m ([m[1;31morigin/fix/realtime-dashboard[m[33m, [m[1;32mfix/realtime-dashboard[m[33m)[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Mon Apr 6 23:25:50 2026 +0900
+
+    fix: resolve dashboard real-time data freezing and enhance indicator baseline
+    
+    - Fix browser caching bug on API polling
+    - Remove frozen Finnhub WS overriding Yahoo Finance in Watchlist & TickerStrip
+    - Inject BTC/ETH live data from Binance into TickerStrip
+    - Add S&P 500 / NASDAQ toggle in Advanced Chart
+    - Adjust RS Leaderboard baseline from SPY to S&P 500 Index (^GSPC)
+    - Fix Layout height restricting correct scroll
+
+ 9 files changed, 61 insertions(+), 76 deletions(-)
+
+[33mcommit 481790c78a116ce10b21ddf84798f1e742d2987b[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Fri Apr 3 05:32:53 2026 +0900
+
+    docs: add architecture walkthrough, retro, and plan review
+
+ 5 files changed, 396 insertions(+)
+
+[33mcommit 33781263b7824e54b4ca9fc58906e3ced372d81c[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Fri Apr 3 05:23:38 2026 +0900
+
+    feat: RS leaderboard 리모델링 & 바이낸스 실시간 연동 & 리사이즈 버그 수정
+
+ 4 files changed, 184 insertions(+), 49 deletions(-)
+
+[33mcommit f9b74e30eb2d7bc994140a322f2f5b60fd9c8f92[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Fri Apr 3 05:05:24 2026 +0900
+
+    feat: optimize realtime data polling to 5s and finalize bento layout
+
+ 43 files changed, 3660 insertions(+), 183 deletions(-)
+
+[33mcommit a8999de391863e50804af9f1f66096b61743321a[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Fri Apr 3 02:27:42 2026 +0900
+
+    feat: implement live React dashboard components and fix yahoo-finance instancing
+
+ 19 files changed, 538 insertions(+), 98 deletions(-)
+
+[33mcommit 56b84c2b2c760344fa97f3359f95e989c63b98b1[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Fri Apr 3 02:12:50 2026 +0900
+
+    feat: setup Docker CI/CD and implement data layer (Yahoo Finance)
+
+ 10 files changed, 867 insertions(+), 2 deletions(-)
+
+[33mcommit cab2a4153f179a927ea9baea9864e20c895314f4[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Fri Apr 3 02:05:39 2026 +0900
+
+    feat: initialize Astro project with React, global styles, and Docker configuration
+
+ 11 files changed, 7660 insertions(+)
+
+[33mcommit 5416feea7b4179174057f7a47abe2e398b6d9140[m
+Author: [1;31mlowshot31[m <[1;31mlowshot31[m@gmail.com>
+Date:   Fri Apr 3 01:48:34 2026 +0900
+
+    docs: add design documentation for gidne module
+
+ 1 file changed, 594 insertions(+)
