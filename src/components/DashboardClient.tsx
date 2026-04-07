@@ -104,15 +104,11 @@ export default function DashboardClient() {
 
   if (!mounted) return null; // hydration 에러 방지
 
-  if (loading || !data) {
-    return (
-      <div style={{ padding: '1rem', color: 'var(--text-muted)' }}>
-        Loading Dashboard Widgets...
-      </div>
-    );
-  }
+  // data가 없어도 독립 위젯들은 즉시 렌더링 (Progressive Loading)
+  // market-data 의존 위젯만 스켈레톤 표시
+  const isDataReady = !loading && data && !error;
 
-  if (error || (!data && !loading)) {
+  if (error && !data) {
     return (
       <div style={{ paddingBottom: '2rem' }}>
         <div className="bento-item" style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--card-bg)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
@@ -160,27 +156,31 @@ export default function DashboardClient() {
       >
         <div key="pulse" className="widget-wrapper">
           <div className="drag-handle"></div>
-          <MarketPulse data={data.marketPulse} />
+          {isDataReady ? <MarketPulse data={data.marketPulse} /> : <SkeletonCard />}
         </div>
         
         <div key="macro" className="widget-wrapper macro-focus-card bento-item" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div className="drag-handle"></div>
-          <MacroFocusWidget presetData={data.macro} />
-          <div style={{ marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--glass-border)' }}>
-            <p className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.5', margin: 0 }}>
-              {new Date(data.meta.lastUpdated).toLocaleTimeString()} · {data.meta.isMarketOpen ? '장중 30s' : '장외 5m'}
-            </p>
-          </div>
+          {isDataReady ? (
+            <>
+              <MacroFocusWidget presetData={data.macro} />
+              <div style={{ marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--glass-border)' }}>
+                <p className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.5', margin: 0 }}>
+                  {new Date(data.meta.lastUpdated).toLocaleTimeString()} · {data.meta.isMarketOpen ? '장중 30s' : '장외 5m'}
+                </p>
+              </div>
+            </>
+          ) : <SkeletonCard />}
         </div>
 
         <div key="sector" className="widget-wrapper">
           <div className="drag-handle"></div>
-          <SectorBar sectors={data.sectors} />
+          {isDataReady ? <SectorBar sectors={data.sectors} /> : <SkeletonCard />}
         </div>
 
         <div key="rs" className="widget-wrapper">
           <div className="drag-handle"></div>
-          <RSLeaderboard sectors={data.sectors} />
+          {isDataReady ? <RSLeaderboard sectors={data.sectors} /> : <SkeletonCard />}
         </div>
 
         <div key="crypto" className="widget-wrapper">
@@ -195,7 +195,7 @@ export default function DashboardClient() {
 
         <div key="breadth" className="widget-wrapper">
           <div className="drag-handle"></div>
-          <MarketBreadth sectors={data.sectors} macro={data.macro} />
+          {isDataReady ? <MarketBreadth sectors={data.sectors} macro={data.macro} /> : <SkeletonCard />}
         </div>
 
         <div key="watchlist" className="widget-wrapper">
@@ -215,7 +215,7 @@ export default function DashboardClient() {
 
         <div key="eod" className="widget-wrapper">
           <div className="drag-handle"></div>
-          <EODBriefing sectors={data.sectors} macro={data.macro} holdings={data.holdings} indices={data.indices} />
+          {isDataReady ? <EODBriefing sectors={data.sectors} macro={data.macro} holdings={data.holdings} indices={data.indices} /> : <SkeletonCard />}
         </div>
       </ResponsiveGridLayout>
 

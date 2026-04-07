@@ -208,14 +208,14 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
         {showTabs && (
           <div className="chart-tabs" style={{ display: 'flex', gap: '0.25rem' }}>
             <button 
-              className={`chart-tab ${currentTicker === 'SPY' ? 'active' : ''}`}
-              onClick={() => { setCurrentTicker('SPY'); setCurrentName('S&P 500'); }}
+              className={`chart-tab ${(currentTicker === 'SPY' || currentTicker === '^GSPC') ? 'active' : ''}`}
+              onClick={() => { setCurrentTicker('^GSPC'); setCurrentName('S&P 500'); }}
             >
               S&P 500
             </button>
             <button 
-              className={`chart-tab ${currentTicker === 'QQQ' ? 'active' : ''}`}
-              onClick={() => { setCurrentTicker('QQQ'); setCurrentName('NASDAQ'); }}
+              className={`chart-tab ${(currentTicker === 'QQQ' || currentTicker === '^IXIC') ? 'active' : ''}`}
+              onClick={() => { setCurrentTicker('^IXIC'); setCurrentName('NASDAQ'); }}
             >
               NASDAQ
             </button>

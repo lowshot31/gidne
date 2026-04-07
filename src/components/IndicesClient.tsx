@@ -4,6 +4,7 @@ import MarketPulse from './MarketPulse';
 import PriceChart from './PriceChart';
 import GlobalMarketMap from './GlobalMarketMap';
 import RelativeStrengthBoard from './RelativeStrengthBoard';
+import SegmentedControl from './SegmentedControl';
 import { useFlash } from '../hooks/useFlash';
 import type { IndexQuote } from '../lib/types';
 
@@ -13,25 +14,51 @@ type RegionFilter = 'all' | 'americas' | 'europe' | 'asia' | 'emerging';
 function IndexRow({ idx, isSelected, onClick }: { idx: IndexQuote, isSelected: boolean, onClick: () => void }) {
   const flash = useFlash(idx.price);
   const isBull = idx.changePercent >= 0;
+  const changeBg = isBull ? 'var(--bull-bg)' : 'var(--bear-bg)';
   
   return (
-    <tr 
-      className={`${isSelected ? 'selected' : ''} ${flash}`}
+    <div 
+      className={flash}
       onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0.6rem 0.5rem',
+        cursor: 'pointer',
+        background: isSelected ? 'var(--card-bg-hover)' : 'transparent',
+        borderRadius: '6px',
+        borderLeft: isSelected ? '3px solid var(--accent-primary)' : '3px solid transparent',
+        transition: 'all 0.2s ease',
+        marginBottom: '2px'
+      }}
     >
-      <td>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>{idx.flag}</span>
-          <span style={{ fontWeight: 500, color: 'var(--text-primary)'}}>{idx.name}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <span style={{ fontSize: '1.2rem' }}>{idx.flag}</span>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>{idx.name}</span>
+          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{idx.symbol.replace('^', '')}</span>
         </div>
-      </td>
-      <td style={{ fontFamily: 'var(--font-mono)' }}>
-        {idx.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-      </td>
-      <td className={isBull ? 'text-bull' : 'text-bear'} style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
-        {isBull ? '+' : ''}{idx.changePercent.toFixed(2)}%
-      </td>
-    </tr>
+      </div>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 500 }}>
+          {idx.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+        <span style={{ 
+          fontFamily: 'var(--font-mono)', 
+          fontSize: '0.75rem', 
+          fontWeight: 600, 
+          color: isBull ? 'var(--bull)' : 'var(--bear)',
+          background: changeBg,
+          padding: '1px 6px',
+          borderRadius: '4px',
+          marginTop: '2px'
+        }}>
+          {isBull ? '+' : ''}{idx.changePercent.toFixed(2)}%
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -114,39 +141,39 @@ export default function IndicesClient() {
         <div className="indices-panel glass-panel">
           <div className="panel-header">
             <h3>글로벌 인덱스 보드</h3>
-            <div className="region-tabs">
-              <button className={regionFilter === 'all' ? 'active' : ''} onClick={() => setRegionFilter('all')}>전체</button>
-              <button className={regionFilter === 'americas' ? 'active' : ''} onClick={() => setRegionFilter('americas')}>미주</button>
-              <button className={regionFilter === 'europe' ? 'active' : ''} onClick={() => setRegionFilter('europe')}>유럽</button>
-              <button className={regionFilter === 'asia' ? 'active' : ''} onClick={() => setRegionFilter('asia')}>아시아</button>
-              <button className={regionFilter === 'emerging' ? 'active' : ''} onClick={() => setRegionFilter('emerging')}>신흥국</button>
-            </div>
+            <SegmentedControl 
+              tabs={[
+                { id: 'all', label: '🌏 전체' },
+                { id: 'americas', label: '🇺🇸 미주' },
+                { id: 'europe', label: '🇪🇺 유럽' },
+                { id: 'asia', label: '🇰🇷 아시아' },
+                { id: 'emerging', label: '🌍 신흥국' }
+              ]}
+              activeTab={regionFilter}
+              onTabChange={(id) => setRegionFilter(id as RegionFilter)}
+              size="sm"
+            />
           </div>
           
-          <div className="indices-table-container">
-            <table className="indices-table">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'left' }}>지수명</th>
-                  <th onClick={() => handleSort('price')} style={{ cursor: 'pointer' }}>
-                    현재가 {sortConfig.key === 'price' ? (sortConfig.dir === 'desc' ? '▼' : '▲') : ''}
-                  </th>
-                  <th onClick={() => handleSort('change')} style={{ cursor: 'pointer' }}>
-                    변동률 {sortConfig.key === 'change' ? (sortConfig.dir === 'desc' ? '▼' : '▲') : ''}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredIndices.map(idx => (
-                  <IndexRow 
-                    key={idx.symbol}
-                    idx={idx}
-                    isSelected={selectedIndex === idx.symbol}
-                    onClick={() => setSelectedIndex(idx.symbol)}
-                  />
-                ))}
-              </tbody>
-            </table>
+          <div className="indices-list-container" style={{ flex: 1, overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)', marginBottom: '0.5rem' }}>
+              <span style={{ fontWeight: 500 }}>지수명</span>
+              <div style={{ display: 'flex', gap: '1.5rem', fontWeight: 500 }}>
+                <span onClick={() => handleSort('price')} style={{ cursor: 'pointer' }}>현재가 {sortConfig.key === 'price' ? (sortConfig.dir === 'desc' ? '▼' : '▲') : ''}</span>
+                <span onClick={() => handleSort('change')} style={{ cursor: 'pointer' }}>변동률 {sortConfig.key === 'change' ? (sortConfig.dir === 'desc' ? '▼' : '▲') : ''}</span>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {filteredIndices.map(idx => (
+                <IndexRow 
+                  key={idx.symbol}
+                  idx={idx}
+                  isSelected={selectedIndex === idx.symbol}
+                  onClick={() => setSelectedIndex(idx.symbol)}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
@@ -211,82 +238,12 @@ export default function IndicesClient() {
           color: var(--text-secondary);
         }
 
-        .region-tabs {
-          display: flex;
-          gap: 4px;
-          background: rgba(0,0,0,0.2);
-          padding: 3px;
-          border-radius: 6px;
+        .indices-list-container {
+          padding-right: 0.5rem;
         }
-        [data-theme='light'] .region-tabs { background: rgba(0,0,0,0.05); }
-        .region-tabs button {
-          background: transparent;
-          border: none;
-          color: var(--text-muted);
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 0.75rem;
-          cursor: pointer;
-        }
-        .region-tabs button.active {
-          background: var(--accent-primary);
-          color: #fff;
-          font-weight: 600;
-        }
+        .indices-list-container::-webkit-scrollbar { width: 4px; }
+        .indices-list-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-        .indices-table-container {
-          flex: 1;
-          overflow-y: auto;
-          padding-right: 4px;
-        }
-        .indices-table-container::-webkit-scrollbar { width: 4px; }
-        .indices-table-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-
-        .indices-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 0.85rem;
-        }
-        .indices-table th {
-          text-align: right;
-          color: var(--text-muted);
-          font-weight: 500;
-          padding-bottom: 8px;
-          border-bottom: 1px solid var(--border-color);
-          position: sticky;
-          top: 0;
-          background: var(--bg-color, #111111);
-          z-index: 2;
-        }
-        [data-theme='light'] .indices-table th { background: #ffffff; }
-
-        .indices-table td {
-          padding: 10px 4px;
-          border-bottom: 1px solid var(--border-color);
-          text-align: right;
-        }
-        .indices-table tr {
-          cursor: pointer;
-          transition: background 0.15s;
-        }
-        .indices-table tr:hover {
-          background: rgba(200, 200, 200, 0.05);
-        }
-        .indices-table tr.selected {
-          background: rgba(200, 155, 60, 0.1);
-        }
-        
-        .indices-table tr.flash-up {
-          background-color: rgba(38, 166, 154, 0.25) !important;
-          transition: background-color 0s;
-        }
-        .indices-table tr.flash-down {
-          background-color: rgba(239, 83, 80, 0.25) !important;
-          transition: background-color 0s;
-        }
-
-        [data-theme='light'] .indices-table tr:hover { background: rgba(0,0,0,0.02); }
-        [data-theme='light'] .indices-table tr.selected { background: rgba(200, 155, 60, 0.15); }
 
         .indices-right-col {
           display: flex;

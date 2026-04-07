@@ -3,6 +3,7 @@ import CryptoLive from './CryptoLive';
 import PriceChart from './PriceChart';
 import CryptoInsights from './CryptoInsights';
 import ExpectedMoveWidget from './ExpectedMoveWidget';
+import SegmentedControl from './SegmentedControl';
 
 // -- Crypto Flows --
 const CryptoFlows = () => {
@@ -124,52 +125,15 @@ export default function FlowsClient() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingBottom: '2rem' }}>
       {/* 탭 토글 UI */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-        <div style={{ 
-          display: 'flex', 
-          background: 'rgba(20,20,30,0.6)', 
-          backdropFilter: 'blur(10px)',
-          padding: '0.25rem', 
-          borderRadius: '999px',
-          border: '1px solid var(--border-color)',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-        }}>
-           <button 
-            onClick={() => setActiveTab('equities')}
-            style={{ 
-              padding: '0.6rem 2rem', 
-              borderRadius: '999px', 
-              background: activeTab === 'equities' ? 'var(--accent-primary)' : 'transparent',
-              color: activeTab === 'equities' ? '#fff' : 'var(--text-muted)',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '0.9rem',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-             }}>
-             📈 주식 및 기관 매크로
-          </button>
-          <button 
-            onClick={() => setActiveTab('crypto')}
-            style={{ 
-              padding: '0.6rem 2rem', 
-              borderRadius: '999px', 
-              background: activeTab === 'crypto' ? 'var(--accent-primary)' : 'transparent',
-              color: activeTab === 'crypto' ? '#fff' : 'var(--text-muted)',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '0.9rem',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-             }}>
-             💎 가상자산 및 선물
-          </button>
-        </div>
+        <SegmentedControl 
+          tabs={[
+            { id: 'equities', label: '📈 주식 및 기관 매크로' },
+            { id: 'crypto', label: '💎 가상자산 및 선물' }
+          ]}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as any)}
+          size="lg"
+        />
       </div>
 
       {/* 탭 컨텐츠 영역 */}

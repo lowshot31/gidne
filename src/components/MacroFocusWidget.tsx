@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MacroRow from './MacroRow';
 import type { MacroData } from '../lib/types';
 import TickerSearch from './TickerSearch';
+import SegmentedControl from './SegmentedControl';
 
 interface Props {
   presetData: MacroData[];
@@ -68,10 +69,10 @@ export default function MacroFocusWidget({ presetData }: Props) {
   };
 
   const tabs = [
-    { id: 'HOT', label: '🔥 HOT' },
-    { id: 'RATES', label: '💸 금리/환율' },
+    { id: 'HOT', label: '🔥 필수 감시' },
+    { id: 'RATES', label: '🏦 금리/채권' },
     { id: 'COMMODITY', label: '🛢️ 원자재' },
-    { id: 'CUSTOM', label: '⭐️ 내 지표' }
+    { id: 'CUSTOM', label: '⭐ 내 지표' }
   ] as const;
 
   const renderContent = () => {
@@ -134,7 +135,7 @@ export default function MacroFocusWidget({ presetData }: Props) {
 
   return (
     <div className="macro-focus-container" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexShrink: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexShrink: 0 }}>
         <h3 className="text-secondary" style={{ margin: 0 }}>MACRO FOCUS</h3>
         <button 
           onClick={() => {
@@ -147,26 +148,8 @@ export default function MacroFocusWidget({ presetData }: Props) {
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexShrink: 0, overflowX: 'auto', paddingBottom: '2px' }}>
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              background: activeTab === tab.id ? 'var(--accent-subtle)' : 'transparent',
-              color: activeTab === tab.id ? 'var(--accent-primary)' : 'var(--text-muted)',
-              border: `1px solid ${activeTab === tab.id ? 'var(--accent-primary)' : 'transparent'}`,
-              borderRadius: '4px',
-              padding: '0.2rem 0.4rem',
-              fontSize: '0.75rem',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              fontFamily: 'var(--font-mono)'
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
+        <SegmentedControl tabs={tabs as any} activeTab={activeTab} onTabChange={(id) => setActiveTab(id as any)} />
       </div>
 
       {isAdding && activeTab === 'CUSTOM' && (

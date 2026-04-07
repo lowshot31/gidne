@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import SegmentedControl from './SegmentedControl';
 
 interface NewsItem {
   uuid: string;
@@ -87,13 +88,20 @@ export default function WatchlistNews() {
           <span>🗞️</span> NEWS 
           {loading && <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', marginLeft: '4px', fontWeight: 'normal' }}>...</span>}
         </h3>
-        <div className="news-tabs">
-          <button className={activeTab === 'all' ? 'active' : ''} onClick={() => setActiveTab('all')}>All</button>
-          <button className={activeTab === 'ticker' ? 'active' : ''} onClick={() => setActiveTab('ticker')}>Tickers</button>
-          <a href="https://www.saveticker.com/app/news" target="_blank" rel="noopener noreferrer" className="live-squawk-btn" title="세이브티커 실시간 뉴스 열기">
-            세이브티커 ↗
-          </a>
-        </div>
+        <SegmentedControl 
+          tabs={[
+            { id: 'all', label: '📰 전체' },
+            { id: 'ticker', label: '🎯 종목' }
+          ]}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as any)}
+          size="sm"
+          suffix={
+            <a href="https://www.saveticker.com/app/news" target="_blank" rel="noopener noreferrer" className="live-squawk-btn" title="세이브티커 실시간 뉴스 열기">
+              세이브티커 ↗
+            </a>
+          }
+        />
       </div>
 
       <div className="news-scroll-container" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.6rem', paddingRight: '4px' }}>
@@ -126,34 +134,7 @@ export default function WatchlistNews() {
         .news-scroll-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
         .news-scroll-container:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); }
         
-        .news-tabs {
-          display: flex;
-          gap: 4px;
-          background: rgba(0,0,0,0.2);
-          padding: 2px;
-          border-radius: 6px;
-          border: 1px solid var(--border-color);
-        }
-        [data-theme='light'] .news-tabs { background: rgba(0,0,0,0.05); }
-        .news-tabs button {
-          background: transparent;
-          border: none;
-          color: var(--text-muted);
-          font-size: 0.65rem;
-          font-family: var(--font-mono);
-          padding: 3px 8px;
-          border-radius: 4px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .news-tabs button:hover {
-          color: var(--text-primary);
-        }
-        .news-tabs button.active {
-          background: var(--accent-primary);
-          color: #fff;
-          font-weight: 600;
-        }
+
 
         .live-squawk-btn {
           background: rgba(239, 83, 80, 0.1) !important;
