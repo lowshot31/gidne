@@ -278,7 +278,7 @@ export default function CompanyAnalysis({ ticker, currentPrice }: Props) {
         .profile-tag {
           font-size: 0.75rem;
           padding: 0.2rem 0.5rem;
-          background: rgba(255,255,255,0.05);
+          background: var(--overlay);
           border: 1px solid var(--border-color);
           border-radius: 4px;
           color: var(--text-secondary);
@@ -323,7 +323,7 @@ export default function CompanyAnalysis({ ticker, currentPrice }: Props) {
           display: flex;
           justify-content: space-between;
           align-items: baseline;
-          border-bottom: 1px dotted rgba(255,255,255,0.1);
+          border-bottom: 1px dotted var(--border-color);
           padding-bottom: 0.25rem;
         }
         .stat-label {
@@ -419,7 +419,7 @@ export default function CompanyAnalysis({ ticker, currentPrice }: Props) {
           flex-direction: column;
           gap: 0.25rem;
           padding-bottom: 0.5rem;
-          border-bottom: 1px dotted rgba(255,255,255,0.1);
+          border-bottom: 1px dotted var(--border-color);
         }
         .filing-item:last-child {
           border-bottom: none;
@@ -437,7 +437,7 @@ export default function CompanyAnalysis({ ticker, currentPrice }: Props) {
         }
         .filing-type {
           font-size: 0.65rem;
-          background: rgba(255, 255, 255, 0.1);
+          background: var(--overlay-hover);
           color: var(--text-secondary);
           padding: 0.1rem 0.3rem;
           border-radius: 3px;

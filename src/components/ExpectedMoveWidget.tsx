@@ -116,7 +116,7 @@ export default function ExpectedMoveWidget({ ticker, currentPrice }: { ticker: s
         .em-tf-toggle {
           display: flex;
           gap: 4px;
-          background: rgba(0,0,0,0.3);
+          background: var(--overlay);
           border-radius: 4px;
           padding: 2px;
         }
@@ -131,7 +131,7 @@ export default function ExpectedMoveWidget({ ticker, currentPrice }: { ticker: s
           cursor: pointer;
         }
         .em-tf-toggle button.active {
-          background: rgba(200, 155, 60, 0.2);
+          background: var(--accent-subtle);
           color: var(--accent-primary);
           font-weight: bold;
         }
@@ -165,7 +165,7 @@ export default function ExpectedMoveWidget({ ticker, currentPrice }: { ticker: s
           position: relative;
           height: 8px;
           border-radius: 4px;
-          background: rgba(255,255,255,0.05);
+          background: var(--overlay);
           overflow: visible;
         }
         .em-bar-fill {
@@ -179,11 +179,11 @@ export default function ExpectedMoveWidget({ ticker, currentPrice }: { ticker: s
           top: -6px;
           width: 4px;
           height: 20px;
-          background: #fff;
+          background: var(--text-primary);
           border-radius: 2px;
           transform: translateX(-2px);
           transition: left 0.3s ease;
-          box-shadow: 0 0 10px rgba(255,255,255,0.8);
+          box-shadow: 0 0 10px var(--accent-primary);
         }
         .em-tooltip {
           position: absolute;
@@ -193,8 +193,8 @@ export default function ExpectedMoveWidget({ ticker, currentPrice }: { ticker: s
           font-size: 0.65rem;
           font-family: var(--font-mono);
           font-weight: bold;
-          color: #fff;
-          background: rgba(0,0,0,0.7);
+          color: var(--text-primary);
+          background: var(--tooltip-bg);
           padding: 2px 6px;
           border-radius: 4px;
         }

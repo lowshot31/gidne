@@ -113,7 +113,7 @@ export default function WatchlistNews() {
         />
       </div>
 
-      <div className="news-scroll-container" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.6rem', paddingRight: '4px' }}>
+      <div className="gidne-list-container" style={{ flex: 1, paddingRight: '4px' }}>
         {!loading && displayedNews.length === 0 ? (
           <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '1rem' }}>
             {activeTab === 'ticker' ? '워치리스트에 종목을 추가하면 관련 뉴스가 표시됩니다.' : '뉴스를 불러오는 중...'}
@@ -121,7 +121,7 @@ export default function WatchlistNews() {
         ) : (
           displayedNews.map((item: NewsItem) => {
             return (
-              <a key={item.uuid} href={item.link} target="_blank" rel="noopener noreferrer" className="news-card">
+              <a key={item.uuid} href={item.link} target="_blank" rel="noopener noreferrer" className="gidne-list-row news-card-override">
                 <div className="news-meta">
                   <span className="news-publisher">
                     {item.publisher}
@@ -138,11 +138,6 @@ export default function WatchlistNews() {
       </div>
 
       <style>{`
-        .news-scroll-container::-webkit-scrollbar { width: 4px; }
-        .news-scroll-container::-webkit-scrollbar-track { background: transparent; }
-        .news-scroll-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
-        .news-scroll-container:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); }
-        
 
 
         .live-squawk-btn {
@@ -165,16 +160,11 @@ export default function WatchlistNews() {
           box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        .news-card {
-          display: flex;
-          flex-direction: column;
+        .news-card-override {
+          align-items: flex-start !important;
+          flex-direction: column !important;
           gap: 6px;
-          padding: 10px 12px;
-          border-radius: var(--radius-md);
-          background: rgba(200, 200, 200, 0.02);
-          border: 1px solid var(--border-color);
           text-decoration: none;
-          transition: all 0.2s ease;
         }
         .news-squawk {
           background: rgba(239, 83, 80, 0.05);

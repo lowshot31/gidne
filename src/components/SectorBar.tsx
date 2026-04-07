@@ -98,14 +98,13 @@ export default function SectorBar({ sectors }: Props) {
         .bars-wrapper { display: flex; flex-direction: column; gap: 0.9rem; flex: 1; overflow-y: auto; min-height: 0; padding-right: 4px; }
         .bars-wrapper::-webkit-scrollbar { width: 4px; }
         .bars-wrapper::-webkit-scrollbar-track { background: transparent; }
-        .bars-wrapper::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
-        .bars-wrapper:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); }
+        .bars-wrapper::-webkit-scrollbar-thumb { background: var(--overlay); border-radius: 4px; }
+        .bars-wrapper:hover::-webkit-scrollbar-thumb { background: var(--overlay-hover); }
         .bar-row { display: flex; align-items: center; gap: 0.75rem; font-family: var(--font-mono); }
         .ticker-col { display: flex; flex-direction: column; flex-shrink: 0; line-height: 1.2; }
         .ticker-label { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); letter-spacing: 0.5px; }
         .ticker-sub { font-size: 0.65rem; color: var(--text-muted); font-weight: 500; font-family: var(--font-body); }
-        .bar-track { flex: 1; height: 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 6px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); overflow: hidden; }
-        [data-theme='light'] .bar-track { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.05); box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
+        .bar-track { flex: 1; height: 10px; background: var(--overlay); border: 1px solid var(--overlay-hover); border-radius: 6px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); overflow: hidden; }
         .bar-fill { height: 100%; border-radius: 6px; transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1); min-width: 2px; }
         .ticker-val { width: 65px; text-align: right; font-weight: 600; font-size: 0.85rem; flex-shrink: 0; }
         .cycle-legend span { display: flex; align-items: center; gap: 4px; }
@@ -130,12 +129,12 @@ export default function SectorBar({ sectors }: Props) {
           bottom: calc(100% + 12px);
           right: -10px;
           width: 340px;
-          background: rgba(20, 20, 30, 0.98);
+          background: var(--tooltip-bg);
           border: 1px solid var(--border-color);
           border-radius: var(--radius-md);
           padding: 1rem;
           color: var(--text-primary);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
           backdrop-filter: blur(12px);
           z-index: 100;
           opacity: 0;

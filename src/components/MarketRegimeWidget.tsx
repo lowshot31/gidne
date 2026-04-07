@@ -177,12 +177,12 @@ export default function MarketRegimeWidget() {
           top: calc(100% + 8px);
           left: 0;
           width: 320px;
-          background: rgba(20, 20, 30, 0.96);
+          background: var(--tooltip-bg);
           border: 1px solid var(--border-color);
           border-radius: var(--radius-md);
           padding: 1rem;
-          color: #f5f5f7; /* Prevent black text in light mode against dark bg */
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+          color: var(--text-primary);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
           backdrop-filter: blur(12px);
           z-index: 100;
           opacity: 0;
@@ -215,16 +215,16 @@ export default function MarketRegimeWidget() {
           bottom: calc(100% + 8px);
           left: 50%;
           transform: translateX(-50%) translateY(5px);
-          width: 260px;
-          background: rgba(20, 20, 25, 0.95);
+          width: 250px;
+          background: var(--tooltip-bg);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
           border: 1px solid var(--glass-border);
           padding: 0.75rem;
           border-radius: 8px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.3);
           z-index: 100;
-          color: #f5f5f7; /* Prevent black text in light mode against dark bg */
+          color: var(--text-primary);
           font-family: var(--font-sans);
           opacity: 0;
           visibility: hidden;

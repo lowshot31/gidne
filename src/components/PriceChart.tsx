@@ -197,7 +197,7 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
   }, [currentSymbol, visitedSymbols]);
 
   return (
-    <div className="bento-item h-full price-chart-container" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="bento-item h-full price-chart-container" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: '350px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h3 className="text-secondary" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '1rem', flexWrap: 'wrap' }}>
           {currentName}

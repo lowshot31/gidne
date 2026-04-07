@@ -283,7 +283,7 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
       {isOpen && (!query.trim() ? recentSearches.length > 0 : suggestions.length > 0) && (
         <ul className="search-dropdown">
           {!query.trim() && recentSearches.length > 0 && (
-             <div className="search-dropdown-header" style={{ padding: '0.4rem 0.75rem', fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255, 255, 255, 0.5)' }}>최근 검색 내역</div>
+             <div className="search-dropdown-header" style={{ padding: '0.4rem 0.75rem', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)' }}>최근 검색 내역</div>
           )}
           {(!query.trim() ? recentSearches : suggestions).map((s, idx) => (
             <li
@@ -320,7 +320,7 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
         .search-input-wrapper {
           display: flex;
           align-items: center;
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--overlay);
           border: 1px solid var(--glass-border);
           border-radius: var(--radius-sm);
           padding: 0.5rem 0.75rem;
@@ -366,14 +366,14 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
         }
         .search-clear:hover {
           color: var(--text-primary);
-          background: rgba(255, 255, 255, 0.1);
+          background: var(--overlay-hover);
         }
         .search-dropdown {
           position: absolute;
           top: calc(100% + 4px);
           left: 0;
           right: 0;
-          background: rgba(20, 20, 30, 0.98);
+          background: var(--tooltip-bg);
           border: 1px solid var(--border-color);
           border-radius: var(--radius-sm);
           list-style: none;
@@ -395,7 +395,7 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
         }
         .search-item:hover,
         .search-item.selected {
-          background: rgba(0, 242, 255, 0.08);
+          background: var(--card-bg-hover);
         }
         .search-item-left {
           display: flex;
@@ -404,11 +404,11 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
         }
         .search-item-left strong {
           font-family: var(--font-mono);
-          color: #f5f5f7;
+          color: var(--text-primary);
           font-size: 0.95rem;
         }
         .search-item-name {
-          color: rgba(255, 255, 255, 0.6);
+          color: var(--text-muted);
           font-size: 0.8rem;
           max-width: 200px;
           overflow: hidden;
@@ -419,7 +419,7 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
           font-size: 0.7rem;
           padding: 2px 6px;
           border-radius: 4px;
-          background: rgba(99, 102, 241, 0.2);
+          background: var(--overlay-hover);
           color: var(--accent-secondary);
           font-weight: 500;
           flex-shrink: 0;

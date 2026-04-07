@@ -197,7 +197,7 @@ export default function MarketBreadth({ sectors, macro }: Props) {
           width: 14px;
           height: 14px;
           border-radius: 50%;
-          background: rgba(255,255,255,0.1);
+          background: var(--overlay);
           color: var(--text-muted);
           font-size: 0.6rem;
           font-weight: bold;
@@ -205,7 +205,7 @@ export default function MarketBreadth({ sectors, macro }: Props) {
           transition: background 0.2s, color 0.2s;
         }
         .tooltip-wrapper:hover .info-icon {
-          background: rgba(255,255,255,0.25);
+          background: var(--overlay-hover);
           color: var(--text-primary);
         }
         .tooltip {
@@ -216,17 +216,17 @@ export default function MarketBreadth({ sectors, macro }: Props) {
           left: 50%;
           transform: translateX(-50%);
           margin-bottom: 8px;
-          background: rgba(15, 15, 20, 0.98);
-          color: #f5f5f7;
+          background: var(--tooltip-bg);
+          color: var(--text-primary);
           padding: 6px 10px;
           border-radius: 6px;
-          border: 1px solid rgba(255,255,255,0.15);
+          border: 1px solid var(--border-color);
           font-size: 0.75rem;
           white-space: nowrap;
           z-index: 50;
           transition: all 0.2s ease-out;
           pointer-events: none;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.3);
         }
         .tooltip::after {
           content: '';
@@ -236,7 +236,7 @@ export default function MarketBreadth({ sectors, macro }: Props) {
           transform: translateX(-50%);
           border-width: 5px;
           border-style: solid;
-          border-color: rgba(255,255,255,0.15) transparent transparent transparent;
+          border-color: var(--border-color) transparent transparent transparent;
         }
         .tooltip-wrapper:hover .tooltip {
           visibility: visible;

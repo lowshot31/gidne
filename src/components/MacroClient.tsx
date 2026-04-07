@@ -76,28 +76,20 @@ export default function MacroClient() {
           </div>
 
           {/* List Content */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem 1rem 1rem 1rem', background: 'transparent' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                {listData.map(m => {
-                  const isSelected = selectedTicker === m.ticker;
-                  return (
-                    <div 
-                      key={m.ticker} 
-                      onClick={() => setSelectedTicker(m.ticker)} 
-                      style={{ 
-                        cursor: 'pointer', 
-                        background: isSelected ? 'rgba(200, 155, 60, 0.1)' : 'transparent', 
-                        borderRadius: '4px', 
-                        borderLeft: isSelected ? '3px solid var(--accent-primary)' : '3px solid transparent',
-                        padding: '0.25rem 0',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
-                    </div>
-                  );
-                })}
-              </div>
+          <div className="gidne-list-container" style={{ flex: 1, padding: '0.5rem 1rem 1rem 1rem' }}>
+              {listData.map(m => {
+                const isSelected = selectedTicker === m.ticker;
+                return (
+                  <div 
+                    key={m.ticker} 
+                    onClick={() => setSelectedTicker(m.ticker)} 
+                    className={`gidne-list-row ${isSelected ? 'active' : ''}`}
+                    style={{ padding: '0.25rem 0' }}
+                  >
+                    <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
+                  </div>
+                );
+              })}
           </div>
         </div>
       </div>

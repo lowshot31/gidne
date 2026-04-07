@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { IndexQuote } from '../lib/types';
 import { isUSMarketOpen } from '../lib/tickers';
 
@@ -10,30 +10,63 @@ interface Props {
 
 const PIN_CITIES = [
   // 미주
-  { id: 'new_york', name: 'New York', region: 'americas', primaryTicker: '^GSPC', left: '26.8%', top: '27.5%' },
-  { id: 'toronto', name: 'Toronto', region: 'americas', primaryTicker: '^GSPTSE', left: '26%', top: '25%' },
-  { id: 'saopaulo', name: 'Sao Paulo', region: 'emerging', primaryTicker: '^BVSP', left: '32%', top: '66%' },
-  { id: 'mexicocity', name: 'Mexico City', region: 'emerging', primaryTicker: '^MXX', left: '22.5%', top: '42%' },
+  { id: 'new_york', name: 'New York', region: 'americas', primaryTicker: '^GSPC', left: '26.5%', top: '22.5%' },
+  { id: 'toronto', name: 'Toronto', region: 'americas', primaryTicker: '^GSPTSE', left: '25.5%', top: '20.5%' },
+  { id: 'saopaulo', name: 'Sao Paulo', region: 'emerging', primaryTicker: '^BVSP', left: '33.5%', top: '63.5%' },
+  { id: 'mexicocity', name: 'Mexico City', region: 'emerging', primaryTicker: '^MXX', left: '20.0%', top: '38.0%' },
   
   // 유럽
-  { id: 'london', name: 'London', region: 'europe', primaryTicker: '^FTSE', left: '47.4%', top: '20.5%' },
-  { id: 'paris', name: 'Paris', region: 'europe', primaryTicker: '^FCHI', left: '48.2%', top: '23%' },
-  { id: 'frankfurt', name: 'Frankfurt', region: 'europe', primaryTicker: '^GDAXI', left: '49.8%', top: '21.5%' },
-  { id: 'telaviv', name: 'Tel Aviv', region: 'emerging', primaryTicker: 'TA35.TA', left: '55.5%', top: '35%' },
+  { id: 'london', name: 'London', region: 'europe', primaryTicker: '^FTSE', left: '46.0%', top: '16.5%' },
+  { id: 'paris', name: 'Paris', region: 'europe', primaryTicker: '^FCHI', left: '47.0%', top: '18.5%' },
+  { id: 'frankfurt', name: 'Frankfurt', region: 'europe', primaryTicker: '^GDAXI', left: '48.5%', top: '17.5%' },
+  { id: 'telaviv', name: 'Tel Aviv', region: 'emerging', primaryTicker: 'TA35.TA', left: '55.0%', top: '31.5%' },
   
   // 아시아 & 신흥국
-  { id: 'tokyo', name: 'Tokyo', region: 'asia', primaryTicker: '^N225', left: '82%', top: '33.5%' },
-  { id: 'seoul', name: 'Seoul', region: 'asia', primaryTicker: '^KS11', left: '79.5%', top: '34%' },
-  { id: 'shanghai', name: 'Shanghai', region: 'asia', primaryTicker: '000001.SS', left: '77%', top: '36.5%' },
-  { id: 'taipei', name: 'Taipei', region: 'asia', primaryTicker: '^TWII', left: '79%', top: '40%' },
-  { id: 'hong_kong', name: 'Hong Kong', region: 'asia', primaryTicker: '^HSI', left: '77.5%', top: '42%' },
-  { id: 'mumbai', name: 'Mumbai', region: 'emerging', primaryTicker: '^NSEI', left: '66.5%', top: '44%' },
-  { id: 'hcmc', name: 'Ho Chi Minh', region: 'emerging', primaryTicker: '^VNINDEX.VN', left: '74%', top: '47%' },
-  { id: 'sydney', name: 'Sydney', region: 'asia', primaryTicker: '^AXJO', left: '85.5%', top: '78%' },
+  { id: 'tokyo', name: 'Tokyo', region: 'asia', primaryTicker: '^N225', left: '84.5%', top: '31.0%' },
+  { id: 'seoul', name: 'Seoul', region: 'asia', primaryTicker: '^KS11', left: '81.5%', top: '31.0%' },
+  { id: 'shanghai', name: 'Shanghai', region: 'asia', primaryTicker: '000001.SS', left: '79.5%', top: '34.0%' },
+  { id: 'taipei', name: 'Taipei', region: 'asia', primaryTicker: '^TWII', left: '80.0%', top: '39.0%' },
+  { id: 'hong_kong', name: 'Hong Kong', region: 'asia', primaryTicker: '^HSI', left: '78.5%', top: '41.5%' },
+  { id: 'mumbai', name: 'Mumbai', region: 'emerging', primaryTicker: '^NSEI', left: '68.0%', top: '41.0%' },
+  { id: 'hcmc', name: 'Ho Chi Minh', region: 'emerging', primaryTicker: '^VNINDEX.VN', left: '76.5%', top: '46.5%' },
+  { id: 'sydney', name: 'Sydney', region: 'asia', primaryTicker: '^AXJO', left: '88.0%', top: '75.0%' },
 ];
 
 export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex }: Props) {
   const [hoveredCity, setHoveredCity] = useState<string | null>(null);
+
+  // 숨겨진 미세조정 모드 (Tweak Mode)
+  const [isTweakMode, setIsTweakMode] = useState(false);
+  const [tweakPins, setTweakPins] = useState([...PIN_CITIES]);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ id: string, active: boolean } | null>(null);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>, id: string) => {
+    if (!isTweakMode) return;
+    dragRef.current = { id, active: true };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    e.stopPropagation();
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isTweakMode || !dragRef.current?.active || !mapRef.current) return;
+    const rect = mapRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    
+    setTweakPins(prev => prev.map(p => 
+      p.id === dragRef.current!.id ? { ...p, left: `${x.toFixed(1)}%`, top: `${y.toFixed(1)}%` } : p
+    ));
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isTweakMode || !dragRef.current?.active) return;
+    dragRef.current.active = false;
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
+
+  const currentPins = isTweakMode ? tweakPins : PIN_CITIES;
+  
 
   // US Market isOpen directly from our utility, others are simplified
   const isUSOpen = isUSMarketOpen();
@@ -100,12 +133,33 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
 
   return (
     <div className="global-map-container glass-panel">
-      <div className="map-center-container">
+      {/* Tweak Mode Toggle */}
+      <div 
+        style={{ position: 'absolute', top: 5, right: 10, zIndex: 100, fontSize: '0.7rem', color: 'var(--text-muted)', cursor: 'pointer' }}
+        onDoubleClick={() => setIsTweakMode(!isTweakMode)}
+        title="Double click to toggle Tweak Mode"
+        className="select-none"
+      >
+        [⚙️]
+      </div>
+      
+      {isTweakMode && (
+        <div style={{ position: 'absolute', top: 30, right: 10, zIndex: 100, background: 'rgba(50,0,0,0.8)', color: '#ffaaaa', padding: '10px', fontSize: '10px', fontFamily: 'monospace', borderRadius: '4px', maxWidth: '300px', maxHeight: '400px', overflow: 'auto' }}>
+          {`const PIN_CITIES = ${JSON.stringify(tweakPins, null, 2)};`}
+        </div>
+      )}
+
+      <div 
+        className="map-center-container"
+        ref={mapRef}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+      >
         {/* Aspect Ratio locked wrapper for accurate Pin placement */}
         <div className="map-inner-wrapper">
           <div className="map-background" />
 
-        {PIN_CITIES.map(city => {
+        {currentPins.map(city => {
           let quote = indices.find(i => i.symbol === city.primaryTicker);
           if (!quote) {
             quote = { symbol: city.primaryTicker, name: city.name, price: 0, change: 0, changePercent: 0, previousClose: 0, region: city.region, flag: '' };
@@ -137,10 +191,18 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
             <div 
               key={city.id}
               className={`map-pin ${hoveredCity === city.id ? 'is-hovered' : ''} ${isSelected ? 'is-selected' : ''} ${isOpen ? 'is-open' : 'is-closed'}`}
-              style={{ left: city.left, top: city.top, '--pin-color': colorVar, '--pin-shadow': shadowColor } as React.CSSProperties}
-              onMouseEnter={() => setHoveredCity(city.id)}
-              onMouseLeave={() => setHoveredCity(null)}
-              onClick={() => onSelectIndex(city.primaryTicker)}
+              style={{ 
+                left: city.left, 
+                top: city.top, 
+                '--pin-color': colorVar, 
+                '--pin-shadow': shadowColor,
+                cursor: isTweakMode ? 'grab' : 'pointer',
+                zIndex: isTweakMode && dragRef.current?.id === city.id ? 50 : undefined
+              } as React.CSSProperties}
+              onMouseEnter={() => !isTweakMode && setHoveredCity(city.id)}
+              onMouseLeave={() => !isTweakMode && setHoveredCity(null)}
+              onClick={() => !isTweakMode && onSelectIndex(city.primaryTicker)}
+              onPointerDown={(e) => handlePointerDown(e, city.id)}
             >
               <div className="pin-core" />
               <div className="pin-pulse" />

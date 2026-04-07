@@ -316,10 +316,9 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
         .eod-briefing { gap: 0.6rem; }
         .eod-header { display: flex; justify-content: space-between; align-items: center; }
         .eod-tf-tabs {
-          display: flex; gap: 2px; background: rgba(0,0,0,0.2); padding: 2px;
+          display: flex; gap: 2px; background: var(--overlay); padding: 2px;
           border-radius: 6px; border: 1px solid var(--border-color);
         }
-        [data-theme='light'] .eod-tf-tabs { background: rgba(0,0,0,0.05); }
         .eod-tf-tabs button {
           background: transparent; border: none; color: var(--text-muted);
           font-size: 0.6rem; font-family: var(--font-mono); padding: 3px 7px;
@@ -329,16 +328,15 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
         .eod-tf-tabs button.active { background: var(--accent-primary); color: #fff; font-weight: 600; }
         
         .eod-summary {
-          background: rgba(200,200,200,0.03); border: 1px solid var(--border-color);
+          background: var(--overlay); border: 1px solid var(--border-color);
           border-radius: var(--radius-md); padding: 0.6rem 0.8rem;
           display: flex; flex-direction: column; gap: 4px;
         }
-        [data-theme='light'] .eod-summary { background: rgba(0,0,0,0.02); }
         .eod-benchmark { display: flex; justify-content: space-between; align-items: center; }
         .eod-stat-row { display: flex; justify-content: space-between; font-size: 0.7rem; }
 
         .eod-scroll::-webkit-scrollbar { width: 4px; }
-        .eod-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        .eod-scroll::-webkit-scrollbar-thumb { background: var(--overlay-hover); border-radius: 4px; }
 
         .eod-section-label {
           font-size: 0.7rem; font-weight: 700; padding: 4px 0;

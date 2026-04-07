@@ -307,7 +307,7 @@ export default function Watchlist() {
           </span>
         </div>
       ) : (
-        <div className="watchlist-list">
+        <div className="gidne-list-container" style={{ flex: 1 }}>
           {items.map((item, index) => {
             const q = quotes.get(item.ticker);
             return (
@@ -477,35 +477,7 @@ export default function Watchlist() {
           padding: 1rem 0;
           text-align: center;
         }
-        .watchlist-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0.2rem;
-          flex: 1;
-          overflow-y: auto;
-          overflow-x: hidden;
-        }
-        .table-row {
-          display: flex;
-          align-items: center;
-          padding: 0.6rem 0.5rem;
-          border-bottom: 1px solid var(--border-color);
-          transition: background 0.2s ease, transform 0.1s ease, border-color 0.2s ease;
-          font-size: 0.85rem;
-          color: inherit;
-        }
-        .table-row:hover {
-          background: var(--bg-card);
-        }
-        .table-row.is-dragging {
-          opacity: 0.4;
-          background: rgba(200, 155, 60, 0.05); /* 약간의 강조색 */
-        }
-        .table-row.is-dragover {
-          border-top: 2px solid var(--accent-primary);
-          background: rgba(200, 155, 60, 0.08); /* 위치 강조 */
-          transform: translateY(2px);
-        }
+
         .wl-grip {
           color: var(--text-muted);
           cursor: grab;
@@ -525,8 +497,7 @@ export default function Watchlist() {
           align-items: baseline;
           gap: 0.4rem;
           min-width: 0;
-          flex: 0 1 auto;
-          max-width: 65%;
+          flex: 1;
         }
         .wl-name {
           font-size: 0.7rem;
@@ -570,10 +541,10 @@ function WatchlistRow({ ticker, name, price, changePercent, isUp, benchmarkChang
   const isRsUp = rs >= 0;
   
   return (
-    <a 
-      href={`/chart/${encodeURIComponent(ticker)}`} 
-      className={`table-row ${flash} ${isDragging ? 'is-dragging' : ''} ${isDragOver ? 'is-dragover' : ''}`} 
-      style={{ textDecoration: 'none', cursor: 'pointer' }}
+    <div 
+      onClick={() => window.location.href = `/chart/${encodeURIComponent(ticker)}`} 
+      className={`gidne-list-row ${flash} ${isDragging ? 'is-dragging' : ''} ${isDragOver ? 'is-dragover' : ''}`} 
+      style={{ cursor: 'pointer' }}
       draggable
       onDragStart={onDragStart}
       onDragEnter={onDragEnter}
@@ -621,6 +592,6 @@ function WatchlistRow({ ticker, name, price, changePercent, isUp, benchmarkChang
       >
         ✕
       </button>
-    </a>
+    </div>
   );
 }

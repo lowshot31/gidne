@@ -29,12 +29,12 @@ const CryptoFlows = () => {
           고배율 롱/숏 포지션이 어느 가격대에 몰려있는지(청산맵), 그리고 데리비트(Deribit) 옵션 시장에서 스마트 머니가 어느 방향으로 콜/풋 배팅을 걸고 있는지 실시간으로 추적합니다.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1rem' }}>
-          <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.1)', borderRadius: '8px', padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--overlay)', border: '1px dashed var(--border-color)', borderRadius: '8px', padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontSize: '2rem', marginBottom: '1rem' }}>💣</span>
             <div style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>Liquidation Map (청산맵)</div>
             <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.5rem' }}>바이낸스 실시간 청산(Rekt) 연동 예정</div>
           </div>
-          <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.1)', borderRadius: '8px', padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--overlay)', border: '1px dashed var(--border-color)', borderRadius: '8px', padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontSize: '2rem', marginBottom: '1rem' }}>🎲</span>
             <div style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>Options Open Interest (옵션 미결제약정)</div>
             <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.5rem' }}>데리비트(Deribit) API 연동 예정</div>

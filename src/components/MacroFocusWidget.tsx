@@ -78,19 +78,20 @@ export default function MacroFocusWidget({ presetData }: Props) {
 
   const renderContent = () => {
     if (activeTab === 'HOT') {
-      // 1. 무슨 일이 있어도 봐야 하는 필수 뼈대 지표 (공포지수 3대장 + 국채금리 + 달러인덱스)
-      const mustHaves = ['^VIX', '^VVIX', '^SKEW', '^TNX', 'DX-Y.NYB'];
-      const mustHavesData = presetData.filter(m => mustHaves.includes(m.ticker));
-      
-      // 2. 나머지 지표 중에서 오늘 하루 변동성이 가장 극심한 '진짜 HOT한' 지표 5개 추출
-      const rest = presetData.filter(m => !mustHaves.includes(m.ticker));
-      const topMovers = [...rest].sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent)).slice(0, 5);
-      
-      // 필수 지표 + 오늘 가장 핫한 지표 조합
-      const hotTickersData = [...mustHavesData, ...topMovers];
+      const hotTickers = [
+        '^VIX',     // S&P500 공포지수
+        '^VVIX',    // VIX 변동성 
+        '^SKEW',    // 블랙스완 위험도
+        'DX-Y.NYB', // 달러 인덱스
+        '^TNX',     // 미 10년물 국채 
+        'KRW=X',    // 원/달러 환율
+        'CL=F',     // WTI
+        'BZ=F'      // 브렌트유
+      ];
+      const hotTickersData = hotTickers.map(t => presetData.find(m => m.ticker === t)).filter(Boolean) as MacroData[];
 
-      return hotTickersData.map(m => (
-        <div key={m.ticker} style={{ padding: '0.25rem 0', borderRadius: '4px' }}>
+      return hotTickersData.map((m: MacroData) => (
+        <div key={m.ticker} className="gidne-list-row" style={{ padding: '0.25rem 0.5rem', cursor: 'default' }}>
           <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
         </div>
       ));
@@ -99,28 +100,28 @@ export default function MacroFocusWidget({ presetData }: Props) {
       return presetData
         .filter(m => m.category === 'rates')
         .map(m => (
-          <div key={m.ticker} style={{ padding: '0.25rem 0', borderRadius: '4px' }}>
-            <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
-          </div>
-        ));
+        <div key={m.ticker} className="gidne-list-row" style={{ padding: '0.25rem 0.5rem', cursor: 'default' }}>
+          <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
+        </div>
+      ));
     }
     if (activeTab === 'CURRENCY') {
       return presetData
         .filter(m => m.category === 'currency')
         .map(m => (
-          <div key={m.ticker} style={{ padding: '0.25rem 0', borderRadius: '4px' }}>
-            <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
-          </div>
-        ));
+        <div key={m.ticker} className="gidne-list-row" style={{ padding: '0.25rem 0.5rem', cursor: 'default' }}>
+          <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
+        </div>
+      ));
     }
     if (activeTab === 'COMMODITY') {
       return presetData
         .filter(m => m.category === 'commodity')
         .map(m => (
-          <div key={m.ticker} style={{ padding: '0.25rem 0', borderRadius: '4px' }}>
-            <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
-          </div>
-        ));
+        <div key={m.ticker} className="gidne-list-row" style={{ padding: '0.25rem 0.5rem', cursor: 'default' }}>
+          <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
+        </div>
+      ));
     }
     if (activeTab === 'CUSTOM') {
       return (
@@ -133,7 +134,7 @@ export default function MacroFocusWidget({ presetData }: Props) {
             customItems.map(item => {
               const q = customQuotes[item.ticker];
               return (
-                <div key={item.ticker} style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                <div key={item.ticker} className="gidne-list-row" style={{ padding: '0.25rem 0.5rem', cursor: 'default', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                   <div style={{ flex: 1 }}>
                     <MacroRow 
                       ticker={item.ticker} 
@@ -183,7 +184,7 @@ export default function MacroFocusWidget({ presetData }: Props) {
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, overflowY: 'auto' }}>
+      <div className="gidne-list-container" style={{ flex: 1 }}>
         {renderContent()}
       </div>
     </div>

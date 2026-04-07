@@ -20,50 +20,10 @@ import EODBriefing from './EODBriefing';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-const DEFAULT_LAYOUTS = {
-  lg: [
-    { i: 'pulse', x: 0, y: 0, w: 12, h: 3, minW: 2, minH: 3 },
-    { i: 'macro', x: 0, y: 3, w: 3, h: 6, minW: 2, minH: 4 },
-    { i: 'chart', x: 3, y: 3, w: 6, h: 7, minW: 2, minH: 4 },
-    { i: 'rs', x: 9, y: 3, w: 3, h: 6, minW: 2, minH: 5 },
-    { i: 'watchlist', x: 0, y: 9, w: 3, h: 5, minW: 2, minH: 3 },
-    { i: 'sector', x: 3, y: 10, w: 6, h: 6, minW: 2, minH: 4 },
-    { i: 'breadth', x: 9, y: 9, w: 3, h: 5, minW: 2, minH: 3 },
-    { i: 'crypto', x: 0, y: 14, w: 3, h: 4, minW: 2, minH: 3 },
-    { i: 'news', x: 3, y: 16, w: 3, h: 6, minW: 3, minH: 4 },
-    { i: 'eod', x: 6, y: 16, w: 3, h: 6, minW: 2, minH: 4 },
-    { i: 'calendar', x: 9, y: 14, w: 3, h: 5, minW: 2, minH: 4 },
-  ],
-  md: [
-    { i: 'pulse', x: 0, y: 0, w: 10, h: 3, minW: 2, minH: 3 },
-    { i: 'chart', x: 0, y: 3, w: 10, h: 7, minW: 2, minH: 4 },
-    { i: 'macro', x: 0, y: 10, w: 5, h: 7, minW: 2, minH: 4 },
-    { i: 'rs', x: 5, y: 10, w: 5, h: 7, minW: 2, minH: 6 },
-    { i: 'sector', x: 0, y: 17, w: 10, h: 7, minW: 2, minH: 4 },
-    { i: 'watchlist', x: 0, y: 24, w: 10, h: 6, minW: 2, minH: 3 },
-    { i: 'crypto', x: 0, y: 30, w: 5, h: 6, minW: 2, minH: 3 },
-    { i: 'breadth', x: 5, y: 30, w: 5, h: 5, minW: 2, minH: 3 },
-    { i: 'calendar', x: 5, y: 35, w: 5, h: 6, minW: 2, minH: 4 },
-    { i: 'news', x: 0, y: 36, w: 5, h: 6, minW: 2, minH: 3 },
-    { i: 'eod', x: 5, y: 36, w: 5, h: 6, minW: 2, minH: 3 },
-  ],
-  sm: [
-    { i: 'pulse', x: 0, y: 0, w: 6, h: 3 },
-    { i: 'chart', x: 0, y: 3, w: 6, h: 7 },
-    { i: 'rs', x: 0, y: 10, w: 6, h: 7 },
-    { i: 'macro', x: 0, y: 17, w: 6, h: 7 },
-    { i: 'sector', x: 0, y: 24, w: 6, h: 8 },
-    { i: 'watchlist', x: 0, y: 32, w: 6, h: 6 },
-    { i: 'breadth', x: 0, y: 38, w: 6, h: 5 },
-    { i: 'crypto', x: 0, y: 43, w: 6, h: 6 },
-    { i: 'calendar', x: 0, y: 49, w: 6, h: 6 },
-    { i: 'news', x: 0, y: 55, w: 6, h: 6 },
-    { i: 'eod', x: 0, y: 61, w: 6, h: 6 },
-  ]
-};
+const DEFAULT_LAYOUTS = {"lg":[{"i":"pulse","x":0,"y":0,"w":12,"h":3,"minW":2,"minH":3,"moved":false,"static":false},{"i":"macro","x":0,"y":3,"w":3,"h":9,"minW":2,"minH":4,"moved":false,"static":false},{"i":"sector","x":3,"y":10,"w":6,"h":8,"minW":2,"minH":4,"moved":false,"static":false},{"i":"rs","x":9,"y":3,"w":3,"h":6,"minW":2,"minH":5,"moved":false,"static":false},{"i":"crypto","x":0,"y":16,"w":3,"h":4,"minW":2,"minH":3,"moved":false,"static":false},{"i":"chart","x":3,"y":3,"w":6,"h":7,"minW":2,"minH":4,"moved":false,"static":false},{"i":"breadth","x":9,"y":16,"w":3,"h":4,"minW":2,"minH":3,"moved":false,"static":false},{"i":"watchlist","x":9,"y":9,"w":3,"h":7,"minW":2,"minH":3,"moved":false,"static":false},{"i":"calendar","x":0,"y":12,"w":3,"h":4,"minW":2,"minH":4,"moved":false,"static":false},{"i":"news","x":3,"y":18,"w":3,"h":6,"minW":3,"minH":4,"moved":false,"static":false},{"i":"eod","x":6,"y":18,"w":3,"h":6,"minW":2,"minH":4,"moved":false,"static":false}],"md":[{"i":"pulse","x":0,"y":0,"w":10,"h":3,"minW":2,"minH":3,"moved":false,"static":false},{"i":"macro","x":0,"y":10,"w":5,"h":7,"minW":2,"minH":4,"moved":false,"static":false},{"i":"sector","x":0,"y":17,"w":10,"h":7,"minW":2,"minH":4,"moved":false,"static":false},{"i":"rs","x":5,"y":10,"w":5,"h":7,"minW":2,"minH":6,"moved":false,"static":false},{"i":"crypto","x":0,"y":30,"w":5,"h":6,"minW":2,"minH":3,"moved":false,"static":false},{"i":"chart","x":0,"y":3,"w":10,"h":7,"minW":2,"minH":4,"moved":false,"static":false},{"i":"breadth","x":5,"y":30,"w":5,"h":5,"minW":2,"minH":3,"moved":false,"static":false},{"i":"watchlist","x":0,"y":24,"w":10,"h":6,"minW":2,"minH":3,"moved":false,"static":false},{"i":"calendar","x":5,"y":35,"w":5,"h":6,"minW":2,"minH":4,"moved":false,"static":false},{"i":"news","x":0,"y":36,"w":5,"h":6,"minW":2,"minH":3,"moved":false,"static":false},{"i":"eod","x":5,"y":41,"w":5,"h":6,"minW":2,"minH":3,"moved":false,"static":false}],"sm":[{"i":"pulse","x":0,"y":0,"w":6,"h":3},{"i":"chart","x":0,"y":3,"w":6,"h":7},{"i":"rs","x":0,"y":10,"w":6,"h":7},{"i":"macro","x":0,"y":17,"w":6,"h":7},{"i":"sector","x":0,"y":24,"w":6,"h":8},{"i":"watchlist","x":0,"y":32,"w":6,"h":6},{"i":"breadth","x":0,"y":38,"w":6,"h":5},{"i":"crypto","x":0,"y":43,"w":6,"h":6},{"i":"calendar","x":0,"y":49,"w":6,"h":6},{"i":"news","x":0,"y":55,"w":6,"h":6},{"i":"eod","x":0,"y":61,"w":6,"h":6}]};
 
 // 레이아웃 버전: DEFAULT_LAYOUTS가 변경될 때마다 이 숫자를 올려야 함
-const LAYOUT_VERSION = 14;
+const LAYOUT_VERSION = 17;
 
 export default function DashboardClient() {
   const { data, loading, error } = useMarketData();

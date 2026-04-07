@@ -115,7 +115,7 @@ export default function EconomicCalendar() {
         <span style={{ 
           fontSize: '0.7rem', 
           color: isDemo ? 'var(--bear)' : 'var(--accent-primary)', 
-          background: isDemo ? 'rgba(255, 59, 48, 0.1)' : 'rgba(0,180,216,0.1)', 
+          background: isDemo ? 'var(--bear-bg)' : 'var(--overlay)', 
           padding: '2px 6px', 
           borderRadius: '4px',
           fontWeight: isDemo ? 500 : 600
@@ -173,7 +173,7 @@ export default function EconomicCalendar() {
       </div>
 
       <style>{`
-        .calendar-card { display: flex; align-items: stretch; background: rgba(200, 200, 200, 0.02); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.75rem; transition: all 0.2s ease; }
+        .calendar-card { display: flex; align-items: stretch; background: var(--overlay); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.75rem; transition: all 0.2s ease; }
         .calendar-card:hover { background: var(--card-bg-hover); border-color: var(--border-hover); }
         .calendar-time-col { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px; padding-right: 0.75rem; border-right: 1px solid var(--glass-border); }
         .calendar-data-col { flex: 1; min-width: 0; padding-left: 0.75rem; display: flex; flex-direction: column; justify-content: center; }
@@ -183,8 +183,6 @@ export default function EconomicCalendar() {
         .stat-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; line-height: 1; }
         .stat-value { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); line-height: 1; letter-spacing: -0.2px; }
         .stat-divider { width: 1px; height: 18px; background: var(--border-color); margin-bottom: 2px; }
-        [data-theme='light'] .calendar-card { background: rgba(0, 0, 0, 0.01); }
-        [data-theme='light'] .calendar-card:hover { background: var(--card-bg-hover); }
       `}</style>
     </div>
   );

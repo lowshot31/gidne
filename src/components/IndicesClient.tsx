@@ -18,20 +18,8 @@ function IndexRow({ idx, isSelected, onClick }: { idx: IndexQuote, isSelected: b
   
   return (
     <div 
-      className={flash}
+      className={`gidne-list-row ${flash} ${isSelected ? 'active' : ''}`}
       onClick={onClick}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0.6rem 0.5rem',
-        cursor: 'pointer',
-        background: isSelected ? 'var(--card-bg-hover)' : 'transparent',
-        borderRadius: '6px',
-        borderLeft: isSelected ? '3px solid var(--accent-primary)' : '3px solid transparent',
-        transition: 'all 0.2s ease',
-        marginBottom: '2px'
-      }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flex: 1 }}>
         <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{idx.flag}</span>
@@ -155,8 +143,8 @@ export default function IndicesClient() {
             />
           </div>
           
-          <div className="indices-list-container" style={{ flex: 1, overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)', marginBottom: '0.5rem' }}>
+          <div className="gidne-list-container" style={{ flex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)', marginBottom: '0.5rem', flexShrink: 0 }}>
               <span style={{ fontWeight: 500 }}>지수명</span>
               <div style={{ display: 'flex', gap: '1.5rem', fontWeight: 500 }}>
                 <span onClick={() => handleSort('price')} style={{ cursor: 'pointer' }}>현재가 {sortConfig.key === 'price' ? (sortConfig.dir === 'desc' ? '▼' : '▲') : ''}</span>
@@ -226,12 +214,6 @@ export default function IndicesClient() {
           font-size: 0.95rem;
           color: var(--text-secondary);
         }
-
-        .indices-list-container {
-          padding-right: 0.5rem;
-        }
-        .indices-list-container::-webkit-scrollbar { width: 4px; }
-        .indices-list-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
 
         .indices-right-col {
