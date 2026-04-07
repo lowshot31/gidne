@@ -91,7 +91,7 @@ export default function WatchlistNews() {
 
   return (
     <div className="bento-item h-full flex flex-col" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h3 className="text-secondary" style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <span>🗞️</span> NEWS 
           {loading && <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', marginLeft: '4px', fontWeight: 'normal' }}>...</span>}

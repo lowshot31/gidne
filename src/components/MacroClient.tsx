@@ -62,7 +62,7 @@ export default function MacroClient() {
         
         <div className="bento-item" style={{ display: 'flex', flexDirection: 'column', height: '600px', padding: 0, overflow: 'hidden' }}>
           {/* Tabs - Toss Style Pill Segmented Control */}
-          <div style={{ padding: '1rem', flexShrink: 0, paddingBottom: '0.5rem' }}>
+          <div style={{ padding: '1rem', flexShrink: 0, paddingBottom: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             <SegmentedControl 
               tabs={[
                 { id: 'HOT', label: '🔥 필수 감시' },

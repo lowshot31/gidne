@@ -143,7 +143,7 @@ export default function FlowsClient() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingBottom: '2rem' }}>
       {/* 탭 토글 UI */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <SegmentedControl 
           tabs={[
             { id: 'equities', label: '📈 주식 및 기관 매크로' },

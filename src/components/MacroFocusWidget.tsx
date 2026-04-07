@@ -135,7 +135,7 @@ export default function MacroFocusWidget({ presetData }: Props) {
 
   return (
     <div className="macro-focus-container" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexShrink: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexShrink: 0, flexWrap: 'wrap', gap: '0.5rem' }}>
         <h3 className="text-secondary" style={{ margin: 0 }}>MACRO FOCUS</h3>
         <button 
           onClick={() => {
@@ -148,7 +148,7 @@ export default function MacroFocusWidget({ presetData }: Props) {
         </button>
       </div>
 
-      <div style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
+      <div style={{ marginBottom: '0.75rem', flexShrink: 0, display: 'flex', flexWrap: 'wrap' }}>
         <SegmentedControl tabs={tabs as any} activeTab={activeTab} onTabChange={(id) => setActiveTab(id as any)} />
       </div>
 
