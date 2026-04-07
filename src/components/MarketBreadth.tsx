@@ -217,7 +217,7 @@ export default function MarketBreadth({ sectors, macro }: Props) {
           transform: translateX(-50%);
           margin-bottom: 8px;
           background: rgba(15, 15, 20, 0.98);
-          color: var(--text-primary);
+          color: #f5f5f7;
           padding: 6px 10px;
           border-radius: 6px;
           border: 1px solid rgba(255,255,255,0.15);

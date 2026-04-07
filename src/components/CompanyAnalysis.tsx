@@ -391,10 +391,10 @@ export default function CompanyAnalysis({ ticker, currentPrice }: Props) {
         }
         .marker-tooltip {
           position: absolute;
-          bottom: 100%;
+          top: 100%;
           left: 50%;
           transform: translateX(-50%);
-          margin-bottom: 4px;
+          margin-top: 6px;
           background: var(--text-primary);
           color: var(--bg-body);
           padding: 2px 6px;

@@ -283,7 +283,7 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
       {isOpen && (!query.trim() ? recentSearches.length > 0 : suggestions.length > 0) && (
         <ul className="search-dropdown">
           {!query.trim() && recentSearches.length > 0 && (
-             <div className="search-dropdown-header text-muted" style={{ padding: '0.4rem 0.75rem', fontSize: '0.7rem', fontWeight: 600 }}>최근 검색 내역</div>
+             <div className="search-dropdown-header" style={{ padding: '0.4rem 0.75rem', fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255, 255, 255, 0.5)' }}>최근 검색 내역</div>
           )}
           {(!query.trim() ? recentSearches : suggestions).map((s, idx) => (
             <li
@@ -404,11 +404,11 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
         }
         .search-item-left strong {
           font-family: var(--font-mono);
-          color: var(--text-primary);
+          color: #f5f5f7;
           font-size: 0.95rem;
         }
         .search-item-name {
-          color: var(--text-muted);
+          color: rgba(255, 255, 255, 0.6);
           font-size: 0.8rem;
           max-width: 200px;
           overflow: hidden;

@@ -14,7 +14,7 @@ interface CustomItem {
 }
 
 export default function MacroFocusWidget({ presetData }: Props) {
-  const [activeTab, setActiveTab] = useState<'HOT' | 'RATES' | 'COMMODITY' | 'CUSTOM'>('HOT');
+  const [activeTab, setActiveTab] = useState<'HOT' | 'RATES' | 'CURRENCY' | 'COMMODITY' | 'CUSTOM'>('HOT');
   const [customItems, setCustomItems] = useState<CustomItem[]>([]);
   const [customQuotes, setCustomQuotes] = useState<Record<string, { price: number; changePercent: number }>>({});
   const [isAdding, setIsAdding] = useState(false);
@@ -71,6 +71,7 @@ export default function MacroFocusWidget({ presetData }: Props) {
   const tabs = [
     { id: 'HOT', label: '🔥 필수 감시' },
     { id: 'RATES', label: '🏦 금리/채권' },
+    { id: 'CURRENCY', label: '💵 외환' },
     { id: 'COMMODITY', label: '🛢️ 원자재' },
     { id: 'CUSTOM', label: '⭐ 내 지표' }
   ] as const;
@@ -88,17 +89,38 @@ export default function MacroFocusWidget({ presetData }: Props) {
       // 필수 지표 + 오늘 가장 핫한 지표 조합
       const hotTickersData = [...mustHavesData, ...topMovers];
 
-      return hotTickersData.map(m => <MacroRow key={m.ticker} ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />);
+      return hotTickersData.map(m => (
+        <div key={m.ticker} style={{ padding: '0.25rem 0', borderRadius: '4px' }}>
+          <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
+        </div>
+      ));
     }
     if (activeTab === 'RATES') {
       return presetData
-        .filter(m => m.category === 'rates' || m.category === 'currency')
-        .map(m => <MacroRow key={m.ticker} ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />);
+        .filter(m => m.category === 'rates')
+        .map(m => (
+          <div key={m.ticker} style={{ padding: '0.25rem 0', borderRadius: '4px' }}>
+            <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
+          </div>
+        ));
+    }
+    if (activeTab === 'CURRENCY') {
+      return presetData
+        .filter(m => m.category === 'currency')
+        .map(m => (
+          <div key={m.ticker} style={{ padding: '0.25rem 0', borderRadius: '4px' }}>
+            <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
+          </div>
+        ));
     }
     if (activeTab === 'COMMODITY') {
       return presetData
         .filter(m => m.category === 'commodity')
-        .map(m => <MacroRow key={m.ticker} ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />);
+        .map(m => (
+          <div key={m.ticker} style={{ padding: '0.25rem 0', borderRadius: '4px' }}>
+            <MacroRow ticker={m.ticker} name={m.name} price={m.price} changePercent={m.changePercent} />
+          </div>
+        ));
     }
     if (activeTab === 'CUSTOM') {
       return (
@@ -135,7 +157,7 @@ export default function MacroFocusWidget({ presetData }: Props) {
 
   return (
     <div className="macro-focus-container" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexShrink: 0, flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexShrink: 0 }}>
         <h3 className="text-secondary" style={{ margin: 0 }}>MACRO FOCUS</h3>
         <button 
           onClick={() => {

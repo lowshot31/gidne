@@ -194,18 +194,6 @@ export default function IndicesClient() {
       </div>
 
       <style>{`
-        .glass-panel {
-          background: rgba(200, 200, 200, 0.03);
-          border: 1px solid var(--border-color);
-          border-radius: var(--radius-lg);
-          padding: 1rem;
-        }
-        [data-theme='light'] .glass-panel {
-          background: #ffffff;
-          border-color: rgba(0,0,0,0.08);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-
         .indices-bottom-layout {
           display: grid;
           grid-template-columns: 400px 1fr;

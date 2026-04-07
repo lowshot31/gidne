@@ -259,7 +259,7 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
       `}</style>
       
       {/* TradingView 위젯 컨테이너 (Zero-Flash Dynamic Caching) */}
-      <div className="tradingview-widget-container" style={{ position: 'relative', flex: 1, minHeight: '350px', width: '100%', borderRadius: '4px', overflow: 'hidden' }}>
+      <div className="tradingview-widget-container" style={{ position: 'relative', flex: 1, minHeight: 0, width: '100%', borderRadius: '4px', overflow: 'hidden' }}>
         {/* TradingView 위젯 백그라운드 렌더링 (DOM 언마운트 방지하여 재로딩 지연 제거) */}
         {Array.from(visitedSymbols).map((sym) => {
           if (sym.startsWith('CBOE:')) return null;

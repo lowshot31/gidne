@@ -10,26 +10,26 @@ interface Props {
 
 const PIN_CITIES = [
   // 미주
-  { id: 'new_york', name: 'New York', region: 'americas', primaryTicker: '^GSPC', left: '26%', top: '33%' },
-  { id: 'toronto', name: 'Toronto', region: 'americas', primaryTicker: '^GSPTSE', left: '27%', top: '28%' },
-  { id: 'saopaulo', name: 'Sao Paulo', region: 'emerging', primaryTicker: '^BVSP', left: '33%', top: '65%' },
-  { id: 'mexicocity', name: 'Mexico City', region: 'emerging', primaryTicker: '^MXX', left: '21%', top: '45%' },
+  { id: 'new_york', name: 'New York', region: 'americas', primaryTicker: '^GSPC', left: '26.8%', top: '27.5%' },
+  { id: 'toronto', name: 'Toronto', region: 'americas', primaryTicker: '^GSPTSE', left: '26%', top: '25%' },
+  { id: 'saopaulo', name: 'Sao Paulo', region: 'emerging', primaryTicker: '^BVSP', left: '32%', top: '66%' },
+  { id: 'mexicocity', name: 'Mexico City', region: 'emerging', primaryTicker: '^MXX', left: '22.5%', top: '42%' },
   
   // 유럽
-  { id: 'london', name: 'London', region: 'europe', primaryTicker: '^FTSE', left: '47.1%', top: '23%' },
-  { id: 'paris', name: 'Paris', region: 'europe', primaryTicker: '^FCHI', left: '48.2%', top: '26%' },
-  { id: 'frankfurt', name: 'Frankfurt', region: 'europe', primaryTicker: '^GDAXI', left: '49.5%', top: '25%' },
-  { id: 'telaviv', name: 'Tel Aviv', region: 'emerging', primaryTicker: 'TA35.TA', left: '56.5%', top: '38%' },
+  { id: 'london', name: 'London', region: 'europe', primaryTicker: '^FTSE', left: '47.4%', top: '20.5%' },
+  { id: 'paris', name: 'Paris', region: 'europe', primaryTicker: '^FCHI', left: '48.2%', top: '23%' },
+  { id: 'frankfurt', name: 'Frankfurt', region: 'europe', primaryTicker: '^GDAXI', left: '49.8%', top: '21.5%' },
+  { id: 'telaviv', name: 'Tel Aviv', region: 'emerging', primaryTicker: 'TA35.TA', left: '55.5%', top: '35%' },
   
   // 아시아 & 신흥국
-  { id: 'tokyo', name: 'Tokyo', region: 'asia', primaryTicker: '^N225', left: '85.5%', top: '35%' },
-  { id: 'seoul', name: 'Seoul', region: 'asia', primaryTicker: '^KS11', left: '82%', top: '36%' },
-  { id: 'shanghai', name: 'Shanghai', region: 'asia', primaryTicker: '000001.SS', left: '78%', top: '38%' },
-  { id: 'taipei', name: 'Taipei', region: 'asia', primaryTicker: '^TWII', left: '80%', top: '43%' },
-  { id: 'hong_kong', name: 'Hong Kong', region: 'asia', primaryTicker: '^HSI', left: '79%', top: '45%' },
-  { id: 'mumbai', name: 'Mumbai', region: 'emerging', primaryTicker: '^NSEI', left: '68%', top: '45%' },
-  { id: 'hcmc', name: 'Ho Chi Minh', region: 'emerging', primaryTicker: '^VNINDEX.VN', left: '77%', top: '49%' },
-  { id: 'sydney', name: 'Sydney', region: 'asia', primaryTicker: '^AXJO', left: '88%', top: '75%' },
+  { id: 'tokyo', name: 'Tokyo', region: 'asia', primaryTicker: '^N225', left: '82%', top: '33.5%' },
+  { id: 'seoul', name: 'Seoul', region: 'asia', primaryTicker: '^KS11', left: '79.5%', top: '34%' },
+  { id: 'shanghai', name: 'Shanghai', region: 'asia', primaryTicker: '000001.SS', left: '77%', top: '36.5%' },
+  { id: 'taipei', name: 'Taipei', region: 'asia', primaryTicker: '^TWII', left: '79%', top: '40%' },
+  { id: 'hong_kong', name: 'Hong Kong', region: 'asia', primaryTicker: '^HSI', left: '77.5%', top: '42%' },
+  { id: 'mumbai', name: 'Mumbai', region: 'emerging', primaryTicker: '^NSEI', left: '66.5%', top: '44%' },
+  { id: 'hcmc', name: 'Ho Chi Minh', region: 'emerging', primaryTicker: '^VNINDEX.VN', left: '74%', top: '47%' },
+  { id: 'sydney', name: 'Sydney', region: 'asia', primaryTicker: '^AXJO', left: '85.5%', top: '78%' },
 ];
 
 export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex }: Props) {
@@ -240,6 +240,7 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           border-radius: var(--radius-lg);
           background: rgba(15, 20, 25, 0.4);
           border: 1px solid var(--border-color);
+          overflow: hidden;
           /* Padding bottom removed, the relative cards will push the height organically */
         }
         
@@ -249,7 +250,7 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
 
         .map-center-container {
           width: 100%;
-          max-width: 1100px; /* Limits width so aspect-ratio height never exceeds ~560px */
+          max-width: 1100px;
           margin: 0 auto;
         }
 
@@ -257,6 +258,14 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           position: relative;
           width: 100%;
           aspect-ratio: 2754 / 1398;
+          /* Crop the massive empty ocean top/bottom from the SVG */
+          margin-top: -5%;
+          margin-bottom: -8%;
+          pointer-events: none; /* Let overlay clicks pass through if needed, though pins need events */
+        }
+        /* Restore pointer-events for interactive elements inside the map */
+        .map-background, .map-pin {
+          pointer-events: auto;
         }
 
         /* Abstract Low-res World Map via CSS repeated background */
@@ -380,15 +389,14 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
 
         .hero-cards-overlay {
           position: relative; /* STOP absolute floating to prevent overflow when wrapping! */
-          margin-top: -4.5rem; /* Native overlap over the bottom of the map */
-          padding: 0 1rem 1.5rem 1rem;
+          padding: 1rem;
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
           gap: 16px;
           z-index: 5;
           width: 100%;
-          /* max-width removed to allow flex to breathe */
+          pointer-events: auto;
         }
 
         .hero-card {

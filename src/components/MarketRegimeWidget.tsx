@@ -181,7 +181,7 @@ export default function MarketRegimeWidget() {
           border: 1px solid var(--border-color);
           border-radius: var(--radius-md);
           padding: 1rem;
-          color: var(--text-primary);
+          color: #f5f5f7; /* Prevent black text in light mode against dark bg */
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
           backdrop-filter: blur(12px);
           z-index: 100;
@@ -224,7 +224,7 @@ export default function MarketRegimeWidget() {
           border-radius: 8px;
           box-shadow: 0 8px 24px rgba(0,0,0,0.4);
           z-index: 100;
-          color: var(--text-primary);
+          color: #f5f5f7; /* Prevent black text in light mode against dark bg */
           font-family: var(--font-sans);
           opacity: 0;
           visibility: hidden;

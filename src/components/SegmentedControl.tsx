@@ -31,40 +31,49 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, size = 
   const sizeStyle = SIZE_MAP[size];
 
   return (
-    <div style={{ 
-      display: 'inline-flex', 
-      background: 'rgba(255, 255, 255, 0.05)', 
-      borderRadius: '12px', 
-      padding: '0.25rem',
-      alignItems: 'center',
-      gap: '4px',
-      flexWrap: 'wrap',
-      maxWidth: '100%',
-    }}>
-      {tabs.map(tab => (
-        <button
-          key={tab.id}
-          onClick={() => onTabChange(tab.id)}
-          style={{
-            background: activeTab === tab.id ? 'rgba(255,255,255,0.1)' : 'transparent',
-            border: 'none',
-            padding: sizeStyle.padding,
-            cursor: 'pointer',
-            color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
-            fontWeight: activeTab === tab.id ? 600 : 500,
-            fontSize: sizeStyle.fontSize,
-            whiteSpace: 'nowrap',
-            borderRadius: '8px',
-            transition: 'all 0.2s',
-            boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <div 
+      className="segmented-control-wrapper"
+      style={{ 
+        display: 'inline-flex', 
+        background: 'rgba(255, 255, 255, 0.05)', 
+        borderRadius: '12px', 
+        padding: '0.25rem',
+        alignItems: 'center',
+        gap: '4px',
+        flexWrap: 'wrap',
+        maxWidth: '100%',
+        width: '100%', // make it full width if it's wrapping to keep borders clean
+      }}
+    >
+      {tabs.map(tab => {
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            style={{
+              flex: '1 1 auto', // Make buttons stretch beautifully when wrapped
+              justifyContent: 'center',
+              background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
+              border: 'none',
+              padding: sizeStyle.padding,
+              cursor: 'pointer',
+              color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
+              fontWeight: isActive ? 600 : 500,
+              fontSize: sizeStyle.fontSize,
+              whiteSpace: 'nowrap',
+              borderRadius: '8px',
+              transition: 'all 0.2s',
+              boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
       {suffix}
     </div>
   );
