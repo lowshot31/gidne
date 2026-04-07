@@ -8,6 +8,7 @@ import {
   MACRO_TICKERS,
   INDICES,
   SECTOR_ETFS,
+  SECTOR_HOLDINGS,
   isUSMarketOpen,
   getPollingInterval,
 } from '../src/lib/tickers';
@@ -103,6 +104,41 @@ async function pumpMarketData() {
     await pipeline.exec();
   } catch (error) {
     console.error('[Pump] Market data error:', error);
+  }
+}
+
+// ========== 1.5. 섹터 홀딩스 펌프 (60초 주기) ==========
+async function pumpHoldingsData() {
+  try {
+    const holdingTickers = new Set<string>();
+    Object.values(SECTOR_HOLDINGS).forEach(stocks => stocks.forEach(s => holdingTickers.add(s.ticker)));
+    
+    // 개별 종목 시세 패치
+    const quotes = await fetchQuotes(Array.from(holdingTickers));
+    
+    const holdings: Record<string, TickerQuote[]> = {};
+    for (const [sectorId, stocks] of Object.entries(SECTOR_HOLDINGS)) {
+      holdings[sectorId] = stocks.map(t => {
+        const q = quotes.get(t.ticker);
+        return { symbol: t.ticker, name: t.name, price: q?.price ?? 0, change: q?.change ?? 0, changePercent: q?.changePercent ?? 0, previousClose: q?.previousClose ?? 0 };
+      });
+    }
+
+    // gidne_holdings_v2 키에 별도 저장 (만료시간 120초)
+    await redis.set('gidne_holdings_v2', JSON.stringify(holdings), { ex: 120 });
+    
+    // 이 개별 종목들도 quote로 저장해두면 좋음
+    const pipeline = redis.pipeline();
+    for (const [ticker, q] of quotes.entries()) {
+      if (q) {
+         pipeline.set(`gidne_quote_${ticker}`, JSON.stringify({
+          symbol: ticker, name: q.name || ticker, price: q.price ?? 0, change: q.change ?? 0, changePercent: q.changePercent ?? 0, previousClose: q.previousClose ?? 0
+        }), { ex: 120 });
+      }
+    }
+    await pipeline.exec();
+  } catch (error) {
+    console.error('[Pump] Holdings data error:', error);
   }
 }
 
@@ -327,9 +363,11 @@ async function main() {
   console.log('[Pump] 🚀 Data Pump Bot initialized.');
   await pumpCalendar();
   await pumpMarketData(); // 즉시 1회 실행하여 UI 표시 준비
+  await pumpHoldingsData(); // 즉시 1회 실행
   await pumpChartData();
 
   let lastMarketPump = Date.now();
+  let lastHoldingsPump = Date.now();
   let lastChartPump = Date.now();
   let lastCalendarPump = Date.now();
 
@@ -356,6 +394,12 @@ async function main() {
       pumpMarketData().catch(e => console.error(e)); // Non-blocking
     }
     
+    // 2.5. 홀딩스 데이터 (60초)
+    if (now - lastHoldingsPump >= 60000) {
+      lastHoldingsPump = now;
+      pumpHoldingsData().catch(e => console.error(e)); // Non-blocking
+    }
+
     // 3. 차트 (5분)
     if (now - lastChartPump >= 300000) {
       lastChartPump = now;

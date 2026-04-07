@@ -57,4 +57,5 @@ export interface MarketDataResponse {
     lastUpdated: string;
     pollingInterval: number;
   };
+  holdings?: Record<string, TickerQuote[]>;
 }

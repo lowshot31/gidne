@@ -117,10 +117,19 @@ function localSearch(q: string, mode: 'default' | 'macro'): Suggestion[] {
 export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }: Props) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [recentSearches, setRecentSearches] = useState<Suggestion[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // 로컬스토리지에서 최근 검색 불러오기
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('gidne_recent_searches');
+      if (stored) setRecentSearches(JSON.parse(stored));
+    } catch {}
+  }, []);
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -139,7 +148,9 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
 
     if (!query.trim()) {
       setSuggestions([]);
-      setIsOpen(false);
+      // 쿼리가 지워졌을 때 최근 검색어가 있다면 드롭다운 유지
+      if (recentSearches.length > 0) setIsOpen(true);
+      else setIsOpen(false);
       return;
     }
 
@@ -180,30 +191,42 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
     };
   }, [query]);
 
-  const navigate = (symbol: string, name: string) => {
+  const navigate = (s: Suggestion) => {
+      // 최근 검색어 저장 로직
+    setRecentSearches(prev => {
+      const filtered = prev.filter(p => p.symbol !== s.symbol);
+      const updated = [s, ...filtered].slice(0, 6);
+      localStorage.setItem('gidne_recent_searches', JSON.stringify(updated));
+      return updated;
+    });
+
     setIsOpen(false);
     setQuery('');
     if (onSelect) {
-      onSelect(symbol, name);
+      onSelect(s.symbol, s.name);
     } else if (onNavigate) {
-      onNavigate(symbol);
+      onNavigate(s.symbol);
     } else {
-      window.location.href = `/chart/${symbol}`;
+      window.location.href = `/chart/${s.symbol}`;
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen) return;
+    
+    // 현재 보여지고 있는 목록 (쿼리가 없으면 최근 검색어, 있으면 제안 목록)
+    const activeList = !query.trim() ? recentSearches : suggestions;
+    if (activeList.length === 0) return;
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIdx(prev => Math.min(prev + 1, suggestions.length - 1));
+      setSelectedIdx(prev => Math.min(prev + 1, activeList.length - 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setSelectedIdx(prev => Math.max(prev - 1, 0));
-    } else if (e.key === 'Enter' && selectedIdx >= 0) {
+    } else if (e.key === 'Enter' && selectedIdx >= 0 && selectedIdx < activeList.length) {
       e.preventDefault();
-      navigate(suggestions[selectedIdx].symbol, suggestions[selectedIdx].name);
+      navigate(activeList[selectedIdx]);
     } else if (e.key === 'Escape') {
       setIsOpen(false);
     }
@@ -234,7 +257,10 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          onFocus={() => suggestions.length > 0 && setIsOpen(true)}
+          onFocus={() => {
+            if (query.trim() && suggestions.length > 0) setIsOpen(true);
+            else if (!query.trim() && recentSearches.length > 0) setIsOpen(true);
+          }}
           onKeyDown={handleKeyDown}
           placeholder={mode === 'macro' ? "매크로 지표, 환율 (예: ^VIX, KRW=X, CL=F)" : "종목 검색 (예: AAPL, 비트코인, 삼성전자)"}
           className="search-input"
@@ -250,13 +276,16 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
         )}
       </div>
 
-      {isOpen && suggestions.length > 0 && (
+      {isOpen && (!query.trim() ? recentSearches.length > 0 : suggestions.length > 0) && (
         <ul className="search-dropdown">
-          {suggestions.map((s, idx) => (
+          {!query.trim() && recentSearches.length > 0 && (
+             <div className="search-dropdown-header text-muted" style={{ padding: '0.4rem 0.75rem', fontSize: '0.7rem', fontWeight: 600 }}>최근 검색 내역</div>
+          )}
+          {(!query.trim() ? recentSearches : suggestions).map((s, idx) => (
             <li
               key={s.symbol}
               className={`search-item ${idx === selectedIdx ? 'selected' : ''}`}
-              onClick={() => navigate(s.symbol, s.name)}
+              onClick={() => navigate(s)}
               onMouseEnter={() => setSelectedIdx(idx)}
             >
               <div className="search-item-left">

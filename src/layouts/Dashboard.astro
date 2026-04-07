@@ -33,16 +33,18 @@ const currentPath = Astro.url.pathname;
 		<div class="dashboard-container">
 			<!-- Header / Nav -->
 			<div class="app-header-wrapper">
-				<header class="app-header">
-					<a href="/" class="logo" style="text-decoration: none; color: inherit; cursor: pointer;">GIDNE</a>
-					<nav class="tabs">
-						<a href="/" class={currentPath === '/' ? "active" : ""}>Equities</a>
-						<a href="/indices" class={currentPath.startsWith('/indices') ? "active" : ""}>Indices</a>
-						<a href="/macro" class={currentPath.startsWith('/macro') ? "active" : ""}>Macro</a>
-						<a href="/flows" class={currentPath.startsWith('/flows') ? "active" : ""}>Flows</a>
-					</nav>
-					<div style="display: flex; gap: 1rem; align-items: center; margin-left: auto;">
-						<div style="width: 280px;">
+				<header class="app-header" style="display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; width: 100%; min-height: 60px; box-sizing: border-box;">
+					<div class="header-left" style="display: flex; align-items: center; gap: 2rem;">
+						<a href="/" class="logo" style="text-decoration: none; color: var(--accent-primary); cursor: pointer; font-family: var(--font-heading); font-size: 1.3rem; font-weight: 600; letter-spacing: 0.08em;">GIDNE</a>
+						<nav class="tabs" style="display: flex; gap: 1.5rem; align-items: center;">
+							<a href="/" class={currentPath === '/' ? "active" : ""}>Equities</a>
+							<a href="/indices" class={currentPath.startsWith('/indices') ? "active" : ""}>Indices</a>
+							<a href="/macro" class={currentPath.startsWith('/macro') ? "active" : ""}>Macro</a>
+							<a href="/flows" class={currentPath.startsWith('/flows') ? "active" : ""}>Flows</a>
+						</nav>
+					</div>
+					<div class="header-right" style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
+						<div class="header-search" style="min-width: 280px; flex-shrink: 0;">
 							<TickerSearch client:load />
 						</div>
 						<ThemeToggle client:load />
@@ -73,11 +75,27 @@ const currentPath = Astro.url.pathname;
 			.app-header {
 				display: flex;
 				align-items: center;
-				gap: 2rem;
+				justify-content: space-between;
 				padding: 0 var(--gap-md);
 				width: 100%;
 				height: 60px;
 				box-sizing: border-box;
+			}
+			.header-left {
+				display: flex;
+				align-items: center;
+				gap: 2rem;
+				flex: 1;
+				min-width: 0; /* for flex overflow */
+			}
+			.header-right {
+				display: flex;
+				align-items: center;
+				gap: 1rem;
+				margin-left: auto;
+			}
+			.header-search {
+				width: 280px;
 			}
 			.logo {
 				font-family: var(--font-heading);
@@ -85,12 +103,10 @@ const currentPath = Astro.url.pathname;
 				font-weight: 600;
 				letter-spacing: 0.08em;
 				color: var(--accent-primary);
-				margin-right: var(--gap-lg);
 			}
 			.tabs {
 				display: flex;
 				gap: var(--gap-md);
-				flex: 1;
 			}
 			.tabs a {
 				color: var(--text-muted);
@@ -99,6 +115,7 @@ const currentPath = Astro.url.pathname;
 				font-weight: 500;
 				padding-bottom: 4px;
 				transition: color var(--transition-fast);
+				white-space: nowrap;
 			}
 			.tabs a:hover {
 				color: var(--text-secondary);
@@ -106,20 +123,6 @@ const currentPath = Astro.url.pathname;
 			.tabs a.active {
 				color: var(--text-primary);
 				border-bottom: 2px solid var(--accent-primary);
-			}
-			.search-bar {
-				color: var(--text-muted);
-				font-size: 0.9rem;
-				text-decoration: none;
-				cursor: pointer;
-				padding: 0.4rem 0.8rem;
-				border: 1px solid var(--glass-border);
-				border-radius: var(--radius-sm);
-				transition: all 0.2s ease;
-			}
-			.search-bar:hover {
-				border-color: var(--accent-primary);
-				color: var(--text-primary);
 			}
 			.ticker-strip {
 				display: flex;
@@ -133,6 +136,40 @@ const currentPath = Astro.url.pathname;
 			.dashboard-content {
 				flex: 1;
 				padding: var(--gap-md);
+			}
+
+			/* Mobile Responsiveness */
+			@media (max-width: 768px) {
+				.app-header {
+					flex-direction: column !important;
+					align-items: stretch !important;
+					height: auto !important;
+					padding: 0.75rem var(--gap-md) !important;
+					gap: 0.75rem !important;
+				}
+				.header-left {
+					gap: 1rem !important;
+					flex-direction: column !important;
+					align-items: flex-start !important;
+				}
+				.tabs {
+					width: 100% !important;
+					overflow-x: auto !important;
+					scrollbar-width: none !important; /* Firefox */
+				}
+				.tabs::-webkit-scrollbar { 
+					display: none !important; /* Safari and Chrome */
+				}
+				.header-right {
+					width: 100% !important;
+					margin-left: 0 !important;
+					justify-content: space-between !important;
+				}
+				.header-search {
+					width: 100% !important;
+					min-width: 0 !important;
+					flex: 1 !important;
+				}
 			}
 		</style>
 	</body>

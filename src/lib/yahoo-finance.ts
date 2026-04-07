@@ -7,14 +7,14 @@ import { cache, TTL } from './cache';
 import type { TickerQuote } from './types';
 
 // yahoo-finance2 v3 이상부터는 인스턴스화가 필요합니다
-export const yahooFinance = new YahooFinance();
+export const yahooFinance = new YahooFinance({ suppressNotices: ['yahooSurvey'] });
 
 /**
  * 여러 티커의 실시간 시세를 청크 병렬로 가져옵니다.
  * 33개 티커를 10개씩 나눠서 Promise.all로 동시 요청 → 응답 시간 ~3배 단축
  */
 export async function fetchQuotes(tickers: string[]): Promise<Map<string, TickerQuote>> {
-  const CACHE_KEY = 'yahoo_quotes_batch';
+  const CACHE_KEY = `yahoo_quotes_batch_${tickers.join(',')}`;
   const CHUNK_SIZE = 10;
   
   const cached = cache.get<Map<string, TickerQuote>>(CACHE_KEY);

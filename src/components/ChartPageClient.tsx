@@ -121,22 +121,79 @@ export default function ChartPageClient({ initialTicker }: Props) {
 
   return (
     <div className="chart-page">
-      {/* ── 상단 히어로: 종목명 + 가격 ── */}
-      <div className="chart-hero bento-item">
-        <div className="hero-left">
-          <div className="hero-ticker-row">
+      {/* ── 🚀 초고도화된 토스증권 스타일 티커 헤더 ── */}
+      <div className="chart-hero toss-style-header bento-item">
+        <div className="toss-hero-left">
+          <div className="toss-hero-top">
             <a href="/" className="back-link" title="대시보드로 돌아가기">←</a>
-            <h1 className="hero-symbol">{quote.symbol}</h1>
-            <span className="hero-type-badge">{quote.quoteType}</span>
+            <div className="toss-logo-circle" style={{ background: priceColor }}>
+              {quote.symbol.charAt(0)}
+            </div>
+            <h1 className="toss-name">{quote.name}</h1>
+            <span className="toss-symbol">{quote.symbol}</span>
+            
+            {/* 태그 영역 */}
+            <div className="toss-tags">
+              <span className="toss-tag">관심종목</span>
+              <span className="toss-tag dark-mode-tag">메모 0개</span>
+            </div>
           </div>
-          <p className="hero-name">{quote.name}</p>
+          
+          <div className="toss-hero-bot">
+            <div className="toss-price-big">${formatNumber(quote.price)}</div>
+            <div className="toss-change-text" style={{ color: priceColor }}>
+              지난 장보다 {changeSign}${Math.abs(quote.change).toFixed(2)} ({changeSign}{Math.abs(quote.changePercent).toFixed(2)}%)
+            </div>
+          </div>
         </div>
-        <div className="hero-right">
-          <div className="hero-price" style={{ color: priceColor }}>
-            ${formatNumber(quote.price)}
+
+        <div className="toss-hero-right">
+          {/* 1. 레인지 컬럼 */}
+          <div className="toss-stat-col toss-ranges">
+            <div className="toss-range-row">
+              <span className="tr-label">1일 범위</span>
+              <span className="tr-min">${formatNumber(quote.dayLow)}</span>
+              <div className="tr-bar-bg">
+                <div className="tr-marker" style={{ left: `${Math.max(0, Math.min(dayRangePct, 100))}%` }}></div>
+              </div>
+              <span className="tr-max">${formatNumber(quote.dayHigh)}</span>
+            </div>
+            <div className="toss-range-row">
+              <span className="tr-label">52주 범위</span>
+              <span className="tr-min">${formatNumber(quote.fiftyTwoWeekLow)}</span>
+              <div className="tr-bar-bg">
+                <div className="tr-marker" style={{ left: `${Math.max(0, Math.min(range52Pct, 100))}%` }}></div>
+              </div>
+              <span className="tr-max">${formatNumber(quote.fiftyTwoWeekHigh)}</span>
+            </div>
           </div>
-          <div className="hero-change" style={{ color: priceColor }}>
-            {changeSign}{quote.change.toFixed(2)} ({changeSign}{quote.changePercent.toFixed(2)}%)
+
+          <div className="toss-divider"></div>
+
+          {/* 2. 거래량 컬럼 */}
+          <div className="toss-stat-col toss-kv">
+            <div className="toss-kv-row">
+              <span className="kv-label">거래량</span>
+              <span className="kv-val">{formatVolume(quote.volume)}</span>
+            </div>
+            <div className="toss-kv-row">
+              <span className="kv-label">평균대비</span>
+              <span className="kv-val">{volRatio.toFixed(1)}x</span>
+            </div>
+          </div>
+
+          <div className="toss-divider"></div>
+
+          {/* 3. 시가총액 컬럼 */}
+          <div className="toss-stat-col toss-kv" style={{ minWidth: '120px' }}>
+            <div className="toss-kv-row">
+              <span className="kv-label">시가총액</span>
+              <span className="kv-val">${formatNumber(quote.marketCap)}</span>
+            </div>
+            <div className="toss-kv-row">
+              <span className="kv-label">시장</span>
+              <span className="kv-val">{quote.exchange}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -160,36 +217,6 @@ export default function ChartPageClient({ initialTicker }: Props) {
                   <span className="stat-value" style={s.color ? { color: s.color } : {}}>{s.value}</span>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* 일일 레인지 */}
-          <div className="bento-item sidebar-card">
-            <h4 className="sidebar-title">TODAY'S RANGE</h4>
-            <div className="range-wrapper">
-              <div className="range-labels">
-                <span style={{ color: 'var(--bear)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>{formatNumber(quote.dayLow)}</span>
-                <span style={{ color: 'var(--bull)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>{formatNumber(quote.dayHigh)}</span>
-              </div>
-              <div className="range-bar">
-                <div className="range-fill" style={{ width: `${dayRangePct}%` }} />
-                <div className="range-marker" style={{ left: `${dayRangePct}%` }} />
-              </div>
-            </div>
-          </div>
-
-          {/* 52주 레인지 */}
-          <div className="bento-item sidebar-card">
-            <h4 className="sidebar-title">52-WEEK RANGE</h4>
-            <div className="range-wrapper">
-              <div className="range-labels">
-                <span style={{ color: 'var(--bear)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>{formatNumber(quote.fiftyTwoWeekLow)}</span>
-                <span style={{ color: 'var(--bull)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>{formatNumber(quote.fiftyTwoWeekHigh)}</span>
-              </div>
-              <div className="range-bar">
-                <div className="range-fill range-fill-52w" style={{ width: `${range52Pct}%` }} />
-                <div className="range-marker" style={{ left: `${range52Pct}%` }} />
-              </div>
             </div>
           </div>
 
@@ -239,63 +266,184 @@ export default function ChartPageClient({ initialTicker }: Props) {
           padding-bottom: 2rem;
         }
 
-        /* ── 히어로 ── */
-        .chart-hero {
+        /* ── 상단 토스 헤더 ── */
+        .chart-hero.toss-style-header {
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          padding: 1.25rem 1.5rem;
-          border-color: var(--accent-subtle);
+          align-items: flex-end;
+          padding: 1.5rem 1.75rem;
           background: linear-gradient(180deg, rgba(200, 155, 60, 0.03) 0%, var(--card-bg) 100%);
+          flex-wrap: wrap;
+          gap: 1.5rem;
         }
-        .hero-ticker-row {
+
+        .toss-hero-left {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          min-width: 320px;
+        }
+
+        .toss-hero-top {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.6rem;
         }
+
         .back-link {
           color: var(--text-muted);
           text-decoration: none;
           font-size: 1.4rem;
-          transition: color 0.2s ease;
           line-height: 1;
+          margin-right: 0.4rem;
+          transition: color 0.2s ease;
         }
-        .back-link:hover { color: var(--accent-primary); }
-        .hero-symbol {
-          font-family: var(--font-heading);
-          font-size: 1.8rem;
-          font-weight: 600;
-          letter-spacing: -0.02em;
+
+        .toss-logo-circle {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 0.8rem;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .toss-name {
           margin: 0;
+          font-size: 1.15rem;
+          font-weight: 700;
+          color: var(--text-primary);
         }
-        .hero-type-badge {
-          font-size: 0.65rem;
-          padding: 0.15rem 0.45rem;
-          border-radius: 4px;
+
+        .toss-symbol {
+          font-size: 1.15rem;
+          color: var(--text-secondary);
+          font-family: var(--font-mono);
+          margin-right: 0.4rem;
+        }
+
+        .toss-tags {
+          display: flex;
+          gap: 0.4rem;
+        }
+
+        .toss-tag {
+          font-size: 0.7rem;
+          padding: 0.2rem 0.6rem;
+          border-radius: 12px;
           background: var(--accent-subtle);
           color: var(--accent-primary);
-          font-weight: 500;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-        }
-        .hero-name {
-          margin: 0.25rem 0 0;
-          color: var(--text-secondary);
-          font-size: 0.9rem;
-        }
-        .hero-right { text-align: right; }
-        .hero-price {
-          font-family: var(--font-mono);
-          font-size: 2.2rem;
           font-weight: 600;
-          letter-spacing: -0.01em;
-          line-height: 1.1;
         }
-        .hero-change {
-          font-family: var(--font-mono);
-          font-size: 1rem;
+
+        .toss-tag.dark-mode-tag {
+          background: rgba(255,255,255,0.06);
+          color: var(--text-secondary);
+        }
+
+        .toss-hero-bot {
+          display: flex;
+          align-items: baseline;
+          gap: 0.75rem;
           margin-top: 0.25rem;
+        }
+
+        .toss-price-big {
+          font-size: 2.2rem;
+          font-weight: 700;
+          font-family: var(--font-mono);
+          line-height: 1;
+          letter-spacing: -0.01em;
+          color: var(--text-primary);
+        }
+
+        .toss-change-text {
+          font-size: 0.95rem;
           font-weight: 500;
+        }
+
+        /* 오른쪽 스탯바 영역 */
+        .toss-hero-right {
+          display: flex;
+          align-items: center;
+          gap: 1.25rem;
+          flex-wrap: wrap;
+        }
+
+        .toss-divider {
+          width: 1px;
+          height: 36px;
+          background: var(--border-color);
+        }
+
+        .toss-stat-col {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+        }
+
+        /* 미니 레인지 슬라이더 */
+        .toss-range-row {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          font-size: 0.75rem;
+          font-family: var(--font-mono);
+        }
+
+        .tr-label {
+          color: var(--text-muted);
+          font-family: var(--font-body);
+          width: 55px;
+        }
+
+        .tr-min, .tr-max {
+          color: var(--text-secondary);
+          width: 50px;
+        }
+        .tr-max { text-align: right; }
+
+        .tr-bar-bg {
+          position: relative;
+          width: 60px;
+          height: 3px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 2px;
+        }
+
+        .tr-marker {
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: 6px;
+          height: 6px;
+          background: #4ade80; /* 밝은 녹색 포인트 점 */
+          border-radius: 50%;
+          box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+        }
+
+        /* 텍스트 KV 스탯 */
+        .toss-kv-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 1rem;
+          font-size: 0.8rem;
+        }
+
+        .kv-label {
+          color: var(--text-muted);
+        }
+
+        .kv-val {
+          color: var(--text-secondary);
+          font-family: var(--font-mono);
+          font-weight: 500;
+          text-align: right;
         }
 
         /* ── 본문 2열 ── */
@@ -422,16 +570,25 @@ export default function ChartPageClient({ initialTicker }: Props) {
             gap: 0.75rem;
           }
         }
-        @media (max-width: 600px) {
-          .chart-hero {
+        @media (max-width: 768px) {
+          .chart-hero.toss-style-header {
             flex-direction: column;
             align-items: flex-start;
-            gap: 0.75rem;
           }
-          .hero-right { text-align: left; }
-          .hero-price { font-size: 1.6rem; }
+          .toss-hero-right {
+            width: 100%;
+            justify-content: space-between;
+          }
+          .toss-divider { display: none; }
+        }
+        @media (max-width: 600px) {
           .chart-sidebar {
             grid-template-columns: 1fr;
+          }
+          .toss-hero-right {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.8rem;
           }
         }
       `}</style>

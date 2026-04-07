@@ -26,10 +26,37 @@ export default function MacroClient() {
   }
 
   return (
-    <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', paddingBottom: '2rem' }}>
+    <div className="macro-container">
+      <style>{`
+        .macro-container {
+          display: flex;
+          gap: 2rem;
+          flex-wrap: wrap;
+          padding-bottom: 2rem;
+        }
+        .macro-left {
+          flex: 1 1 400px;
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+          min-width: 0;
+        }
+        .macro-right {
+          flex: 1 1 500px;
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+          min-width: 0;
+        }
+        @media (max-width: 768px) {
+          .macro-left, .macro-right {
+            flex: 1 1 100%;
+          }
+        }
+      `}</style>
       
       {/* ── Left Column: Regime + List ── */}
-      <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div className="macro-left">
         <MarketRegimeWidget />
         
         <div className="bento-item" style={{ display: 'flex', flexDirection: 'column', height: '600px', padding: 0, overflow: 'hidden' }}>
@@ -86,7 +113,7 @@ export default function MacroClient() {
       </div>
 
       {/* ── Right Column: Chart + Calendar ── */}
-      <div style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div className="macro-right">
         <div className="bento-item" style={{ height: '400px', padding: '1rem' }}>
           <PriceChart ticker={selectedTicker} name={data.macro.find(m => m.ticker === selectedTicker)?.name || 'Macro Data'} />
         </div>

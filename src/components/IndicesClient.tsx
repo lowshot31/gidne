@@ -12,7 +12,21 @@ export default function IndicesClient() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '2rem' }}>
       <MarketPulse data={data.marketPulse} />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1rem' }}>
+      
+      <style>{`
+        .indices-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+          gap: 1rem;
+        }
+        @media (max-width: 768px) {
+          .indices-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+      
+      <div className="indices-grid">
         <PriceChart ticker="^GSPC" name="S&P 500" />
         <PriceChart ticker="^IXIC" name="NASDAQ" />
         <PriceChart ticker="^KS11" name="KOSPI" />

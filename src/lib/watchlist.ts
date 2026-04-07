@@ -41,6 +41,7 @@ export function addToWatchlist(ticker: string): WatchlistItem[] {
   const list = getWatchlist();
   const normalized = ticker.toUpperCase().trim();
   if (!normalized) return list;
+  if (list.length >= 30) return list; // 최대 30개 제한
   if (list.some(item => item.ticker === normalized)) return list; // 중복 방지
   
   const updated = [...list, { ticker: normalized, addedAt: new Date().toISOString() }];
@@ -55,6 +56,18 @@ export function removeFromWatchlist(ticker: string): WatchlistItem[] {
   const list = getWatchlist().filter(item => item.ticker !== ticker.toUpperCase().trim());
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
   return list;
+}
+
+/**
+ * 워치리스트 순서 변경 (드래그 앤 드롭)
+ */
+export function reorderWatchlist(startIndex: number, endIndex: number): WatchlistItem[] {
+  const list = getWatchlist();
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
+  return result;
 }
 
 /**

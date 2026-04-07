@@ -15,47 +15,55 @@ import CryptoLive from './CryptoLive';
 import MarketBreadth from './MarketBreadth';
 import Watchlist from './Watchlist';
 import EconomicCalendar from './EconomicCalendar';
+import WatchlistNews from './WatchlistNews';
+import EODBriefing from './EODBriefing';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const DEFAULT_LAYOUTS = {
   lg: [
     { i: 'pulse', x: 0, y: 0, w: 12, h: 3, minW: 2, minH: 3 },
-    { i: 'macro', x: 0, y: 3, w: 3, h: 7, minW: 2, minH: 4 },
+    { i: 'macro', x: 0, y: 3, w: 3, h: 6, minW: 2, minH: 4 },
     { i: 'chart', x: 3, y: 3, w: 6, h: 7, minW: 2, minH: 4 },
-    { i: 'rs', x: 9, y: 3, w: 3, h: 7, minW: 2, minH: 6 },
-    { i: 'crypto', x: 0, y: 10, w: 3, h: 6, minW: 2, minH: 3 },
-    { i: 'sector', x: 3, y: 10, w: 6, h: 10, minW: 2, minH: 4 },
-    { i: 'breadth', x: 9, y: 10, w: 3, h: 5, minW: 2, minH: 3 },
-    { i: 'watchlist', x: 0, y: 16, w: 3, h: 6, minW: 2, minH: 3 },
-    { i: 'calendar', x: 9, y: 15, w: 3, h: 6, minW: 2, minH: 4 },
+    { i: 'rs', x: 9, y: 3, w: 3, h: 6, minW: 2, minH: 5 },
+    { i: 'watchlist', x: 0, y: 9, w: 3, h: 5, minW: 2, minH: 3 },
+    { i: 'sector', x: 3, y: 10, w: 6, h: 6, minW: 2, minH: 4 },
+    { i: 'breadth', x: 9, y: 9, w: 3, h: 5, minW: 2, minH: 3 },
+    { i: 'crypto', x: 0, y: 14, w: 3, h: 4, minW: 2, minH: 3 },
+    { i: 'news', x: 3, y: 16, w: 3, h: 6, minW: 3, minH: 4 },
+    { i: 'eod', x: 6, y: 16, w: 3, h: 6, minW: 2, minH: 4 },
+    { i: 'calendar', x: 9, y: 14, w: 3, h: 5, minW: 2, minH: 4 },
   ],
   md: [
     { i: 'pulse', x: 0, y: 0, w: 10, h: 3, minW: 2, minH: 3 },
     { i: 'chart', x: 0, y: 3, w: 10, h: 7, minW: 2, minH: 4 },
     { i: 'macro', x: 0, y: 10, w: 5, h: 7, minW: 2, minH: 4 },
     { i: 'rs', x: 5, y: 10, w: 5, h: 7, minW: 2, minH: 6 },
-    { i: 'sector', x: 0, y: 17, w: 10, h: 10, minW: 2, minH: 4 },
-    { i: 'crypto', x: 0, y: 27, w: 5, h: 6, minW: 2, minH: 3 },
-    { i: 'breadth', x: 5, y: 27, w: 5, h: 5, minW: 2, minH: 3 },
-    { i: 'watchlist', x: 0, y: 33, w: 10, h: 6, minW: 2, minH: 3 },
-    { i: 'calendar', x: 5, y: 32, w: 5, h: 6, minW: 2, minH: 4 },
+    { i: 'sector', x: 0, y: 17, w: 10, h: 7, minW: 2, minH: 4 },
+    { i: 'watchlist', x: 0, y: 24, w: 10, h: 6, minW: 2, minH: 3 },
+    { i: 'crypto', x: 0, y: 30, w: 5, h: 6, minW: 2, minH: 3 },
+    { i: 'breadth', x: 5, y: 30, w: 5, h: 5, minW: 2, minH: 3 },
+    { i: 'calendar', x: 5, y: 35, w: 5, h: 6, minW: 2, minH: 4 },
+    { i: 'news', x: 0, y: 36, w: 5, h: 6, minW: 2, minH: 3 },
+    { i: 'eod', x: 5, y: 36, w: 5, h: 6, minW: 2, minH: 3 },
   ],
   sm: [
     { i: 'pulse', x: 0, y: 0, w: 6, h: 3 },
     { i: 'chart', x: 0, y: 3, w: 6, h: 7 },
     { i: 'rs', x: 0, y: 10, w: 6, h: 7 },
     { i: 'macro', x: 0, y: 17, w: 6, h: 7 },
-    { i: 'sector', x: 0, y: 24, w: 6, h: 10 },
-    { i: 'crypto', x: 0, y: 34, w: 6, h: 6 },
-    { i: 'breadth', x: 0, y: 40, w: 6, h: 5 },
-    { i: 'watchlist', x: 0, y: 45, w: 6, h: 6 },
-    { i: 'calendar', x: 0, y: 51, w: 6, h: 6 },
+    { i: 'sector', x: 0, y: 24, w: 6, h: 8 },
+    { i: 'watchlist', x: 0, y: 32, w: 6, h: 6 },
+    { i: 'breadth', x: 0, y: 38, w: 6, h: 5 },
+    { i: 'crypto', x: 0, y: 43, w: 6, h: 6 },
+    { i: 'calendar', x: 0, y: 49, w: 6, h: 6 },
+    { i: 'news', x: 0, y: 55, w: 6, h: 6 },
+    { i: 'eod', x: 0, y: 61, w: 6, h: 6 },
   ]
 };
 
 // 레이아웃 버전: DEFAULT_LAYOUTS가 변경될 때마다 이 숫자를 올려야 함
-const LAYOUT_VERSION = 8;
+const LAYOUT_VERSION = 14;
 
 export default function DashboardClient() {
   const { data, loading, error } = useMarketData();
@@ -104,11 +112,31 @@ export default function DashboardClient() {
     );
   }
 
-  if (error) {
+  if (error || (!data && !loading)) {
     return (
-      <div className="bento-item bg-bear text-primary" style={{ padding: '2rem', textAlign: 'center' }}>
-        <h2>데이터 로딩 실패</h2>
-        <p>{error}</p>
+      <div style={{ paddingBottom: '2rem' }}>
+        <div className="bento-item" style={{ padding: '4rem 2rem', textAlign: 'center', background: 'var(--card-bg)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
+          <div style={{ fontSize: '3rem', animation: 'spin 4s linear infinite', opacity: 0.5 }}>⏳</div>
+          <h2 style={{ fontFamily: 'var(--font-heading)', margin: 0, fontWeight: 700, letterSpacing: '0.05em' }}>시황 데이터 집계 중</h2>
+          <p className="text-muted" style={{ maxWidth: '400px', margin: 0, lineHeight: '1.6' }}>
+            백그라운드에서 실시간 데이터를 Redis에 캐싱하고 있습니다.<br/>
+            잠시만 기다려주시면 자동으로 새로고침됩니다.
+            {error && <span style={{ display: 'block', marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--bear)' }}>({error})</span>}
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{ 
+              marginTop: '1rem', background: 'var(--accent-primary)', color: 'white', 
+              border: 'none', padding: '0.6rem 1.25rem', borderRadius: '6px', 
+              cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', transition: 'all 0.2s'
+            }}
+          >
+            수동 새로고침
+          </button>
+        </div>
+        <style>{`
+          @keyframes spin { 100% { transform: rotate(360deg); } }
+        `}</style>
       </div>
     );
   }
@@ -178,6 +206,16 @@ export default function DashboardClient() {
         <div key="calendar" className="widget-wrapper">
           <div className="drag-handle"></div>
           <EconomicCalendar />
+        </div>
+
+        <div key="news" className="widget-wrapper">
+          <div className="drag-handle"></div>
+          <WatchlistNews />
+        </div>
+
+        <div key="eod" className="widget-wrapper">
+          <div className="drag-handle"></div>
+          <EODBriefing sectors={data.sectors} macro={data.macro} holdings={data.holdings} indices={data.indices} />
         </div>
       </ResponsiveGridLayout>
 

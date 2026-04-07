@@ -21,10 +21,10 @@ export default function MarketBreadth({ sectors, macro }: Props) {
 
   // 매크로 카테고리별 히트맵 데이터
   const categories = [
-    { key: 'volatility', label: 'VOL', icon: '⚡' },
-    { key: 'rates', label: 'RATES', icon: '📊' },
-    { key: 'currency', label: 'FX', icon: '💱' },
-    { key: 'commodity', label: 'CMDTY', icon: '🛢️' },
+    { key: 'volatility', label: 'VOL', icon: '⚡', desc: '시장 변동성 (VIX 등)' },
+    { key: 'rates', label: 'RATES', icon: '📊', desc: '국채 금리 (10년, 30년 등)' },
+    { key: 'currency', label: 'FX', icon: '💱', desc: '환율 (달러인덱스 등)' },
+    { key: 'commodity', label: 'CMDTY', icon: '🛢️', desc: '원자재 (원유, 금 등)' },
   ];
 
   const getCategoryAvg = (cat: string) => {
@@ -43,7 +43,15 @@ export default function MarketBreadth({ sectors, macro }: Props) {
 
   return (
     <div className="bento-item breadth-container">
-      <h3 className="text-secondary mb-md">MARKET BREADTH</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '1rem' }}>
+        <h3 className="text-secondary" style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>MARKET BREADTH</h3>
+        <div className="tooltip-wrapper" style={{ cursor: 'help' }}>
+          <span className="info-icon">?</span>
+          <div className="tooltip" style={{ left: 0, transform: 'translateX(-20%)', width: '220px', whiteSpace: 'normal', lineHeight: '1.4' }}>
+            <strong>시장 폭 (Market Breadth)</strong><br/>시장의 전반적인 상승/하락 에너지를 측정하는 지표입니다. 상승 종목 수와 하락 종목 수의 비율을 나타냅니다.
+          </div>
+        </div>
+      </div>
       
       {/* A/D 바 */}
       <div className="ad-bar-wrapper">
@@ -74,7 +82,11 @@ export default function MarketBreadth({ sectors, macro }: Props) {
           const color = getHeatColor(avg);
           return (
             <div key={cat.key} className="heat-cell" style={{ borderColor: color }}>
-              <div className="heat-label">{cat.icon} {cat.label}</div>
+              <div className="heat-label tooltip-wrapper">
+                {cat.icon} {cat.label}
+                <span className="info-icon">?</span>
+                <div className="tooltip">{cat.desc}</div>
+              </div>
               <div className="heat-value" style={{ color }}>
                 {avg >= 0 ? '+' : ''}{avg.toFixed(2)}%
               </div>
@@ -143,6 +155,9 @@ export default function MarketBreadth({ sectors, macro }: Props) {
           transition: border-color 0.3s ease;
         }
         .heat-label {
+          display: flex;
+          align-items: center;
+          gap: 4px;
           font-size: 0.7rem;
           color: var(--text-muted);
           letter-spacing: 0.03em;
@@ -156,7 +171,7 @@ export default function MarketBreadth({ sectors, macro }: Props) {
           display: flex;
           flex-direction: column;
           gap: 0.3rem;
-          padding-top: 0.25rem;
+          padding-top: 0.3rem;
           border-top: 1px solid var(--glass-border);
         }
         .tb-item {
@@ -167,6 +182,66 @@ export default function MarketBreadth({ sectors, macro }: Props) {
         }
         .tb-label {
           font-size: 0.75rem;
+        }
+
+        /* Tooltip System */
+        .tooltip-wrapper {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+        }
+        .info-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.1);
+          color: var(--text-muted);
+          font-size: 0.6rem;
+          font-weight: bold;
+          cursor: help;
+          transition: background 0.2s, color 0.2s;
+        }
+        .tooltip-wrapper:hover .info-icon {
+          background: rgba(255,255,255,0.25);
+          color: var(--text-primary);
+        }
+        .tooltip {
+          visibility: hidden;
+          opacity: 0;
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-bottom: 8px;
+          background: rgba(15, 15, 20, 0.98);
+          color: var(--text-primary);
+          padding: 6px 10px;
+          border-radius: 6px;
+          border: 1px solid rgba(255,255,255,0.15);
+          font-size: 0.75rem;
+          white-space: nowrap;
+          z-index: 50;
+          transition: all 0.2s ease-out;
+          pointer-events: none;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+        }
+        .tooltip::after {
+          content: '';
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border-width: 5px;
+          border-style: solid;
+          border-color: rgba(255,255,255,0.15) transparent transparent transparent;
+        }
+        .tooltip-wrapper:hover .tooltip {
+          visibility: visible;
+          opacity: 1;
+          margin-bottom: 10px;
         }
       `}</style>
     </div>

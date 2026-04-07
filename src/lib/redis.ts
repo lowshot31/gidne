@@ -19,7 +19,19 @@ export function getRedis(context?: any) {
 export async function getGlobalMarketData(context?: any) {
   try {
     const redis = getRedis(context);
-    return await redis.get('gidne_market_data');
+    const [marketData, holdingsData] = await Promise.all([
+      redis.get('gidne_market_data'),
+      redis.get('gidne_holdings_v2')
+    ]);
+
+    if (!marketData) return null;
+
+    const parsedData = typeof marketData === 'string' ? JSON.parse(marketData) : marketData;
+    const parsedHoldings = typeof holdingsData === 'string' ? JSON.parse(holdingsData) : holdingsData || {};
+    
+    // 프론트엔드 호환성을 위해 데이터를 병합하여 반환합니다.
+    parsedData.holdings = parsedHoldings;
+    return parsedData;
   } catch (error) {
     console.error('[Redis] GET Error:', error);
     return null;

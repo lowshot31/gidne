@@ -17,19 +17,121 @@ export const INDICES = [
 
 
 export const SECTOR_ETFS = [
-  { ticker: 'XLK', name: 'Technology', cycle: 'Growth', color: '#22c55e' },
-  { ticker: 'XLC', name: 'Communication', cycle: 'Growth', color: '#22c55e' },
-  { ticker: 'XLY', name: 'Discretionary', cycle: 'Early', color: '#22c55e' },
-  { ticker: 'XLV', name: 'Healthcare', cycle: 'Defensive', color: '#0ea5e9' },
-  { ticker: 'XLP', name: 'Staples', cycle: 'Defensive', color: '#0ea5e9' },
-  { ticker: 'XLU', name: 'Utilities', cycle: 'Defensive', color: '#0ea5e9' },
+  // 1. Early Cycle (Recovery - 회복기) : 금리 인하 수혜, 소비 꿈틀
+  { ticker: 'XLY', name: 'Discretionary', cycle: 'Early (Recovery)', color: '#22c55e' }, // Green
+  { ticker: 'XLF', name: 'Financials', cycle: 'Early (Recovery)', color: '#22c55e' },
+  { ticker: 'XLRE', name: 'Real Estate', cycle: 'Early (Recovery)', color: '#22c55e' },
   
-  { ticker: 'XLF', name: 'Financials', cycle: 'Rate-Sensitive', color: '#ef4444' },
-  { ticker: 'XLE', name: 'Energy', cycle: 'Late', color: '#ef4444' },
-  { ticker: 'XLI', name: 'Industrials', cycle: 'Late', color: '#ef4444' },
-  { ticker: 'XLB', name: 'Materials', cycle: 'Late', color: '#ef4444' },
-  { ticker: 'XLRE', name: 'Real Estate', cycle: 'Rate-Sensitive', color: '#ef4444' },
+  // 2. Mid Cycle (Expansion - 호황기) : 실적 장세, 기업 투자 증가
+  { ticker: 'XLK', name: 'Technology', cycle: 'Mid (Expansion)', color: '#eab308' }, // Yellow/Gold
+  { ticker: 'XLC', name: 'Communication', cycle: 'Mid (Expansion)', color: '#eab308' },
+  { ticker: 'XLI', name: 'Industrials', cycle: 'Mid (Expansion)', color: '#eab308' },
+  
+  // 3. Late Cycle (Slowdown - 후퇴기) : 인플레이션 헤지, 원자재 강세
+  { ticker: 'XLE', name: 'Energy', cycle: 'Late (Slowdown)', color: '#f97316' }, // Orange
+  { ticker: 'XLB', name: 'Materials', cycle: 'Late (Slowdown)', color: '#f97316' },
+  
+  // 4. Defensive (Recession - 침체기) : 경기 방어, 배당/필수소비재
+  { ticker: 'XLV', name: 'Healthcare', cycle: 'Defensive (Recession)', color: '#0ea5e9' }, // Blue
+  { ticker: 'XLP', name: 'Staples', cycle: 'Defensive (Recession)', color: '#0ea5e9' },
+  { ticker: 'XLU', name: 'Utilities', cycle: 'Defensive (Recession)', color: '#0ea5e9' },
 ] as const;
+
+// 섹터 ETF → Top 5 구성종목 매핑 (EOD 리포트 드릴다운용)
+export const SECTOR_HOLDINGS: Record<string, { ticker: string; name: string }[]> = {
+  XLK: [
+    { ticker: 'AAPL', name: 'Apple' },
+    { ticker: 'MSFT', name: 'Microsoft' },
+    { ticker: 'NVDA', name: 'NVIDIA' },
+    { ticker: 'AVGO', name: 'Broadcom' },
+    { ticker: 'CRM', name: 'Salesforce' },
+  ],
+  XLF: [
+    { ticker: 'BRK-B', name: 'Berkshire' },
+    { ticker: 'JPM', name: 'JPMorgan' },
+    { ticker: 'V', name: 'Visa' },
+    { ticker: 'MA', name: 'Mastercard' },
+    { ticker: 'BAC', name: 'BofA' },
+  ],
+  XLY: [
+    { ticker: 'AMZN', name: 'Amazon' },
+    { ticker: 'TSLA', name: 'Tesla' },
+    { ticker: 'HD', name: 'Home Depot' },
+    { ticker: 'MCD', name: "McDonald's" },
+    { ticker: 'NKE', name: 'Nike' },
+  ],
+  XLE: [
+    { ticker: 'XOM', name: 'ExxonMobil' },
+    { ticker: 'CVX', name: 'Chevron' },
+    { ticker: 'COP', name: 'ConocoPhillips' },
+    { ticker: 'EOG', name: 'EOG Resources' },
+    { ticker: 'SLB', name: 'Schlumberger' },
+  ],
+  XLV: [
+    { ticker: 'UNH', name: 'UnitedHealth' },
+    { ticker: 'JNJ', name: 'J&J' },
+    { ticker: 'LLY', name: 'Eli Lilly' },
+    { ticker: 'ABT', name: 'Abbott' },
+    { ticker: 'PFE', name: 'Pfizer' },
+  ],
+  XLI: [
+    { ticker: 'GE', name: 'GE Aerospace' },
+    { ticker: 'CAT', name: 'Caterpillar' },
+    { ticker: 'UNP', name: 'Union Pacific' },
+    { ticker: 'HON', name: 'Honeywell' },
+    { ticker: 'BA', name: 'Boeing' },
+  ],
+  XLC: [
+    { ticker: 'META', name: 'Meta' },
+    { ticker: 'GOOGL', name: 'Alphabet' },
+    { ticker: 'NFLX', name: 'Netflix' },
+    { ticker: 'DIS', name: 'Disney' },
+    { ticker: 'TMUS', name: 'T-Mobile' },
+  ],
+  XLP: [
+    { ticker: 'PG', name: 'P&G' },
+    { ticker: 'KO', name: 'Coca-Cola' },
+    { ticker: 'PEP', name: 'PepsiCo' },
+    { ticker: 'COST', name: 'Costco' },
+    { ticker: 'WMT', name: 'Walmart' },
+  ],
+  XLU: [
+    { ticker: 'NEE', name: 'NextEra' },
+    { ticker: 'SO', name: 'Southern Co' },
+    { ticker: 'DUK', name: 'Duke Energy' },
+    { ticker: 'D', name: 'Dominion' },
+    { ticker: 'AEP', name: 'AEP' },
+  ],
+  XLB: [
+    { ticker: 'LIN', name: 'Linde' },
+    { ticker: 'SHW', name: 'Sherwin-Williams' },
+    { ticker: 'FCX', name: 'Freeport' },
+    { ticker: 'APD', name: 'Air Products' },
+    { ticker: 'NEM', name: 'Newmont' },
+  ],
+  XLRE: [
+    { ticker: 'PLD', name: 'Prologis' },
+    { ticker: 'AMT', name: 'American Tower' },
+    { ticker: 'EQIX', name: 'Equinix' },
+    { ticker: 'SPG', name: 'Simon Property' },
+    { ticker: 'O', name: 'Realty Income' },
+  ],
+};
+
+// 매크로 지표 → 섹터 원인 연결 맵 (EOD "왜(Why)" 분석용)
+export const MACRO_SECTOR_DRIVERS: Record<string, { macro: string; direction: 'same' | 'inverse'; label: string }[]> = {
+  XLE: [{ macro: 'CL=F', direction: 'same', label: 'WTI 원유' }, { macro: 'BZ=F', direction: 'same', label: '브렌트유' }],
+  XLB: [{ macro: 'HG=F', direction: 'same', label: '구리' }, { macro: 'GC=F', direction: 'same', label: '금' }],
+  XLK: [{ macro: '^TNX', direction: 'inverse', label: '10Y 금리' }],
+  XLY: [{ macro: '^TNX', direction: 'inverse', label: '10Y 금리' }],
+  XLF: [{ macro: '^TNX', direction: 'same', label: '10Y 금리' }],
+  XLU: [{ macro: '^TNX', direction: 'inverse', label: '10Y 금리' }],
+  XLRE: [{ macro: '^TNX', direction: 'inverse', label: '10Y 금리' }],
+  XLP: [],
+  XLV: [],
+  XLI: [{ macro: 'HG=F', direction: 'same', label: '구리(경기)' }],
+  XLC: [{ macro: '^TNX', direction: 'inverse', label: '10Y 금리' }],
+};
 
 export const MACRO_TICKERS = [
   // 1. 변동성 & 리스크 척도 (HOT)
