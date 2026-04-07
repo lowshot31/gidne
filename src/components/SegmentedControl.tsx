@@ -37,11 +37,9 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, size = 
       borderRadius: '12px', 
       padding: '0.25rem',
       alignItems: 'center',
-      gap: '2px',
-      overflowX: 'auto',
+      gap: '4px',
+      flexWrap: 'wrap',
       maxWidth: '100%',
-      scrollbarWidth: 'none' as const,
-      msOverflowStyle: 'none' as any,
     }}>
       {tabs.map(tab => (
         <button

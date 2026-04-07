@@ -175,11 +175,24 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
       triggerWidget();
     }
 
-    // 테마 변경 감지 시 모든 위젯 초기화해야 하지만 구조상 복잡하므로 
-    // 여기서는 일단 보류하거나 새로고침 브라우저 권장.
+    // 테마 변경 감지 시 위젯을 초기화하여 다시 그림
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-theme') {
+          const containerId = `tv_chart_${currentSymbol.replace(/[^a-zA-Z0-9]/g, '_')}`;
+          const containerEl = document.getElementById(containerId);
+          if (containerEl) {
+            containerEl.innerHTML = '';
+            triggerWidget();
+          }
+        }
+      });
+    });
+    observer.observe(document.documentElement, { attributes: true });
     
     return () => {
       clearTimeout(debounceTimer);
+      observer.disconnect();
     };
   }, [currentSymbol, visitedSymbols]);
 

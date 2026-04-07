@@ -104,30 +104,51 @@ const StockHeatmapWidget = () => {
   React.useEffect(() => {
     if (!container.current) return;
     
-    // 이전 스크립트 찌꺼기가 남지 않도록 초기화 (React strict mode 및 탭 전환 대비)
-    container.current.innerHTML = '';
-    
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js';
-    script.type = 'text/javascript';
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-      "exchanges": [],
-      "dataSource": "SPX500",
-      "grouping": "sector",
-      "blockSize": "market_cap_basic",
-      "blockColor": "change",
-      "locale": "kr",
-      "symbolUrl": "",
-      "colorTheme": "dark",
-      "hasTopBar": false,
-      "isDataSetEnabled": false,
-      "isZoomEnabled": true,
-      "hasSymbolTooltip": true,
-      "width": "100%",
-      "height": "100%"
+    let debounceTimer: ReturnType<typeof setTimeout>;
+
+    const initWidget = () => {
+      container.current!.innerHTML = '';
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      
+      const script = document.createElement('script');
+      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js';
+      script.type = 'text/javascript';
+      script.async = true;
+      script.innerHTML = JSON.stringify({
+        "exchanges": [],
+        "dataSource": "SPX500",
+        "grouping": "sector",
+        "blockSize": "market_cap_basic",
+        "blockColor": "change",
+        "locale": "kr",
+        "symbolUrl": "",
+        "colorTheme": isLight ? "light" : "dark",
+        "hasTopBar": false,
+        "isDataSetEnabled": false,
+        "isZoomEnabled": true,
+        "hasSymbolTooltip": true,
+        "width": "100%",
+        "height": "100%"
+      });
+      container.current!.appendChild(script);
+    };
+
+    initWidget();
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-theme') {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => initWidget(), 50);
+        }
+      });
     });
-    container.current.appendChild(script);
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => {
+      clearTimeout(debounceTimer);
+      observer.disconnect();
+    };
   }, []);
 
   return (
