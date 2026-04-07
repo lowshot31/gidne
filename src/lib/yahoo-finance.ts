@@ -29,14 +29,19 @@ export async function fetchQuotes(tickers: string[]): Promise<Map<string, Ticker
       chunks.push(tickers.slice(i, i + CHUNK_SIZE));
     }
 
-    // 모든 청크를 병렬 요청 — 원래 요청 티커도 함께 전달
-    const chunkResults = await Promise.allSettled(
-      chunks.map(async (chunk) => {
+    // 모든 청크를 순차적으로 요청하여 Yahoo Finance 429 에러 방지 (Option A: Jitter 방식)
+    const chunkResults: Array<{ status: 'fulfilled', value: { requestedTickers: string[], quotes: any[] } } | { status: 'rejected', reason: any }> = [];
+    for (const chunk of chunks) {
+      try {
         const quotes = await yahooFinance.quote(chunk);
         const arr = Array.isArray(quotes) ? quotes : [quotes];
-        return { requestedTickers: chunk, quotes: arr };
-      })
-    );
+        chunkResults.push({ status: 'fulfilled', value: { requestedTickers: chunk, quotes: arr } });
+        // 청크 사이에 300ms 무작위 지연 (Jitter) 주입
+        await new Promise(r => setTimeout(r, 200 + Math.random() * 200));
+      } catch (err) {
+        chunkResults.push({ status: 'rejected', reason: err });
+      }
+    }
 
     // 결과 합치기 (실패한 청크는 무시)
     for (const res of chunkResults) {

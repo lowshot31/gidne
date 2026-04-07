@@ -262,7 +262,7 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
             else if (!query.trim() && recentSearches.length > 0) setIsOpen(true);
           }}
           onKeyDown={handleKeyDown}
-          placeholder={mode === 'macro' ? "매크로 지표, 환율 (예: ^VIX, KRW=X, CL=F)" : "종목 검색 (예: AAPL, 비트코인, 삼성전자)"}
+          placeholder={mode === 'macro' ? "매크로 지표, 환율 (예: ^VIX, KRW=X, CL=F)" : "종목 검색 (예: AAPL, TSLA, NVDA)"}
           className="search-input"
           autoComplete="off"
         />

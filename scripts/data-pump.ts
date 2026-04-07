@@ -13,7 +13,7 @@ import {
   getPollingInterval,
 } from '../src/lib/tickers';
 import { Redis } from '@upstash/redis';
-import type { MarketDataResponse, TickerQuote, MacroData } from '../src/lib/types';
+import type { MarketDataResponse, TickerQuote, MacroData, IndexQuote } from '../src/lib/types';
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL || '',
@@ -78,9 +78,9 @@ async function pumpMarketData() {
       return { ticker: t.ticker, name: t.name, category: t.category, price: q?.price ?? 0, change: q?.change ?? 0, changePercent: q?.changePercent ?? 0 };
     });
 
-    const indices: TickerQuote[] = INDICES.map(t => {
+    const indices: IndexQuote[] = INDICES.map(t => {
       const q = quotes.get(t.ticker);
-      return { symbol: t.ticker, name: t.name, price: q?.price ?? 0, change: q?.change ?? 0, changePercent: q?.changePercent ?? 0, previousClose: q?.previousClose ?? 0 };
+      return { symbol: t.ticker, name: t.name, price: q?.price ?? 0, change: q?.change ?? 0, changePercent: q?.changePercent ?? 0, previousClose: q?.previousClose ?? 0, region: t.region, flag: t.flag };
     });
 
     const vixQuote = quotes.get('^VIX') ?? undefined;

@@ -24,6 +24,7 @@
     "lightweight-charts": "^5.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-globe.gl": "^2.37.1",
     "react-grid-layout": "^2.2.3",
     "yahoo-finance2": "^3.14.0"
   },

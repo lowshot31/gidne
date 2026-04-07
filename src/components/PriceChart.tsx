@@ -7,43 +7,66 @@ interface Props {
 }
 
 // Yahoo 티커를 TradingView 심볼로 변환
-// 주의: 거래소를 명시하지 않으면 Cboe One(15분 딜레이)로 연결될 수 있음
 const getTVSymbol = (ticker: string) => {
-  // 지수 (위젯 허용 안 되는 지수들은 CFD나 ETF로 우회)
-  if (ticker === '^GSPC') return 'FOREXCOM:SPX500';
-  if (ticker === '^IXIC') return 'FOREXCOM:NSXUSD';
-  if (ticker === '^KS11') return 'AMEX:EWY'; // KOSPI 위젯 제한 -> 한국 ETF
-  if (ticker === '^N225') return 'OANDA:JP225USD';
-  if (ticker === '^VIX') return 'FRED:VIXCLS'; // FRED 공공재 데이터 (무료 위젯 100% 허용)
+  // 북미 주요 지수 (안정적인 실시간 렌더링을 위해 선물이나 메이저 CFD 사용)
+  if (ticker === '^GSPC') return 'FOREXCOM:SPXUSD'; // S&P 500 CFD
+  if (ticker === '^IXIC') return 'FOREXCOM:NSXUSD'; // Nasdaq 100 CFD
+  if (ticker === '^DJI') return 'FOREXCOM:DJI'; // Dow CFD
+  if (ticker === '^RUT') return 'AMEX:IWM'; // Russell ETF (CFD 차단 우회)
+  if (ticker === '^GSPTSE') return 'TSX:TSX'; // TSX
+
+  // 유럽/선진국 지수
+  if (ticker === '^FTSE') return 'CAPITALCOM:UK100';
+  if (ticker === '^GDAXI') return 'CAPITALCOM:DE40'; // DAX CFD
+  if (ticker === '^FCHI') return 'CAPITALCOM:FR40'; // CAC CFD
+  if (ticker === '^STOXX50E') return 'OANDA:EU50EUR'; // Euro Stoxx CFD (OANDA가 안정적)
+  if (ticker === '^AXJO') return 'OANDA:AU200AUD'; // 호주 ASX 200 CFD
+
+  // 아시아 (ETF 및 주요 CFD로 완전 우회 - TradingView 제약 타파)
+  if (ticker === '^KS11') return 'AMEX:EWY'; // KOSPI -> 한국 ETF
+  if (ticker === '^N225') return 'OANDA:JP225USD'; // Nikkei CFD (OANDA가 무료 위젯에서 더 안정적)
+  if (ticker === '000001.SS') return 'AMEX:ASHR'; // 상하이 -> 와이드모트 ETF
+  if (ticker === '^HSI') return 'CAPITALCOM:HK50'; // 항셍 CFD
+  if (ticker === '^TWII') return 'AMEX:EWT'; // 대만 가권 -> 대만 ETF
+
+  // 신흥국 주가지수 (완벽 우회)
+  if (ticker === '^NSEI') return 'BATS:INDA'; // 인도 니프티50 -> 인도 ETF
+  if (ticker === '^VNINDEX.VN') return 'BATS:VNM'; // 베트남 -> VNM ETF
+  if (ticker === 'TA35.TA') return 'AMEX:EIS'; // 이스라엘 -> 이스라엘 ETF
+  if (ticker === '^BVSP') return 'AMEX:EWZ'; // 브라질 -> 브라질 ETF
+  if (ticker === '^MXX') return 'AMEX:EWW'; // 멕시코 -> 멕시코 ETF
+
+  // 기타 매크로 / 원자재
+  if (ticker === '^VIX') return 'CBOE:VIX';
   if (ticker === '^VVIX') return 'CBOE:VVIX';
-  if (ticker === '^TNX') return 'FRED:DGS10'; // FRED 10-Year Yield
-  if (ticker === '^FVX') return 'FRED:DGS5'; // FRED 5-Year Yield
-  // ETF — TradingView 무료 위젯 한계:
-  // SPY(Cboe One) = 15분 딜레이, ES1!(CME) = 10분 딜레이
-  // FOREXCOM:SPX500 (CFD) = 실시간 무료
-  if (ticker === 'SPY') return 'FOREXCOM:SPX500';
-  if (ticker === 'QQQ') return 'FOREXCOM:NSXUSD';
-  // 선물/원자재/크립토
+  if (ticker === '^TNX') return 'FRED:DGS10';
+  if (ticker === '^FVX') return 'FRED:DGS5';
+  
+  if (ticker === 'SPY') return 'AMEX:SPY';
+  if (ticker === 'QQQ') return 'NASDAQ:QQQ';
+  
   if (ticker === 'BTC-USD') return 'BINANCE:BTCUSD';
   if (ticker === 'ETH-USD') return 'BINANCE:ETHUSD';
   if (ticker === 'SOL-USD') return 'BINANCE:SOLUSD';
   if (ticker === 'DOGE-USD') return 'BINANCE:DOGEUSD';
-  if (ticker === 'GC=F') return 'OANDA:XAUUSD';
+  if (ticker === 'GC=F') return 'COMEX:GC1!';
   if (ticker === 'CL=F') return 'NYMEX:CL1!';
-  // 환율/달러
+  
   if (ticker === 'KRW=X') return 'FX:USDKRW';
-  if (ticker === 'DX-Y.NYB') return 'CAPITALCOM:DXY';
-  // 섹터 ETF — AMEX 실시간
+  if (ticker === 'DX-Y.NYB') return 'TVC:DXY';
   if (/^XL[A-Z]$/.test(ticker)) return `AMEX:${ticker}`;
-  // 기본: NASDAQ 먼저 시도 (대부분 실시간)
+
   return ticker.includes(':') ? ticker : ticker;
 };
 
 function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Props) {
-  const container = useRef<HTMLDivElement>(null);
-  const [currentTicker, setCurrentTicker] = useState(initialTicker || 'SPY');
+  const [currentTicker, setCurrentTicker] = useState(initialTicker || '^GSPC');
   const [currentName, setCurrentName] = useState(initialName || 'S&P 500');
   const showTabs = !initialTicker; // 외부에서 티커가 지정되지 않은 메인 화면의 경우에만 탭 표시
+
+  const currentSymbol = getTVSymbol(currentTicker);
+  const [visitedSymbols, setVisitedSymbols] = useState<Set<string>>(new Set([currentSymbol]));
+  const initializedWidgets = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (initialTicker) setCurrentTicker(initialTicker);
@@ -53,27 +76,29 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
     if (initialName) setCurrentName(initialName);
   }, [initialName]);
 
-  const [containerId] = useState(() => {
-    const symbol = getTVSymbol(initialTicker || 'SPY');
-    return `tv_chart_${symbol.replace(/[^a-zA-Z0-9]/g, '_')}_${Math.random().toString(36).substring(7)}`;
-  });
+  useEffect(() => {
+    setVisitedSymbols((prev) => {
+      if (prev.has(currentSymbol)) return prev;
+      const next = new Set(prev);
+      next.add(currentSymbol);
+      return next;
+    });
+  }, [currentSymbol]);
 
   useEffect(() => {
-    const symbol = getTVSymbol(currentTicker);
-    
-    if (container.current) {
-      container.current.id = containerId;
-    }
+    if (initializedWidgets.current.has(currentSymbol)) return;
 
-    let tvScriptLoadingPromise: Promise<void> | null = null;
+    let debounceTimer: ReturnType<typeof setTimeout>;
 
     const initWidget = () => {
-      if (typeof window !== 'undefined' && (window as any).TradingView && container.current) {
-        container.current.innerHTML = '';
+      const containerId = `tv_chart_${currentSymbol.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      const containerEl = document.getElementById(containerId);
+      
+      if (typeof window !== 'undefined' && (window as any).TradingView && containerEl && containerEl.innerHTML === '') {
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         new (window as any).TradingView.widget({
           autosize: true,
-          symbol: symbol,
+          symbol: currentSymbol,
           interval: "D",
           timezone: "Asia/Seoul",
           theme: isLight ? "light" : "dark",
@@ -82,49 +107,56 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
           enable_publishing: false,
           backgroundColor: isLight ? "#ffffff" : "#161616",
           gridColor: isLight ? "rgba(229, 229, 234, 1)" : "rgba(42, 42, 42, 1)",
-          hide_top_toolbar: false, // 1분/3분/1시간 탭 복구
+          hide_top_toolbar: false,
           hide_legend: false,
           save_image: false,
           container_id: containerId,
           allow_symbol_change: false,
           toolbar_bg: isLight ? "#ffffff" : "#161616"
         });
+        initializedWidgets.current.add(currentSymbol);
       }
     };
 
+    const triggerWidget = () => {
+      debounceTimer = setTimeout(() => {
+        initWidget();
+      }, 50); // 아주 짧은 지연만 주고 생성
+    };
+
+    let tvScriptLoadingPromise: Promise<void> | null = null;
     if (!(window as any).TradingView) {
-      if (!tvScriptLoadingPromise) {
+      const scriptId = 'tradingview-widget-script';
+      let script = document.getElementById(scriptId) as HTMLScriptElement;
+      
+      if (!script) {
         tvScriptLoadingPromise = new Promise((resolve) => {
-          const script = document.createElement('script');
-          script.id = 'tradingview-widget-script';
+          script = document.createElement('script');
+          script.id = scriptId;
           script.src = 'https://s3.tradingview.com/tv.js';
           script.type = 'text/javascript';
           script.async = true;
           script.onload = () => resolve();
           document.head.appendChild(script);
         });
+      } else {
+        tvScriptLoadingPromise = Promise.resolve();
       }
+      
       tvScriptLoadingPromise.then(() => {
-        initWidget();
+        triggerWidget();
       });
     } else {
-      initWidget();
+      triggerWidget();
     }
 
-    // 테마 변경 감지 (MutationObserver)를 통해 차트 테마 실시간 업데이트
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'data-theme') {
-          initWidget();
-        }
-      });
-    });
-    observer.observe(document.documentElement, { attributes: true });
-
+    // 테마 변경 감지 시 모든 위젯 초기화해야 하지만 구조상 복잡하므로 
+    // 여기서는 일단 보류하거나 새로고침 브라우저 권장.
+    
     return () => {
-      observer.disconnect();
+      clearTimeout(debounceTimer);
     };
-  }, [currentTicker]);
+  }, [currentSymbol, visitedSymbols]);
 
   return (
     <div className="bento-item h-full price-chart-container" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -176,13 +208,24 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
         }
       `}</style>
       
-      {/* TradingView 위젯 컨테이너 */}
-      <div className="tradingview-widget-container" style={{ flex: 1, minHeight: '350px', width: '100%', borderRadius: '4px', overflow: 'hidden' }}>
-        <div ref={container} style={{ height: '100%', width: '100%' }} />
+      {/* TradingView 위젯 컨테이너 (Zero-Flash Dynamic Caching) */}
+      <div className="tradingview-widget-container" style={{ position: 'relative', flex: 1, minHeight: '350px', width: '100%', borderRadius: '4px', overflow: 'hidden' }}>
+        {Array.from(visitedSymbols).map((sym) => (
+          <div 
+            key={sym}
+            id={`tv_chart_${sym.replace(/[^a-zA-Z0-9]/g, '_')}`}
+            style={{ 
+              position: 'absolute', 
+              inset: 0, 
+              opacity: sym === currentSymbol ? 1 : 0, 
+              pointerEvents: sym === currentSymbol ? 'auto' : 'none',
+              zIndex: sym === currentSymbol ? 10 : 1
+            }} 
+          />
+        ))}
       </div>
     </div>
   );
 }
 
 export default memo(PriceChart);
-

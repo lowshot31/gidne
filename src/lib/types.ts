@@ -10,6 +10,11 @@ export interface TickerQuote {
   previousClose: number;
 }
 
+export interface IndexQuote extends TickerQuote {
+  region: 'americas' | 'europe' | 'asia' | 'emerging' | string;
+  flag: string;
+}
+
 export interface SectorData {
   ticker: string;
   name: string;
@@ -51,7 +56,7 @@ export interface MarketDataResponse {
   sectors: SectorData[];
   marketPulse: MarketPulseData;
   macro: MacroData[];
-  indices: TickerQuote[];
+  indices: IndexQuote[];
   meta: {
     isMarketOpen: boolean;
     lastUpdated: string;

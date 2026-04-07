@@ -2,17 +2,32 @@
 // 고정 티커 목록 — DESIGN.md §6 기반
 
 export const INDICES = [
-  { ticker: '^GSPC', name: 'S&P 500', symbol: 'SPY', flag: '🇺🇸' },
-  { ticker: '^IXIC', name: 'Nasdaq 100', symbol: 'QQQ', flag: '🇺🇸' },
-  { ticker: '^DJI', name: 'Dow Jones', symbol: 'DIA', flag: '🇺🇸' },
-  { ticker: '^RUT', name: 'Russell 2000', symbol: 'IWM', flag: '🇺🇸' },
-  { ticker: '^KS11', name: 'KOSPI', symbol: 'KOSPI', flag: '🇰🇷' },
-  { ticker: '^KQ11', name: 'KOSDAQ', symbol: 'KOSDAQ', flag: '🇰🇷' },
-  { ticker: '^N225', name: 'Nikkei 225', symbol: 'N225', flag: '🇯🇵' },
-  { ticker: '000300.SS', name: 'CSI 300', symbol: 'CSI300', flag: '🇨🇳' },
-  { ticker: '^STOXX50E', name: 'Euro Stoxx 50', symbol: 'SX5E', flag: '🇪🇺' },
-  { ticker: '^FTSE', name: 'FTSE 100', symbol: 'FTSE', flag: '🇬🇧' },
-] as const;
+  // 미주 (Americas)
+  { ticker: '^GSPC', name: 'S&P 500', symbol: '^GSPC', flag: '🇺🇸', region: 'americas' },
+  { ticker: '^IXIC', name: 'Nasdaq 100', symbol: '^IXIC', flag: '🇺🇸', region: 'americas' },
+  { ticker: '^DJI', name: 'Dow Jones', symbol: '^DJI', flag: '🇺🇸', region: 'americas' },
+  { ticker: '^RUT', name: 'Russell 2000', symbol: '^RUT', flag: '🇺🇸', region: 'americas' },
+  { ticker: '^GSPTSE', name: 'TSX Composite', symbol: '^GSPTSE', flag: '🇨🇦', region: 'americas' },
+  { ticker: '^BVSP', name: 'Bovespa', symbol: '^BVSP', flag: '🇧🇷', region: 'emerging' },
+  { ticker: '^MXX', name: 'IPC Mexico', symbol: '^MXX', flag: '🇲🇽', region: 'emerging' },
+
+  // 유럽 (Europe)
+  { ticker: '^STOXX50E', name: 'Euro Stoxx 50', symbol: '^STOXX50E', flag: '🇪🇺', region: 'europe' },
+  { ticker: '^FTSE', name: 'FTSE 100', symbol: '^FTSE', flag: '🇬🇧', region: 'europe' },
+  { ticker: '^GDAXI', name: 'DAX', symbol: '^GDAXI', flag: '🇩🇪', region: 'europe' },
+  { ticker: '^FCHI', name: 'CAC 40', symbol: '^FCHI', flag: '🇫🇷', region: 'europe' },
+
+  // 아시아 및 신흥국 (Asia & Emerging)
+  { ticker: '^N225', name: 'Nikkei 225', symbol: '^N225', flag: '🇯🇵', region: 'asia' },
+  { ticker: '^KS11', name: 'KOSPI', symbol: '^KS11', flag: '🇰🇷', region: 'asia' },
+  { ticker: '^TWII', name: 'TAIEX', symbol: '^TWII', flag: '🇹🇼', region: 'asia' },
+  { ticker: '000001.SS', name: 'Shanghai Comp', symbol: '000001.SS', flag: '🇨🇳', region: 'asia' },
+  { ticker: '^HSI', name: 'Hang Seng', symbol: '^HSI', flag: '🇭🇰', region: 'asia' },
+  { ticker: '^AXJO', name: 'ASX 200', symbol: '^AXJO', flag: '🇦🇺', region: 'asia' },
+  { ticker: '^NSEI', name: 'NIFTY 50', symbol: '^NSEI', flag: '🇮🇳', region: 'emerging' },
+  { ticker: '^VNINDEX.VN', name: 'VN-Index', symbol: '^VNINDEX.VN', flag: '🇻🇳', region: 'emerging' },
+  { ticker: 'TA35.TA', name: 'TA-35', symbol: 'TA35.TA', flag: '🇮🇱', region: 'emerging' },
+];
 
 
 

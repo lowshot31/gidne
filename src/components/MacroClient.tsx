@@ -60,29 +60,51 @@ export default function MacroClient() {
         <MarketRegimeWidget />
         
         <div className="bento-item" style={{ display: 'flex', flexDirection: 'column', height: '600px', padding: 0, overflow: 'hidden' }}>
-          {/* Tabs */}
-          <div style={{ display: 'flex', overflowX: 'auto', borderBottom: '1px solid var(--border-color)', padding: '0 1rem', flexShrink: 0 }}>
-            {[
-              { id: 'HOT', label: '🔥 필수 감시' },
-              { id: 'RATES', label: '🏦 금리/채권' },
-              { id: 'CURRENCY', label: '💵 외환' },
-              { id: 'COMMODITY', label: '🛢️ 원자재' }
-            ].map(tab => (
-              <button 
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                style={{
-                  background: 'none', border: 'none', padding: '1rem 0.75rem', cursor: 'pointer',
-                  color: activeTab === tab.id ? 'var(--accent-primary)' : 'var(--text-muted)',
-                  borderBottom: activeTab === tab.id ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                  fontWeight: activeTab === tab.id ? 'bold' : 'normal',
-                  fontSize: '0.85rem',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
+          {/* Tabs - Toss Style Pill Segmented Control */}
+          <div style={{ padding: '1rem', flexShrink: 0, paddingBottom: '0.5rem' }}>
+            <div style={{ 
+              display: 'inline-flex', 
+              background: 'rgba(255, 255, 255, 0.05)', 
+              borderRadius: '12px', 
+              padding: '0.25rem',
+              overflowX: 'auto',
+              maxWidth: '100%',
+              scrollbarWidth: 'none', // Firefox
+              msOverflowStyle: 'none'  // IE and Edge
+            }}>
+              {[
+                { id: 'HOT', label: '🔥 필수 감시' },
+                { id: 'RATES', label: '🏦 금리/채권' },
+                { id: 'CURRENCY', label: '💵 외환' },
+                { id: 'COMMODITY', label: '🛢️ 원자재' }
+              ].map(tab => (
+                <button 
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  style={{
+                    background: activeTab === tab.id ? 'rgba(255,255,255,0.1)' : 'transparent',
+                    border: 'none',
+                    padding: '0.5rem 0.8rem',
+                    cursor: 'pointer',
+                    color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
+                    fontWeight: activeTab === tab.id ? 600 : 500,
+                    fontSize: '0.85rem',
+                    whiteSpace: 'nowrap',
+                    borderRadius: '8px',
+                    transition: 'all 0.2s',
+                    boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <style>{`
+              /* Chrome, Safari, Opera 용 스크롤바 숨김 */
+              div::-webkit-scrollbar {
+                  display: none;
+              }
+            `}</style>
           </div>
 
           {/* List Content */}
