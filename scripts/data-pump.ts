@@ -300,6 +300,31 @@ async function pumpDemandQueues() {
       monthlyLower: price - finalMonthlyEM,
     };
   }, 1800);
+
+  // 4) 수익률(Returns 1W, 1M) 데이터 처리
+  await processQueue('gidne_queue_returns', 'gidne_ret_v2_', async (ticker: string) => {
+    const period1 = new Date(); 
+    period1.setMonth(period1.getMonth() - 2); // 넉넉히 2달치 (1M 계산을 위해)
+    const chart: any = await yahooFinance.chart(ticker, { period1, interval: '1d' as any });
+    
+    const quotes = chart.quotes.filter((q: any) => q.close !== null && q.close !== undefined);
+    if (quotes.length === 0) throw new Error('No historical quotes');
+
+    const latest = quotes[quotes.length - 1].close;
+    
+    // 1W (약 5거래일 전)
+    const idx1W = Math.max(0, quotes.length - 6);
+    const price1W = quotes[idx1W].close || latest;
+    
+    // 1M (약 21거래일 전)
+    const idx1M = Math.max(0, quotes.length - 22);
+    const price1M = quotes[idx1M].close || latest;
+
+    const change1W = ((latest - price1W) / price1W) * 100;
+    const change1M = ((latest - price1M) / price1M) * 100;
+
+    return { change1W, change1M };
+  }, 14400); // 4 hours TTL
 }
 
 // ========== 3. 기타 배치 (차트, 캘린더) ==========

@@ -24,50 +24,16 @@ export const GET: APIRoute = async ({ request, locals }) => {
   }
 
   if (missing.length > 0) {
-    for (const t of missing) {
-      try {
-        const res = await fetch(`https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(t)}?interval=1d&range=3mo`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-            'Accept': 'application/json'
-          }
-        });
-        if (!res.ok) throw new Error(`YF Chart HTTP error: ${res.status}`);
-        
-        const json = await res.json();
-        const result = json.chart?.result?.[0];
-        if (!result) continue;
-        
-        const closePrices = result.indicators?.quote?.[0]?.close || [];
-        const quotes = closePrices.filter((c: number | null) => c !== null && c !== undefined);
-        
-        if (quotes.length > 0) {
-          const latest = quotes[quotes.length - 1];
-          
-          // 1W (약 5거래일 전)
-          const idx1W = Math.max(0, quotes.length - 6);
-          const price1W = quotes[idx1W] || latest;
-          
-          // 1M (약 21거래일 전)
-          const idx1M = Math.max(0, quotes.length - 22);
-          const price1M = quotes[idx1M] || latest;
-
-          const change1W = ((latest - price1W) / price1W) * 100;
-          const change1M = ((latest - price1M) / price1M) * 100;
-          
-          const ret = { change1W, change1M };
-          results[t] = ret;
-          
-          // 4시간 캐싱 (과거 수익률이므로 자주 바뀔 필요 없음)
-          await redis.set(`gidne_ret_v2_${t}`, JSON.stringify(ret), { ex: 14400 });
-        }
-      } catch(e) {
-        console.error(`Failed returns for ${t}:`, e);
+      // 큐에 추가하여 data-pump가 1W, 1M 수익률을 안전한 로컬 환경에서 처리하도록 위임 (Cloudflare/Yahoo 블록 방어)
+      for (const t of missing) {
+        await redis.sadd('gidne_queue_returns', t);
       }
-      // Throttling for Yahoo (200ms per ticker)
-      await new Promise(r => setTimeout(r, 200));
+      
+      // 당장 표시할 캐시가 없으므로 프론트에 임시 0 반환 (다음 폴링 시 업데이트 됨)
+      for (const t of missing) {
+        results[t] = { change1W: 0, change1M: 0 };
+      }
     }
-  }
 
   return new Response(JSON.stringify(results), {
     status: 200,

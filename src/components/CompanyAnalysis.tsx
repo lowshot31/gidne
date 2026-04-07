@@ -206,7 +206,7 @@ export default function CompanyAnalysis({ ticker, currentPrice }: Props) {
                   style={{ left: `${targetPct}%` }}
                   title={`Current Price: $${currentPrice}`}
                 >
-                  <div className="marker-tooltip">${currentPrice}</div>
+                  <div className="marker-tooltip">Now</div>
                 </div>
               </div>
             </div>
@@ -383,11 +383,16 @@ export default function CompanyAnalysis({ ticker, currentPrice }: Props) {
           top: -6px;
           width: 4px;
           height: 20px;
-          background: var(--text-primary);
+          background: #00ffff;
           border-radius: 2px;
           transform: translateX(-2px);
-          box-shadow: 0 0 8px rgba(0,0,0,0.5);
+          box-shadow: 0 0 8px #00ffff, 0 0 15px #00ffff;
           transition: left 0.5s ease;
+          z-index: 10;
+        }
+        [data-theme='light'] .current-price-marker {
+          background: #0077ff;
+          box-shadow: 0 0 8px #0077ff, 0 0 15px #0077ff;
         }
         .marker-tooltip {
           position: absolute;
@@ -395,14 +400,26 @@ export default function CompanyAnalysis({ ticker, currentPrice }: Props) {
           left: 50%;
           transform: translateX(-50%);
           margin-top: 6px;
-          background: var(--text-primary);
-          color: var(--bg-body);
-          padding: 2px 6px;
+          background: rgba(0, 255, 255, 0.15);
+          border: 1px solid #00ffff;
+          color: #e0ffff;
+          padding: 2px 8px;
           border-radius: 4px;
-          font-size: 0.75rem;
+          font-size: 0.70rem;
           font-family: var(--font-mono);
-          font-weight: 600;
+          font-weight: 700;
+          text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
+          box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
           pointer-events: none;
+          white-space: nowrap;
+          z-index: 10;
+        }
+        [data-theme='light'] .marker-tooltip {
+          background: rgba(0, 119, 255, 0.1);
+          border: 1px solid #0077ff;
+          color: #0044aa;
+          text-shadow: 0 0 8px rgba(0, 119, 255, 0.6);
+          box-shadow: 0 0 10px rgba(0, 119, 255, 0.3);
         }
 
         /* SEC Filings */
