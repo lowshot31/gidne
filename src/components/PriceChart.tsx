@@ -185,12 +185,24 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
   return (
     <div className="bento-item h-full price-chart-container" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <h3 className="text-secondary" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem' }}>
+        <h3 className="text-secondary" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '1rem', flexWrap: 'wrap' }}>
           {currentName}
           {isDelayed && (
             <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(255, 165, 0, 0.1)', color: '#ffa500', border: '1px solid rgba(255, 165, 0, 0.2)' }}>
               🕒 15분 지연
             </span>
+          )}
+          
+          {isRestrictedSymbol && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ width: '8px', height: '8px', backgroundColor: 'var(--accent-primary)', borderRadius: '2px' }}></div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--text-muted)' }}>vs S&P 500 (역상관)</span>
+              </div>
+              <div style={{ fontSize: '0.65rem', padding: '2px 6px', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--bull)', border: '1px solid rgba(34, 197, 94, 0.2)', borderRadius: '4px' }}>
+                ✅ Gidne Native 우회
+              </div>
+            </div>
           )}
         </h3>
         {showTabs && (
@@ -234,28 +246,37 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
       
       {/* TradingView 위젯 컨테이너 (Zero-Flash Dynamic Caching) */}
       <div className="tradingview-widget-container" style={{ position: 'relative', flex: 1, minHeight: '350px', width: '100%', borderRadius: '4px', overflow: 'hidden' }}>
-        {isRestrictedSymbol ? (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 20, backgroundColor: 'var(--bg-secondary)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <CustomLightweightChart ticker={currentTicker} name={currentName} hideWrapper={true} />
-            {/* Added a subtle overlay indicating this is the native bypass rendering */}
-            <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '0.65rem', padding: '2px 6px', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--bull)', border: '1px solid rgba(34, 197, 94, 0.2)', borderRadius: '4px', zIndex: 30 }}>
-              ✅ Gidne Native 우회
-            </div>
-          </div>
-        ) : (
-          Array.from(visitedSymbols).map((sym) => (
+        {/* TradingView 위젯 백그라운드 렌더링 (DOM 언마운트 방지하여 재로딩 지연 제거) */}
+        {Array.from(visitedSymbols).map((sym) => {
+          if (sym.startsWith('CBOE:')) return null;
+          const isActive = sym === currentSymbol && !isRestrictedSymbol;
+          return (
             <div 
               key={sym}
               id={`tv_chart_${sym.replace(/[^a-zA-Z0-9]/g, '_')}`}
               style={{ 
                 position: 'absolute', 
                 inset: 0, 
-                opacity: sym === currentSymbol ? 1 : 0, 
-                pointerEvents: sym === currentSymbol ? 'auto' : 'none',
-                zIndex: sym === currentSymbol ? 10 : 1
+                opacity: isActive ? 1 : 0, 
+                pointerEvents: isActive ? 'auto' : 'none',
+                zIndex: isActive ? 10 : 1,
+                transition: 'opacity 0.2s ease-in-out'
               }} 
             />
-          ))
+          );
+        })}
+
+        {/* Native 우회 차트 오버레이 영역 (CBOE 전용) */}
+        {isRestrictedSymbol && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 20, backgroundColor: 'var(--bg-secondary)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+             <CustomLightweightChart 
+              ticker={currentTicker} 
+              name={currentName} 
+              hideWrapper={true} 
+              compareTicker="SPY"
+              compareName="S&P 500"
+            />
+          </div>
         )}
       </div>
     </div>

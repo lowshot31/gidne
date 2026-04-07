@@ -108,7 +108,7 @@ export default function MacroClient() {
           </div>
 
           {/* List Content */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', background: 'rgba(0,0,0,0.2)' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem 1rem 1rem 1rem', background: 'transparent' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                 {listData.map(m => {
                   const isSelected = selectedTicker === m.ticker;

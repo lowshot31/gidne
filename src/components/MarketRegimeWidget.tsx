@@ -44,7 +44,12 @@ export default function MarketRegimeWidget() {
       }
     }
 
-    return { regime, color, shortDesc, icon, metrics: { vix, vixChange, dxyChange, tnxChange, spxChange } };
+    // Score for visual thermometer (0 = Extreme Fear, 100 = Extreme Greed)
+    // VIX 10 = 100 (Greed), VIX 35+ = 0 (Fear)
+    let score = 100 - ((vix - 10) / 25) * 100;
+    score = Math.max(0, Math.min(100, score));
+
+    return { regime, color, shortDesc, icon, score, metrics: { vix, vixChange, dxyChange, tnxChange, spxChange } };
   }, [data]);
 
   if (loading || !regimeInfo) return <div className="bento-item p-xl text-center">Loading Regime...</div>;
@@ -79,6 +84,37 @@ export default function MarketRegimeWidget() {
               </li>
             </ul>
           </div>
+        </div>
+      </div>
+
+      {/* ── Visual Thermometer Bar ── */}
+      <div style={{ marginBottom: '2rem', padding: '0 4px' }}>
+        <div style={{ 
+          position: 'relative', 
+          width: '100%', 
+          height: '10px', 
+          background: 'linear-gradient(90deg, #9c27b0, #ef5350, #f5a623, #22c55e)', 
+          borderRadius: '5px',
+          boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)'
+        }}>
+          <div style={{ 
+            position: 'absolute', 
+            top: '-5px', 
+            left: `calc(${regimeInfo.score}% - 10px)`, 
+            width: '20px', 
+            height: '20px', 
+            background: 'var(--card-bg)', 
+            border: `3px solid ${regimeInfo.color}`, 
+            borderRadius: '50%',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+            transition: 'left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '14px', fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500, padding: '0 2px' }}>
+          <span>극단적 공포</span>
+          <span>공포</span>
+          <span>중립</span>
+          <span>탐욕</span>
         </div>
       </div>
 

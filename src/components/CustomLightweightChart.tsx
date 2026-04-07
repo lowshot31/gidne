@@ -1,17 +1,20 @@
 import React, { useEffect, useRef, useState, memo } from 'react';
-import { createChart, ColorType, AreaSeries } from 'lightweight-charts';
+import { createChart, ColorType, AreaSeries, LineSeries } from 'lightweight-charts';
 import type { IChartApi, ISeriesApi, Time } from 'lightweight-charts';
 
 interface Props {
   ticker: string;
   name: string;
   hideWrapper?: boolean;
+  compareTicker?: string;
+  compareName?: string;
 }
 
-function CustomLightweightChart({ ticker, name, hideWrapper }: Props) {
+function CustomLightweightChart({ ticker, name, hideWrapper, compareTicker, compareName }: Props) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Area"> | null>(null);
+  const compareSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,9 +24,18 @@ function CustomLightweightChart({ ticker, name, hideWrapper }: Props) {
     const fetchAndRender = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/chart?ticker=${encodeURIComponent(ticker)}&interval=1d`);
-        if (!res.ok) throw new Error('Data fetch failed');
-        const data = await res.json();
+        const fetches = [fetch(`/api/chart?ticker=${encodeURIComponent(ticker)}&interval=1d`)];
+        if (compareTicker) {
+          fetches.push(fetch(`/api/chart?ticker=${encodeURIComponent(compareTicker)}&interval=1d`));
+        }
+
+        const responses = await Promise.all(fetches);
+        for (const res of responses) {
+          if (!res.ok) throw new Error('Data fetch failed');
+        }
+
+        const data = await responses[0].json();
+        const compareData = compareTicker ? await responses[1].json() : null;
         
         if (!isMounted) return;
 
@@ -33,8 +45,7 @@ function CustomLightweightChart({ ticker, name, hideWrapper }: Props) {
         const bgColor = isLight ? '#ffffff' : '#161616';
         const textColor = isLight ? '#333333' : '#d1d4dc';
         const gridColor = isLight ? 'rgba(229, 229, 234, 1)' : 'rgba(42, 42, 42, 1)';
-        const lineColor = '#2962FF';
-        const topColor = isLight ? 'rgba(41, 98, 255, 0.2)' : 'rgba(41, 98, 255, 0.4)';
+        const compColor = isLight ? 'rgba(245, 158, 11, 0.8)' : 'rgba(251, 191, 36, 0.8)'; // Amber/Gold for SPY
 
         // Determine if bull or bear overall trend for color
         let trendBull = true;
@@ -71,10 +82,25 @@ function CustomLightweightChart({ ticker, name, hideWrapper }: Props) {
             topColor: finalTopColor,
             bottomColor: 'rgba(0, 0, 0, 0)',
             lineWidth: 2,
+            priceScaleId: 'right',
           });
 
           chartRef.current = chart;
           seriesRef.current = series;
+
+          if (compareTicker) {
+            chart.priceScale('left').applyOptions({
+              visible: true,
+              borderColor: gridColor,
+            });
+            const cSeries = chart.addSeries(LineSeries, {
+              color: compColor,
+              lineWidth: 2,
+              lineStyle: 0,
+              priceScaleId: 'left',
+            });
+            compareSeriesRef.current = cSeries;
+          }
         } else {
           // Update colors if theme changed
           chartRef.current.applyOptions({
@@ -91,14 +117,25 @@ function CustomLightweightChart({ ticker, name, hideWrapper }: Props) {
             lineColor: finalLineColor,
             topColor: finalTopColor,
           });
+          if (compareSeriesRef.current) {
+            compareSeriesRef.current.applyOptions({ color: compColor });
+          }
         }
 
         const formattedData = data.map((d: any) => ({
           time: d.time as Time,
           value: d.close,
         }));
-
         seriesRef.current?.setData(formattedData);
+
+        if (compareData && compareSeriesRef.current) {
+          const fmtComp = compareData.map((d: any) => ({
+            time: d.time as Time,
+            value: d.close,
+          }));
+          compareSeriesRef.current.setData(fmtComp);
+        }
+
         chartRef.current.timeScale().fitContent();
         
         setLoading(false);
@@ -146,7 +183,7 @@ function CustomLightweightChart({ ticker, name, hideWrapper }: Props) {
 
   if (hideWrapper) {
     return (
-      <div className="price-chart-container" style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', overflow: 'hidden' }}>
+      <div className="price-chart-container" style={{ position: 'relative', display: 'flex', flexDirection: 'column', width: '100%', height: '100%', overflow: 'hidden' }}>
         {chartContent}
       </div>
     );
