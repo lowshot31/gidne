@@ -143,12 +143,15 @@ async function pumpHoldingsData() {
 }
 
 // ========== 2. 온디맨드 큐(Demand Queue) 처리기 ==========
-async function pumpDemandQueues() {
+async function pumpDemandQueues(): Promise<boolean> {
+  let processedAny = false;
+
   // 개별 티커 단위 처리
   const processQueue = async (queueName: string, cachePrefix: string, fetchFn: (t: string) => Promise<any>, ttl: number) => {
     const tickers = await redis.smembers(queueName);
     if (!tickers || tickers.length === 0) return;
     
+    processedAny = true;
     console.log(`[Pump:Queue] Processing ${tickers.length} demands from ${queueName}`);
     const pipeline = redis.pipeline();
     
@@ -325,6 +328,8 @@ async function pumpDemandQueues() {
 
     return { change1W, change1M };
   }, 14400); // 4 hours TTL
+
+  return processedAny;
 }
 
 // ========== 3. 기타 배치 (차트, 캘린더) ==========
@@ -399,15 +404,26 @@ async function main() {
   const POLLING_INTERVAL = getPollingInterval(); // 보통 15000ms
 
   let lastQueuePump = Date.now();
+  let currentPollDelay = 2000; // 초기 큐 폴링 딜레이 (2초)
+  const MAX_POLL_DELAY = 10000; // 큐가 빌 경우 최대 대기 시간 (10초)
 
   while (true) {
     const now = Date.now();
 
-    // 1. 빠른 큐 폴링 (5초마다 한 번씩만 확인하여 Upstash 무료 한도 방어)
-    if (now - lastQueuePump >= 5000) {
+    // 1. 적응형 큐 폴링 (Adaptive Polling: 하드 제한 방어 & 실시간성 확보)
+    if (now - lastQueuePump >= currentPollDelay) {
       lastQueuePump = now;
       try {
-        await pumpDemandQueues();
+        const didWork = await pumpDemandQueues();
+        if (didWork) {
+          // 큐에 처리할 일이 있었다면, 대기 시간을 즉시 2초로 리셋하여 
+          // 다음 들어오는 큐들도 최대한 빨리 처리 (터미널의 실시간 체감 확보)
+          currentPollDelay = 2000; 
+        } else {
+          // 큐가 비어있다면 대기 시간을 점진적으로 1.5배씩 늘림 (최대 10초 대기)
+          // 아무도 앱을 사용하지 않는 새벽 시간에 API 호출을 80% 이상 절약
+          currentPollDelay = Math.min(currentPollDelay * 1.5, MAX_POLL_DELAY);
+        }
       } catch (e) {
         console.error('[Pump] Demand Queue error:', e);
       }
