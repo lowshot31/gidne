@@ -51,27 +51,49 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
   );
 
   useEffect(() => {
-    // 탭 클릭을 기다리지 않고, 컴포넌트 마운트 시 즉시 전체 1W/1M 수익률을 백그라운드에서 프리페치(Pre-fetch)
-    const allNeeded = Array.from(new Set([
-      '^GSPC', // Ensure SP500 is ALWAYS requested
-      '^IXIC', // Ensure NASDAQ is ALWAYS requested
-      ...sectors.map(s => s.ticker), 
-      ...macro.map(m => m.ticker),
-      ...(holdings ? Object.values(holdings).flat().map(h => h.symbol) : []),
-      ...wlTickers
-    ]));
-    
-    const missing = allNeeded.filter(t => !returnsCache[t]);
-    if (missing.length > 0) {
-      setIsLoading(true);
-      fetch(`/api/returns?tickers=${missing.map(encodeURIComponent).join(',')}`)
-        .then(r => r.ok ? r.json() : {})
-        .then(data => {
-          setReturnsCache(prev => ({ ...prev, ...data }));
-          setIsLoading(false);
-        })
-        .catch(() => setIsLoading(false));
-    }
+    let pollingTimer: ReturnType<typeof setTimeout>;
+
+    const fetchReturns = () => {
+      const allNeeded = Array.from(new Set([
+        '^GSPC', '^IXIC', 
+        ...sectors.map(s => s.ticker), 
+        ...macro.map(m => m.ticker),
+        ...(holdings ? Object.values(holdings).flat().map(h => h.symbol) : []),
+        ...wlTickers
+      ]));
+      
+      const missing = allNeeded.filter(t => {
+        const cached = returnsCache[t];
+        // 캐시가 없거나, 아직 펌프가 처리 중이라서 API가 임시로 0,0을 보낸 상태일 경우 (change1W 0 && change1M 0은 매우 희박하므로 로딩 상태로 간주)
+        if (!cached) return true;
+        if (cached.change1W === 0 && cached.change1M === 0) return true;
+        return false;
+      });
+
+      if (missing.length > 0) {
+        setIsLoading(true);
+        fetch(`/api/returns?tickers=${missing.map(encodeURIComponent).join(',')}`)
+          .then(r => r.ok ? r.json() as Promise<Record<string, {change1W: number, change1M: number}>> : {})
+          .then((data: any) => {
+            setReturnsCache(prev => ({ ...prev, ...data }));
+            
+            // 아직 data에 진짜 값이 안 들어온 항목이 있다면 (큐에서 대기 중), 5초 뒤에 다시 찔러봄!
+            const stillMissing = missing.some(t => !data[t] || (data[t].change1W === 0 && data[t].change1M === 0));
+            if (stillMissing) {
+              pollingTimer = setTimeout(fetchReturns, 5000);
+            } else {
+              setIsLoading(false);
+            }
+          })
+          .catch(() => setIsLoading(false));
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReturns();
+
+    return () => clearTimeout(pollingTimer);
   }, [timeframe, wlTickers, sectors, macro, holdings]);
 
   const getChange = (ticker: string, default1D: number) => {
