@@ -1,6 +1,5 @@
 // src/pages/api/news.ts
 import type { APIRoute } from 'astro';
-import { yahooFinance } from '../../lib/yahoo-finance';
 import { getRedis } from '../../lib/redis';
 
 export const GET: APIRoute = async ({ request, locals }) => {
@@ -44,7 +43,17 @@ export const GET: APIRoute = async ({ request, locals }) => {
       const uuidSet = new Set();
       
       for (const query of queries) {
-        const result = await yahooFinance.search(query, { newsCount: count });
+        const searchRes = await fetch(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&newsCount=${count}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+            'Accept': 'application/json'
+          }
+        });
+        if (!searchRes.ok) {
+          console.warn(`YF Search HTTP error: ${searchRes.status}`);
+          continue;
+        }
+        const result = await searchRes.json();
         
         const yfNews = await Promise.all((result.news || []).map(async (item: any) => {
           if (uuidSet.has(item.uuid)) return null;

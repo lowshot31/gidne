@@ -335,11 +335,11 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           position: absolute;
           inset: 0;
           background-color: rgba(255, 255, 255, 0.12);
-          mask-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg');
+          mask-image: url('/map.svg');
           mask-size: 100% 100%;
           mask-position: center;
           mask-repeat: no-repeat;
-          -webkit-mask-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg');
+          -webkit-mask-image: url('/map.svg');
           -webkit-mask-size: 100% 100%;
           -webkit-mask-position: center;
           -webkit-mask-repeat: no-repeat;

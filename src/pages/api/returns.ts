@@ -1,6 +1,5 @@
 // src/pages/api/returns.ts
 import type { APIRoute } from 'astro';
-import { yahooFinance } from '../../lib/yahoo-finance';
 import { getRedis } from '../../lib/redis';
 
 export const GET: APIRoute = async ({ request, locals }) => {
@@ -27,21 +26,31 @@ export const GET: APIRoute = async ({ request, locals }) => {
   if (missing.length > 0) {
     for (const t of missing) {
       try {
-        const period1 = new Date(); 
-        period1.setMonth(period1.getMonth() - 2); // 넉넉히 2달치 (1M 계산을 위해)
-        const chart: any = await yahooFinance.chart(t, { period1, interval: '1d' as any });
+        const res = await fetch(`https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(t)}?interval=1d&range=3mo`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+            'Accept': 'application/json'
+          }
+        });
+        if (!res.ok) throw new Error(`YF Chart HTTP error: ${res.status}`);
         
-        const quotes = chart.quotes.filter((q: any) => q.close !== null && q.close !== undefined);
+        const json = await res.json();
+        const result = json.chart?.result?.[0];
+        if (!result) continue;
+        
+        const closePrices = result.indicators?.quote?.[0]?.close || [];
+        const quotes = closePrices.filter((c: number | null) => c !== null && c !== undefined);
+        
         if (quotes.length > 0) {
-          const latest = quotes[quotes.length - 1].close;
+          const latest = quotes[quotes.length - 1];
           
           // 1W (약 5거래일 전)
           const idx1W = Math.max(0, quotes.length - 6);
-          const price1W = quotes[idx1W].close || latest;
+          const price1W = quotes[idx1W] || latest;
           
           // 1M (약 21거래일 전)
           const idx1M = Math.max(0, quotes.length - 22);
-          const price1M = quotes[idx1M].close || latest;
+          const price1M = quotes[idx1M] || latest;
 
           const change1W = ((latest - price1W) / price1W) * 100;
           const change1M = ((latest - price1M) / price1M) * 100;
