@@ -33,15 +33,15 @@ function IndexRow({ idx, isSelected, onClick }: { idx: IndexQuote, isSelected: b
         marginBottom: '2px'
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <span style={{ fontSize: '1.2rem' }}>{idx.flag}</span>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>{idx.name}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flex: 1 }}>
+        <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{idx.flag}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1, paddingRight: '0.5rem' }}>
+          <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{idx.name}</span>
           <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{idx.symbol.replace('^', '')}</span>
         </div>
       </div>
       
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 500 }}>
           {idx.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
@@ -228,8 +228,9 @@ export default function IndicesClient() {
 
         .panel-header {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.75rem;
           margin-bottom: 1rem;
         }
         .panel-header h3 {

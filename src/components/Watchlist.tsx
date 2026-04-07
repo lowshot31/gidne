@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getWatchlist, addToWatchlist, removeFromWatchlist, reorderWatchlist } from '../lib/watchlist';
 import type { WatchlistItem } from '../lib/watchlist';
 import { useFlash } from '../hooks/useFlash';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 interface QuoteData {
   price: number;
@@ -24,7 +27,6 @@ interface SearchResult {
  */
 export default function Watchlist() {
   const [items, setItems] = useState<WatchlistItem[]>([]);
-  const [quotes, setQuotes] = useState<Map<string, QuoteData>>(new Map());
   const [inputValue, setInputValue] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,34 +49,27 @@ export default function Watchlist() {
     } catch {}
   }, []);
 
-  const fetchQuotes = useCallback(async (tickers: string[]) => {
-    if (tickers.length === 0) return;
-    const fetchList = Array.from(new Set([...tickers, '^GSPC', '^IXIC']));
-    try {
-      const res = await fetch(`/api/quotes?tickers=${fetchList.map(encodeURIComponent).join(',')}&_t=${Date.now()}`);
-      if (!res.ok) return;
-      const data: Record<string, QuoteData> = await res.json();
-      const newQuotes = new Map<string, QuoteData>();
-      Object.entries(data).forEach(([symbol, q]: [string, any]) => {
-        newQuotes.set(symbol, {
+  const { data: fetchedQuotes } = useSWR<Record<string, QuoteData>>(
+    items.length > 0 
+      ? `/api/quotes?tickers=${Array.from(new Set([...items.map(i => i.ticker), '^GSPC', '^IXIC'])).map(encodeURIComponent).join(',')}`
+      : null,
+    fetcher,
+    { refreshInterval: 5000, dedupingInterval: 2000 }
+  );
+
+  const quotes = React.useMemo(() => {
+    const m = new Map<string, QuoteData>();
+    if (fetchedQuotes) {
+      Object.entries(fetchedQuotes).forEach(([symbol, q]: [string, any]) => {
+        m.set(symbol, {
           price: q.price ?? 0,
           changePercent: q.changePercent ?? 0,
           name: q.name ?? symbol,
         });
       });
-      setQuotes(newQuotes);
-    } catch (err) {
-      console.error('[Watchlist] batch fetch error:', err);
     }
-  }, []);
-
-  // 워치리스트 시세 폴링 (5초 — 배치 API로 요청 수 최소화)
-  useEffect(() => {
-    const tickers = items.map(i => i.ticker);
-    fetchQuotes(tickers);
-    const interval = setInterval(() => fetchQuotes(tickers), 5000);
-    return () => clearInterval(interval);
-  }, [items, fetchQuotes]);
+    return m;
+  }, [fetchedQuotes]);
 
   // 자동완성 검색 (디바운스 300ms)
   const searchTickers = useCallback(async (query: string) => {
@@ -282,7 +277,16 @@ export default function Watchlist() {
                   onClick={() => handleSelectSuggestion(s.symbol)}
                   onMouseEnter={() => setSelectedIdx(idx)}
                 >
-                  <div className="ac-left">
+                  <div className="ac-left" style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ position: 'relative', width: '16px', height: '16px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--border-color)' }}>
+                      <span style={{ fontSize: '10px', color: '#fff' }}>{s.symbol.charAt(0)}</span>
+                      <img 
+                        src={`https://assets.parqet.com/logos/symbol/${s.symbol}?format=png`} 
+                        alt="" 
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', background: '#fff', zIndex: 1 }} 
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                      />
+                    </div>
                     <strong className="ac-symbol">{s.symbol}</strong>
                     <span className="ac-name text-muted">{s.name}</span>
                   </div>
@@ -519,9 +523,10 @@ export default function Watchlist() {
         .wl-ticker {
           display: flex;
           align-items: baseline;
-          gap: 0.3rem;
+          gap: 0.4rem;
           min-width: 0;
-          flex: 1;
+          flex: 0 1 auto;
+          max-width: 65%;
         }
         .wl-name {
           font-size: 0.7rem;
@@ -576,10 +581,20 @@ function WatchlistRow({ ticker, name, price, changePercent, isUp, benchmarkChang
       onDragOver={(e) => e.preventDefault()}
     >
       <div className="wl-grip" title="드래그해서 순서 변경">⋮⋮</div>
-      <div className="wl-ticker">
+      <div className="wl-ticker" style={{ alignItems: 'center' }}>
+        <div style={{ position: 'relative', width: '20px', height: '20px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--border-color)', border: '1px solid var(--border-color)' }}>
+          <span style={{ fontSize: '10px', color: '#fff' }}>{ticker.charAt(0)}</span>
+          <img 
+            src={`https://assets.parqet.com/logos/symbol/${ticker}?format=png`} 
+            alt="" 
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', background: '#fff', zIndex: 1 }} 
+            onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+          />
+        </div>
         <strong>{ticker}</strong>
-        {!isLoading && <span className="text-muted wl-name">{name}</span>}
+        {!isLoading && <span className="text-muted wl-name" style={{ marginLeft: '2px' }}>{name}</span>}
       </div>
+      <div style={{ flex: 1, borderBottom: '1px dotted var(--border-color)', margin: '0 12px', minWidth: '20px', alignSelf: 'center', opacity: 0.5, transform: 'translateY(-4px)' }}></div>
       <div className="wl-data" style={{ padding: '0 0.25rem', borderRadius: '4px', gap: '0.75rem' }}>
         {!isLoading ? (
           <>

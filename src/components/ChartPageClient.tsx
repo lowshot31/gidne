@@ -27,8 +27,8 @@ function formatNumber(n: number): string {
   if (Math.abs(n) >= 1e12) return (n / 1e12).toFixed(2) + 'T';
   if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(2) + 'B';
   if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(2) + 'M';
-  if (Math.abs(n) >= 1e3) return n.toLocaleString('en-US');
-  return n.toFixed(2);
+  if (Math.abs(n) >= 1e3) return n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function formatVolume(n: number): string {
@@ -50,7 +50,10 @@ export default function ChartPageClient({ initialTicker }: Props) {
 
   const fetchQuote = useCallback(async () => {
     try {
-      const res = await fetch(`/api/quote?ticker=${encodeURIComponent(initialTicker)}`);
+      const apiTicker = initialTicker.toUpperCase().endsWith('USDT') 
+        ? initialTicker.toUpperCase().replace('USDT', '-USD') 
+        : initialTicker;
+      const res = await fetch(`/api/quote?ticker=${encodeURIComponent(apiTicker)}`);
       if (!res.ok) throw new Error('Not found');
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -71,14 +74,27 @@ export default function ChartPageClient({ initialTicker }: Props) {
 
   if (loading) {
     return (
-      <div className="chart-page-skeleton">
-        <div className="skeleton-header" />
-        <div className="skeleton-chart" />
+      <div className="chart-page-loading" style={{ height: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="toss-spinner"></div>
+        <h3 style={{ marginTop: '1.5rem', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '1.2rem' }}>
+          실시간 데이터를 가져오는 중입니다...
+        </h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+          글로벌 금융 시장과 연결 중입니다 ⚡
+        </p>
         <style>{`
-          .chart-page-skeleton { padding: 1rem; }
-          .skeleton-header { height: 80px; background: var(--card-bg); border-radius: var(--radius-md); margin-bottom: 1rem; animation: pulse 1.5s ease-in-out infinite; }
-          .skeleton-chart { height: 500px; background: var(--card-bg); border-radius: var(--radius-md); animation: pulse 1.5s ease-in-out infinite; }
-          @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+          .toss-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent-primary);
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
         `}</style>
       </div>
     );
@@ -119,6 +135,10 @@ export default function ChartPageClient({ initialTicker }: Props) {
     { label: '거래소', value: quote.exchange || '-' },
   ];
 
+  const logoUrl = quote.quoteType === 'CRYPTOCURRENCY' 
+    ? `https://assets.coincap.io/assets/icons/${quote.symbol.replace('-USD', '').toLowerCase()}@2x.png`
+    : `https://assets.parqet.com/logos/symbol/${quote.symbol}?format=png`;
+
   return (
     <div className="chart-page">
       {/* ── 🚀 초고도화된 토스증권 스타일 티커 헤더 ── */}
@@ -126,16 +146,21 @@ export default function ChartPageClient({ initialTicker }: Props) {
         <div className="toss-hero-left">
           <div className="toss-hero-top">
             <a href="/" className="back-link" title="대시보드로 돌아가기">←</a>
-            <div className="toss-logo-circle" style={{ background: priceColor }}>
-              {quote.symbol.charAt(0)}
+            <div className="toss-logo-circle" style={{ background: priceColor, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ position: 'absolute', color: '#fff', fontSize: '1rem', fontWeight: 600 }}>{quote.symbol.charAt(0)}</span>
+              <img 
+                src={logoUrl} 
+                alt="" 
+                style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%', objectFit: 'contain', background: '#fff' }} 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+              />
             </div>
-            <h1 className="toss-name">{quote.name}</h1>
-            <span className="toss-symbol">{quote.symbol}</span>
+            <h1 className="toss-name">{quote.quoteType === 'CRYPTOCURRENCY' ? quote.name.replace(' USD', '') : quote.name}</h1>
+            <span className="toss-symbol">{quote.quoteType === 'CRYPTOCURRENCY' ? `${quote.symbol.replace('-USD', '')}/USDT` : quote.symbol}</span>
             
             {/* 태그 영역 */}
             <div className="toss-tags">
-              <span className="toss-tag">관심종목</span>
-              <span className="toss-tag dark-mode-tag">메모 0개</span>
+              {/* 기능이 연동되면 표시할 태그 영역 */}
             </div>
           </div>
           
@@ -221,7 +246,9 @@ export default function ChartPageClient({ initialTicker }: Props) {
           </div>
 
           {/* 당일 예상 변동폭 (Expected Move) - 옵션 IV 기반 */}
-          <ExpectedMoveWidget ticker={initialTicker} currentPrice={quote.price} />
+          {quote.quoteType !== 'CRYPTOCURRENCY' && (
+            <ExpectedMoveWidget ticker={initialTicker} currentPrice={quote.price} />
+          )}
 
           {/* 거래량 */}
           <div className="bento-item sidebar-card">

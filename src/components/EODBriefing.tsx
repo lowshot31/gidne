@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import type { SectorData, MacroData, TickerQuote } from '../lib/types';
 import { SECTOR_HOLDINGS, MACRO_SECTOR_DRIVERS } from '../lib/tickers';
 import { getWatchlistTickers } from '../lib/watchlist';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 interface HoldingQuote {
   ticker: string;
@@ -30,21 +33,22 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
   const [timeframe, setTimeframe] = useState<TimeFrame>('1D');
   const [copied, setCopied] = useState(false);
   const [wlTickers, setWlTickers] = useState<string[]>([]);
-  const [wlQuotes, setWlQuotes] = useState<Record<string, {name: string, changePercent: number}>>({});
   const [returnsCache, setReturnsCache] = useState<Record<string, {change1W: number, change1M: number}>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showWlExpand, setShowWlExpand] = useState(false);
 
   useEffect(() => {
-    const wl = getWatchlistTickers();
-    setWlTickers(wl);
-    if (wl.length > 0) {
-      fetch(`/api/quotes?tickers=${wl.map(encodeURIComponent).join(',')}`)
-        .then(r => r.ok ? r.json() : {})
-        .then(data => setWlQuotes(data))
-        .catch(console.error);
-    }
+    const loadWl = () => setWlTickers(getWatchlistTickers());
+    loadWl();
+    window.addEventListener('gidne_watchlist_updated', loadWl);
+    return () => window.removeEventListener('gidne_watchlist_updated', loadWl);
   }, []);
+
+  const { data: wlQuotes = {} } = useSWR<Record<string, {name: string, changePercent: number}>>(
+    wlTickers.length > 0 ? `/api/quotes?tickers=${wlTickers.map(encodeURIComponent).join(',')}` : null,
+    fetcher,
+    { refreshInterval: 10000, dedupingInterval: 2000 }
+  );
 
   useEffect(() => {
     // 탭 클릭을 기다리지 않고, 컴포넌트 마운트 시 즉시 전체 1W/1M 수익률을 백그라운드에서 프리페치(Pre-fetch)
@@ -254,9 +258,12 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
                 const isGainer = (m.change ?? 0) >= 0;
                 return (
                   <a key={m.ticker+idx} href={`/chart/${encodeURIComponent(m.ticker)}`} className="eod-holding-row" style={{border: `1px solid ${isGainer ? 'rgba(34,197,94,0.3)' : 'rgba(239,83,80,0.3)'}`, background: isGainer ? 'rgba(34,197,94,0.05)' : 'rgba(239,83,80,0.05)'}}>
-                    <span>{m.ticker} <span className={isGainer ? 'text-bull' : 'text-bear'} style={{marginLeft:'2px', fontSize:'0.7rem', fontWeight: 600}}>
-                      {m.change === null ? '로딩중' : `${isGainer ? '+' : ''}${m.change.toFixed(1)}%`}
-                    </span></span>
+                    <span>{m.ticker} {m.change === null 
+                      ? <span className="eod-shimmer-pill" /> 
+                      : <span className={isGainer ? 'text-bull' : 'text-bear'} style={{marginLeft:'2px', fontSize:'0.7rem', fontWeight: 600}}>
+                          {isGainer ? '+' : ''}{m.change.toFixed(1)}%
+                        </span>
+                    }</span>
                   </a>
                 );
               })}
@@ -375,6 +382,22 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
         .eod-holding-row:hover {
           background: var(--accent-subtle, rgba(200,155,60,0.12));
           border-color: var(--accent-primary); color: var(--text-primary);
+        }
+
+        .eod-shimmer-pill {
+          display: inline-block;
+          width: 36px;
+          height: 12px;
+          border-radius: 4px;
+          background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite linear;
+          vertical-align: middle;
+          margin-left: 4px;
+        }
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
         }
       `}</style>
     </div>

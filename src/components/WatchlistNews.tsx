@@ -11,41 +11,59 @@ interface NewsItem {
 }
 
 export default function WatchlistNews() {
-  const [news, setNews] = useState<NewsItem[]>([]);
+  const [generalNews, setGeneralNews] = useState<NewsItem[]>([]);
+  const [tickerNews, setTickerNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'ticker'>('all');
 
-  // Poll news every 1 minute
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        // 실제 워치리스트 키: 'gidne-watchlist', 형태: {ticker: string, addedAt: string}[]
-        const savedTickersStr = localStorage.getItem('gidne-watchlist') || '[]';
-        const parsed = JSON.parse(savedTickersStr);
-        const tickers: string[] = Array.isArray(parsed) 
-          ? parsed.map((item: any) => typeof item === 'string' ? item : item?.ticker).filter(Boolean)
-          : [];
-        // 검색 쿼리가 너무 길면 야후 파이낸스에서 결과가 떨어지므로 최근 3개만 대표로 쿼리
-        const query = (tickers.length > 0 ? tickers.slice(0, 3).join(',') : 'finance');
-        
-        const res = await fetch(`/api/news?q=${query}&count=15`);
-        if (!res.ok) throw new Error('API failed');
-        const data = await res.json();
-        setNews(data);
-      } catch (err) {
-        console.error('Failed to fetch news', err);
-      } finally {
-        setLoading(false);
+  // 전체 시장 뉴스 가져오기
+  const fetchGeneralNews = async () => {
+    try {
+      const res = await fetch(`/api/news?q=stock market&count=15`);
+      if (!res.ok) throw new Error('API failed');
+      const data = await res.json();
+      setGeneralNews(data);
+    } catch (err) {
+      console.error('Failed to fetch general news', err);
+    }
+  };
+
+  // 워치리스트 종목 뉴스 가져오기
+  const fetchTickerNews = async () => {
+    try {
+      const savedTickersStr = localStorage.getItem('gidne-watchlist') || '[]';
+      const parsed = JSON.parse(savedTickersStr);
+      const tickers: string[] = Array.isArray(parsed) 
+        ? parsed.map((item: any) => typeof item === 'string' ? item : item?.ticker).filter(Boolean)
+        : [];
+      if (tickers.length === 0) {
+        setTickerNews([]);
+        return;
       }
+      const query = tickers.slice(0, 5).join(',');
+      const res = await fetch(`/api/news?q=${encodeURIComponent(query)}&count=15`);
+      if (!res.ok) throw new Error('API failed');
+      const data = await res.json();
+      setTickerNews(data);
+    } catch (err) {
+      console.error('Failed to fetch ticker news', err);
+    }
+  };
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      await Promise.all([fetchGeneralNews(), fetchTickerNews()]);
+      setLoading(false);
     };
-    
-    fetchNews();
-    
-    // 워치리스트 변경 이벤트를 수신해서 즉시 뉴스 업데이트
-    const handleStorageChange = () => { fetchNews(); };
+    fetchAll();
+
+    const handleStorageChange = () => { fetchTickerNews(); };
     window.addEventListener('gidne_watchlist_updated', handleStorageChange);
     
-    const iv = setInterval(fetchNews, 60000);
+    const iv = setInterval(() => {
+      fetchGeneralNews();
+      fetchTickerNews();
+    }, 60000);
     return () => {
       clearInterval(iv);
       window.removeEventListener('gidne_watchlist_updated', handleStorageChange);
@@ -54,20 +72,13 @@ export default function WatchlistNews() {
 
   const timeAgo = (publishTime: string | number | Date) => {
     if (!publishTime) return '';
-    
-    // Date 객체 생성 (문자열이든 밀리초든 모두 커버)
     let pubDate = new Date(publishTime);
-    
-    // 만약 timestamp가 (밀리초가 아닌) '초(seconds)' 단위라면 1970년대로 파싱됨
     if (typeof publishTime === 'number' && publishTime < 10000000000) {
       pubDate = new Date(publishTime * 1000);
     }
-    
     if (isNaN(pubDate.getTime())) return '얼마 전';
-    
     const diffMs = Date.now() - pubDate.getTime();
-    if (diffMs < 0) return '방금 전'; // 시스템 시간 오차 방지
-    
+    if (diffMs < 0) return '방금 전';
     const diff = Math.floor(diffMs / 60000);
     if (diff < 1) return '방금 전';
     if (diff < 60) return `${diff}분 전`;
@@ -76,10 +87,7 @@ export default function WatchlistNews() {
     return `${Math.floor(hours / 24)}일 전`;
   };
 
-  const filteredNews = news.filter((item) => {
-    if (activeTab === 'ticker') return item.type === 'article';
-    return true;
-  });
+  const displayedNews = activeTab === 'all' ? generalNews : tickerNews;
 
   return (
     <div className="bento-item h-full flex flex-col" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -98,6 +106,7 @@ export default function WatchlistNews() {
           size="sm"
           suffix={
             <a href="https://www.saveticker.com/app/news" target="_blank" rel="noopener noreferrer" className="live-squawk-btn" title="세이브티커 실시간 뉴스 열기">
+              <img src="https://www.google.com/s2/favicons?domain=saveticker.com&sz=16" alt="" style={{ width: '14px', height: '14px', borderRadius: '2px' }} />
               세이브티커 ↗
             </a>
           }
@@ -105,12 +114,12 @@ export default function WatchlistNews() {
       </div>
 
       <div className="news-scroll-container" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.6rem', paddingRight: '4px' }}>
-        {!loading && filteredNews.length === 0 ? (
+        {!loading && displayedNews.length === 0 ? (
           <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '1rem' }}>
-            해당 탭에 뉴스가 없습니다.
+            {activeTab === 'ticker' ? '워치리스트에 종목을 추가하면 관련 뉴스가 표시됩니다.' : '뉴스를 불러오는 중...'}
           </div>
         ) : (
-          filteredNews.map((item) => {
+          displayedNews.map((item: NewsItem) => {
             return (
               <a key={item.uuid} href={item.link} target="_blank" rel="noopener noreferrer" className="news-card">
                 <div className="news-meta">
@@ -137,21 +146,23 @@ export default function WatchlistNews() {
 
 
         .live-squawk-btn {
-          background: rgba(239, 83, 80, 0.1) !important;
-          color: var(--bear) !important;
-          border: 1px solid rgba(239, 83, 80, 0.3) !important;
           text-decoration: none;
-          font-size: 0.65rem;
-          font-family: var(--font-mono);
-          padding: 3px 8px;
-          border-radius: 4px;
+          font-size: 0.75rem;
+          padding: 0.35rem 0.7rem;
+          border-radius: 8px;
           transition: all 0.2s ease;
           display: flex;
           align-items: center;
+          gap: 4px;
+          color: var(--text-muted);
+          background: transparent;
+          border: none;
+          white-space: nowrap;
         }
         .live-squawk-btn:hover {
-          background: rgba(239, 83, 80, 0.2) !important;
-          box-shadow: 0 0 8px rgba(239, 83, 80, 0.2);
+          color: var(--text-primary);
+          background: rgba(255,255,255,0.1);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
         .news-card {

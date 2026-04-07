@@ -142,6 +142,11 @@ export default function DashboardClient() {
     setLayouts(DEFAULT_LAYOUTS);
   };
 
+  // 에러 시 스켈레톤 대신 인라인 에러 카드
+  const fallback = error && !loading
+    ? <SkeletonCard error={error} onRetry={() => window.location.reload()} />
+    : <SkeletonCard />;
+
   return (
     <div style={{ paddingBottom: '2rem' }}>
       <ResponsiveGridLayout
@@ -156,7 +161,7 @@ export default function DashboardClient() {
       >
         <div key="pulse" className="widget-wrapper">
           <div className="drag-handle"></div>
-          {isDataReady ? <MarketPulse data={data.marketPulse} /> : <SkeletonCard />}
+          {isDataReady ? <MarketPulse data={data.marketPulse} /> : fallback}
         </div>
         
         <div key="macro" className="widget-wrapper macro-focus-card bento-item" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -170,17 +175,17 @@ export default function DashboardClient() {
                 </p>
               </div>
             </>
-          ) : <SkeletonCard />}
+          ) : fallback}
         </div>
 
         <div key="sector" className="widget-wrapper">
           <div className="drag-handle"></div>
-          {isDataReady ? <SectorBar sectors={data.sectors} /> : <SkeletonCard />}
+          {isDataReady ? <SectorBar sectors={data.sectors} /> : fallback}
         </div>
 
         <div key="rs" className="widget-wrapper">
           <div className="drag-handle"></div>
-          {isDataReady ? <RSLeaderboard sectors={data.sectors} /> : <SkeletonCard />}
+          {isDataReady ? <RSLeaderboard sectors={data.sectors} /> : fallback}
         </div>
 
         <div key="crypto" className="widget-wrapper">
@@ -195,7 +200,7 @@ export default function DashboardClient() {
 
         <div key="breadth" className="widget-wrapper">
           <div className="drag-handle"></div>
-          {isDataReady ? <MarketBreadth sectors={data.sectors} macro={data.macro} /> : <SkeletonCard />}
+          {isDataReady ? <MarketBreadth sectors={data.sectors} macro={data.macro} /> : fallback}
         </div>
 
         <div key="watchlist" className="widget-wrapper">
@@ -215,7 +220,7 @@ export default function DashboardClient() {
 
         <div key="eod" className="widget-wrapper">
           <div className="drag-handle"></div>
-          {isDataReady ? <EODBriefing sectors={data.sectors} macro={data.macro} holdings={data.holdings} indices={data.indices} /> : <SkeletonCard />}
+          {isDataReady ? <EODBriefing sectors={data.sectors} macro={data.macro} holdings={data.holdings} indices={data.indices} /> : fallback}
         </div>
       </ResponsiveGridLayout>
 

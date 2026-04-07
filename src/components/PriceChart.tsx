@@ -68,10 +68,11 @@ const getTVSymbol = (ticker: string) => {
   // 크립토 / 주요 ETF
   if (ticker === 'SPY') return 'AMEX:SPY';
   if (ticker === 'QQQ') return 'NASDAQ:QQQ';
-  if (ticker === 'BTC-USD') return 'BINANCE:BTCUSD';
-  if (ticker === 'ETH-USD') return 'BINANCE:ETHUSD';
-  if (ticker === 'SOL-USD') return 'BINANCE:SOLUSD';
-  if (ticker === 'DOGE-USD') return 'BINANCE:DOGEUSD';
+  
+  if (ticker.endsWith('-USD')) {
+    const coin = ticker.replace('-USD', '');
+    return `BINANCE:${coin}USDT`; // 바이낸스 현물 마켓으로 통일하여 100% 인식되도록 구성
+  }
 
   if (/^XL[A-Z]$/.test(ticker)) return `AMEX:${ticker}`;
 

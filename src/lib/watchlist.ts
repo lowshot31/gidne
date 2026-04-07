@@ -3,6 +3,12 @@
 
 const STORAGE_KEY = 'gidne-watchlist';
 
+const notifyWatchlistChange = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('gidne_watchlist_updated'));
+  }
+};
+
 export interface WatchlistItem {
   ticker: string;
   addedAt: string; // ISO date
@@ -46,6 +52,7 @@ export function addToWatchlist(ticker: string): WatchlistItem[] {
   
   const updated = [...list, { ticker: normalized, addedAt: new Date().toISOString() }];
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  notifyWatchlistChange();
   return updated;
 }
 
@@ -55,6 +62,7 @@ export function addToWatchlist(ticker: string): WatchlistItem[] {
 export function removeFromWatchlist(ticker: string): WatchlistItem[] {
   const list = getWatchlist().filter(item => item.ticker !== ticker.toUpperCase().trim());
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  notifyWatchlistChange();
   return list;
 }
 
@@ -67,6 +75,7 @@ export function reorderWatchlist(startIndex: number, endIndex: number): Watchlis
   const [removed] = result.splice(startIndex, 1);
   result.splice(endIndex, 0, removed);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
+  notifyWatchlistChange();
   return result;
 }
 

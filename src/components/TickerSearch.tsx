@@ -207,7 +207,11 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
     } else if (onNavigate) {
       onNavigate(s.symbol);
     } else {
-      window.location.href = `/chart/${s.symbol}`;
+      let navSymbol = s.symbol;
+      if (s.type === 'CRYPTOCURRENCY' && s.symbol.endsWith('-USD')) {
+        navSymbol = s.symbol.replace('-USD', 'USDT');
+      }
+      window.location.href = `/chart/${navSymbol}`;
     }
   };
 
@@ -288,7 +292,16 @@ export default function TickerSearch({ onNavigate, onSelect, mode = 'default' }:
               onClick={() => navigate(s)}
               onMouseEnter={() => setSelectedIdx(idx)}
             >
-              <div className="search-item-left">
+              <div className="search-item-left" style={{ alignItems: 'center' }}>
+                <div style={{ position: 'relative', width: '22px', height: '22px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--border-color)', border: '1px solid var(--border-color)' }}>
+                  <span style={{ fontSize: '11px', color: '#fff' }}>{s.symbol.charAt(0)}</span>
+                  <img 
+                    src={`https://assets.parqet.com/logos/symbol/${s.symbol}?format=png`} 
+                    alt="" 
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', background: '#fff', zIndex: 1 }} 
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                  />
+                </div>
                 <strong>{s.symbol}</strong>
                 <span className="search-item-name">{s.name}</span>
               </div>

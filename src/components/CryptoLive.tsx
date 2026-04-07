@@ -24,8 +24,14 @@ function CryptoRow({ symbol, price, change24h, high24h, low24h }: {
   const name = DISPLAY_NAMES[symbol] || symbol.replace('USDT', '');
 
   return (
-    <a href={`/chart/${encodeURIComponent(symbol.replace('USDT', '-USD'))}`} style={{ textDecoration: 'none' }} className={`crypto-row ${flash}`}>
-      <div className="crypto-name">
+    <a href={`/chart/${encodeURIComponent(symbol.toUpperCase())}`} style={{ textDecoration: 'none' }} className={`crypto-row ${flash}`}>
+      <div className="crypto-name" style={{ alignItems: 'center' }}>
+        <img 
+          src={`https://assets.coincap.io/assets/icons/${name.toLowerCase()}@2x.png`} 
+          alt="" 
+          style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'contain', background: '#fff', marginRight: '2px' }} 
+          onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+        />
         <strong>{name}</strong>
       </div>
       <div className="crypto-price-col">

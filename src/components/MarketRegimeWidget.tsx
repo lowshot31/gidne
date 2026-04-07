@@ -20,26 +20,26 @@ export default function MarketRegimeWidget() {
 
     let regime = '달리는 불장 (안전) 🚀';
     let color = 'var(--text-bull)';
-    let shortDesc = '증시 유동성이 풍부해 투자 심리가 안정적입니다. 주식과 코인에 돈이 몰리는 좋은 장세죠!';
+    let shortDesc = '변동성(VIX)이 20 이하로 얌전하며, 시장에 돈이 넘쳐 주식과 코인을 쓸어담기 좋은 타이밍입니다!';
     let icon = '🟢';
 
     if (vix > 20 || vixChange > 5) {
       if (tnxChange > 1 && dxyChange > 0.5) {
         regime = '발작 장세 (금리·달러 폭등) 🚨';
         color = 'var(--text-bear)';
-        shortDesc = '긴축 우려 등 거시적 악재로 인해 시장이 발작을 일으키고 있어요. 주식하기 힘든 장입니다.';
+        shortDesc = '금리와 달러가 동반 폭등하면서 세계 경제의 돈줄이 쪼그라들까봐 시장이 발작하는 무서운 장세입니다.';
         icon = '🔴';
       } else {
         regime = '현금 확보! (극단적 공포) 🥶';
         color = 'var(--text-bear)';
-        shortDesc = '공포 지수가 치솟으며 무차별 폭락이 나올 수 있어요. 지금은 현금을 꽉 쥘 시간입니다.';
+        shortDesc = '묻지마 폭락 투매가 나오는 구역. 기회를 엿보며 무조건 현금 총알을 비축하세요!';
         icon = '🟣';
       }
     } else {
       if (spxChange < 0.3 && spxChange > -0.3) {
         regime = '눈치보기 (급등락 테마주) 🎢';
         color = 'var(--neutral)';
-        shortDesc = '시장이 뚜렷한 방향 없이 횡보하며, 매일 유행하는 테마(섹터)만 빠르게 바뀌는 핑퐁 장세입니다.';
+        shortDesc = '전체 지수는 멈춰 있고 특정 유행하는 테마주들끼리만 돈이 빠르게 빙글빙글 돌고 있습니다.';
         icon = '🟡';
       }
     }

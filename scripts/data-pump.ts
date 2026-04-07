@@ -192,7 +192,7 @@ async function pumpDemandQueues() {
       exchange: q.fullExchangeName || q.exchange || '',
       quoteType: q.quoteType || '',
     };
-  }, 15);
+  }, 60);
 
   // 2) 요약(Summary) 데이터 처리
   await processQueue('gidne_queue_summary', 'gidne_summary_v2_', async (ticker: string) => {
