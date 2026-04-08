@@ -213,21 +213,28 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .gidne-list-row:hover {
-  background: var(--card-bg-hover);
+  background: var(--overlay-hover);
+  border-left-color: var(--accent-primary);
+  transform: translateX(2px);
+}
+
+.gidne-list-row:hover span,
+.gidne-list-row:hover strong {
+  color: var(--text-primary);
 }
 
 .gidne-list-row.active {
-  background: rgba(200, 155, 60, 0.1);
+  background: var(--accent-subtle);
   border-left-color: var(--accent-primary);
 }
 
 .gidne-list-row.is-dragging {
   opacity: 0.4;
-  background: rgba(200, 155, 60, 0.05); /* 약간의 강조색 */
+  background: var(--accent-subtle);
 }
 
 .gidne-list-row.is-dragover {
   border-top: 2px solid var(--accent-primary);
-  background: rgba(200, 155, 60, 0.08); /* 위치 강조 */
+  background: var(--accent-subtle);
   transform: translateY(2px);
 }

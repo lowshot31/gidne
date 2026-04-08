@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { IndexQuote } from '../lib/types';
 import { isUSMarketOpen } from '../lib/tickers';
+import FlagIcon from './FlagIcon';
 
 interface Props {
   indices: IndexQuote[];
@@ -284,7 +285,7 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
                     className={`hero-picker-item ${heroTickers.includes(idx.symbol) ? 'selected' : ''}`}
                     onClick={() => toggleHero(idx.symbol)}
                   >
-                    <span>{idx.flag} {idx.name}</span>
+                    <span><FlagIcon flag={idx.flag} size={16} /> {idx.name}</span>
                     {heroTickers.includes(idx.symbol) && <span className="text-bull">✓</span>}
                   </div>
                 ))}

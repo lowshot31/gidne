@@ -508,65 +508,113 @@ export default function Watchlist() {
           text-align: center;
         }
 
-        .wl-grip {
-          color: var(--text-muted);
-          cursor: grab;
-          font-size: 0.9rem;
-          margin-right: 0.4rem;
-          opacity: 0.2;
-          transition: opacity 0.2s;
-        }
-        .table-row:hover .wl-grip {
-          opacity: 0.8;
-        }
         .watchlist-row {
-          display: flex; /* Back to flex, but unified */
+          display: flex;
           align-items: center;
           width: 100%;
+          transition: all 0.2s ease;
+          border-radius: var(--radius-sm);
         }
-        .wl-ticker {
+        .watchlist-row:hover {
+          background: var(--overlay-hover) !important;
+          box-shadow: inset 3px 0 0 var(--accent-primary);
+          transform: translateX(2px);
+        }
+        .watchlist-row:hover .wl-symbol,
+        .watchlist-row:hover .wl-name,
+        .watchlist-row:hover .wl-price {
+          color: var(--text-primary) !important;
+          opacity: 1 !important;
+        }
+        .watchlist-row:hover .wl-grip {
+          opacity: 0.8;
+        }
+
+        /* ── 4컬럼 % 분배 ── */
+        .wl-col {
           display: flex;
-          align-items: center; 
-          gap: 0.4rem;
+          align-items: center;
           min-width: 0;
-          flex: 1; /* Takes exactly the gap between grip and prices */
           overflow: hidden;
         }
-        /* The dotted line is now a pseudo-element safely inside the ticker's flexible space */
-        .wl-ticker::after {
-          content: "";
-          flex: 1; /* Stretches to fill whatever is left inside .wl-ticker */
-          border-bottom: 1px dotted var(--border-color);
-          margin: 0 8px;
-          min-width: 2px; /* Drops down to tiny gap instead of pushing */
-          opacity: 0.5;
-          transform: translateY(-2px);
+        .wl-col-ticker {
+          width: 35%;
+          gap: 0.35rem;
+          flex-shrink: 0;
         }
-        .wl-ticker strong {
+        .wl-col-name {
+          width: 25%;
+          flex-shrink: 1;
+        }
+        .wl-col-price {
+          width: 18%;
+          justify-content: flex-end;
+          flex-shrink: 0;
+        }
+        .wl-col-change {
+          width: 22%;
+          flex-direction: column;
+          align-items: flex-end;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        /* ── 요소 스타일 ── */
+        .wl-logo-wrap {
+          position: relative;
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          overflow: hidden;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--border-color);
+          border: 1px solid var(--border-color);
+        }
+        .wl-logo-fallback {
+          font-size: 10px;
+          color: var(--text-secondary);
+          font-weight: 600;
+        }
+        .wl-logo-img {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          background: white;
+          z-index: 1;
+        }
+        .wl-symbol {
           white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          flex-shrink: 1; /* Allow it to shrink and trigger ellipsis! */
-          min-width: 0;
-          font-size: 0.9rem; 
+          font-size: 0.88rem;
+          letter-spacing: 0.3px;
         }
         .wl-name {
-          font-size: 0.65rem;
+          font-size: 0.72rem;
           opacity: 0.7;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          flex: 0 10 auto; /* Absorbs 10x more shrink damage than strong */
-        }
-        .wl-data {
-          display: flex;
-          gap: 0.5rem;
-          align-items: center;
+          display: block;
         }
         .wl-price {
           color: var(--text-primary);
-          font-size: 0.9rem;
-          font-weight: 500;
+          font-size: 0.88rem;
+          font-weight: 600;
+          font-family: var(--font-mono);
+          white-space: nowrap;
+        }
+        .wl-grip {
+          color: var(--text-muted);
+          cursor: grab;
+          font-size: 0.85rem;
+          margin-right: 0.25rem;
+          opacity: 0.15;
+          transition: opacity 0.2s;
+          flex-shrink: 0;
         }
         .wl-remove {
           background: none;
@@ -578,34 +626,28 @@ export default function Watchlist() {
           border-radius: 2px;
           transition: color var(--transition-fast);
           flex-shrink: 0;
+          opacity: 0;
+        }
+        .watchlist-row:hover .wl-remove {
+          opacity: 1;
         }
         .wl-remove:hover {
           color: var(--bear);
         }
-        @media (max-width: 480px) {
-          .wl-name {
-            display: none;
-          }
-          .watchlist-row {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-          }
-          .wl-ticker::after {
-            margin: 0 4px; /* Compress the dots gap on mobile */
-            min-width: 2px;
-          }
-          .wl-grip {
-            margin-right: 0.15rem;
-            font-size: 0.8rem;
-          }
-          .wl-price {
-            font-size: 0.8rem; /* tiny bit smaller */
-          }
-          .wl-remove {
-            padding: 0;
-          }
-          .wl-ticker strong {
-            font-size: 0.8rem;
+
+        /* ── 모바일 반응형 ── */
+        @media (max-width: 600px) {
+          .wl-col-ticker { width: 30%; }
+          .wl-col-name { display: none; }
+          .wl-col-price { width: 30%; }
+          .wl-col-change { width: 40%; }
+          .wl-grip { margin-right: 0.15rem; font-size: 0.75rem; }
+          .wl-symbol { font-size: 0.8rem; }
+          .wl-price { font-size: 0.8rem; }
+          .wl-remove { opacity: 1; }
+          .watchlist-row:hover {
+            transform: none;
+            box-shadow: none;
           }
         }
       `}</style>
@@ -630,39 +672,50 @@ function WatchlistRow({ ticker, name, price, changePercent, isUp, benchmarkChang
       onDragEnd={handleSort}
       onDragOver={(e) => e.preventDefault()}
     >
-      <div className="wl-grip" title="드래그해서 순서 변경">⋮⋮</div>
-      <div className="wl-ticker" style={{ alignItems: 'center' }}>
-        <div style={{ position: 'relative', width: '20px', height: '20px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--border-color)', border: '1px solid var(--border-color)' }}>
-          <span style={{ fontSize: '10px', color: '#fff' }}>{ticker.charAt(0)}</span>
+      {/* Col 1: 그립 + 로고 + 티커 (35%) */}
+      <div className="wl-col wl-col-ticker">
+        <div className="wl-grip" title="드래그해서 순서 변경">⋮⋮</div>
+        <div className="wl-logo-wrap">
+          <span className="wl-logo-fallback">{ticker.charAt(0)}</span>
           <img 
             src={`https://assets.parqet.com/logos/symbol/${ticker}?format=png`} 
             alt="" 
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', background: '#fff', zIndex: 1 }} 
+            className="wl-logo-img"
             onError={(e) => { e.currentTarget.style.display = 'none'; }} 
           />
         </div>
-        <strong>{ticker}</strong>
-        {!isLoading && <span className="text-muted wl-name" style={{ marginLeft: '2px' }}>{name}</span>}
+        <strong className="wl-symbol">{ticker}</strong>
       </div>
-      <div className="wl-data" style={{ padding: '0 0.25rem', borderRadius: '4px', gap: '0.75rem' }}>
+
+      {/* Col 2: 회사 풀네임 (25%) */}
+      <div className="wl-col wl-col-name">
+        {!isLoading && <span className="text-muted wl-name">{name}</span>}
+      </div>
+
+      {/* Col 3: 가격 (18%) */}
+      <div className="wl-col wl-col-price">
         {!isLoading ? (
-          <>
-            <span className="wl-price">{price >= 1000 ? price.toLocaleString('en-US', { maximumFractionDigits: 0 }) : price.toFixed(2)}</span>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: '0.75rem', minWidth: '65px' }}>
-              <span className={isUp ? 'text-bull' : 'text-bear'} style={{ fontWeight: 500 }}>
-                {isUp ? '+' : ''}{changePercent.toFixed(2)}%
-              </span>
-              <span className={isRsUp ? 'text-bull' : 'text-bear'} style={{ opacity: 0.8, fontSize: '0.65rem', whiteSpace: 'nowrap' }}>
-                RS({benchmarkLabel}): {isRsUp ? '+' : ''}{rs.toFixed(2)}%
-              </span>
-            </div>
-          </>
+          <span className="wl-price">{price >= 1000 ? price.toLocaleString('en-US', { maximumFractionDigits: 0 }) : price.toFixed(2)}</span>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'flex-end', minWidth: '90px' }}>
-            <span className="text-muted" style={{ fontSize: '0.7rem', opacity: 0.7 }}>초기 데이터 수집 중...</span>
-          </div>
+          <span className="text-muted" style={{ fontSize: '0.7rem', opacity: 0.7 }}>로딩...</span>
         )}
       </div>
+
+      {/* Col 4: 변동률 + RS (22%) */}
+      <div className="wl-col wl-col-change">
+        {!isLoading ? (
+          <>
+            <span className={isUp ? 'text-bull' : 'text-bear'} style={{ fontWeight: 600, fontSize: '0.82rem' }}>
+              {isUp ? '+' : ''}{changePercent.toFixed(2)}%
+            </span>
+            <span className={isRsUp ? 'text-bull' : 'text-bear'} style={{ opacity: 0.7, fontSize: '0.62rem', whiteSpace: 'nowrap' }}>
+              RS({benchmarkLabel}): {isRsUp ? '+' : ''}{rs.toFixed(2)}%
+            </span>
+          </>
+        ) : null}
+      </div>
+
+      {/* 삭제 버튼 */}
       <button 
         className="wl-remove" 
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(); }}

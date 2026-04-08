@@ -124,7 +124,7 @@ export default function MacroFocusWidget({ presetData }: Props) {
             </div>
           ) : (
             customItems.map(item => {
-              const q = customQuotes[item.ticker];
+              const q = customQuotes?.[item.ticker];
               return (
                 <div key={item.ticker} className="gidne-list-row" style={{ padding: '0.25rem 0.5rem', cursor: 'default', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                   <div style={{ flex: 1 }}>

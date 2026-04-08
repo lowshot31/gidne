@@ -6,6 +6,7 @@ import GlobalMarketMap from './GlobalMarketMap';
 import RelativeStrengthBoard from './RelativeStrengthBoard';
 import SegmentedControl from './SegmentedControl';
 import { useFlash } from '../hooks/useFlash';
+import FlagIcon from './FlagIcon';
 import type { IndexQuote } from '../lib/types';
 
 type RegionFilter = 'all' | 'americas' | 'europe' | 'asia' | 'emerging';
@@ -22,7 +23,7 @@ function IndexRow({ idx, isSelected, onClick }: { idx: IndexQuote, isSelected: b
       onClick={onClick}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flex: 1 }}>
-        <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{idx.flag}</span>
+        <FlagIcon flag={idx.flag} size={22} />
         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1, paddingRight: '0.5rem' }}>
           <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{idx.name}</span>
           <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{idx.symbol.replace('^', '')}</span>
@@ -171,7 +172,7 @@ export default function IndicesClient() {
             {selectedQuote && (
               <PriceChart 
                 ticker={selectedQuote.symbol} 
-                name={`${selectedQuote.flag} ${selectedQuote.name}`} 
+                name={`${selectedQuote.name}`} 
               />
             )}
           </div>

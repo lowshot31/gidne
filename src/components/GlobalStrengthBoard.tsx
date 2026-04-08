@@ -1,5 +1,6 @@
 import React from 'react';
 import type { IndexQuote } from '../lib/types';
+import FlagIcon from './FlagIcon';
 
 interface Props {
   indices: IndexQuote[];
@@ -23,7 +24,7 @@ export default function GlobalStrengthBoard({ indices }: Props) {
         <div className="strength-list">
           {strongest.map(idx => (
             <div key={idx.symbol} className="strength-item">
-              <span className="strength-flag">{idx.flag}</span>
+              <FlagIcon flag={idx.flag} size={16} />
               <span className="strength-name">{idx.name}</span>
               <span className="text-bull" style={{ fontFamily: 'var(--font-mono)' }}>+{idx.changePercent.toFixed(2)}%</span>
             </div>
@@ -40,7 +41,7 @@ export default function GlobalStrengthBoard({ indices }: Props) {
         <div className="strength-list">
           {weakest.map(idx => (
             <div key={idx.symbol} className="strength-item">
-              <span className="strength-flag">{idx.flag}</span>
+              <FlagIcon flag={idx.flag} size={16} />
               <span className="strength-name">{idx.name}</span>
               <span className="text-bear" style={{ fontFamily: 'var(--font-mono)' }}>{idx.changePercent.toFixed(2)}%</span>
             </div>

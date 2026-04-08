@@ -142,7 +142,7 @@ export default function MacroRow({ ticker, name, price, changePercent }: Props) 
         </strong>
         <span 
           className={isUp ? 'text-bull' : 'text-bear'} 
-          style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '0.1rem', padding: '0.1rem 0.3rem', borderRadius: '4px', background: isUp ? 'rgba(38, 166, 154, 0.1)' : 'rgba(239, 83, 80, 0.1)' }}
+          style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '0.1rem', padding: '0.1rem 0.3rem', borderRadius: '4px', background: isUp ? 'var(--bull-bg)' : 'var(--bear-bg)' }}
         >
           {isUp ? '+' : ''}{changePercent.toFixed(2)}%
         </span>
@@ -153,14 +153,14 @@ export default function MacroRow({ ticker, name, price, changePercent }: Props) 
           background-color: transparent;
         }
         .macro-row:hover {
-          background-color: var(--bg-modifier-hover);
+          background-color: var(--overlay-hover);
         }
         .macro-row.flash-up {
-          background-color: rgba(38, 166, 154, 0.12);
+          background-color: var(--bull-bg);
           transform: scale(1.015);
         }
         .macro-row.flash-down {
-          background-color: rgba(239, 83, 80, 0.12);
+          background-color: var(--bear-bg);
           transform: scale(1.015);
         }
         .macro-tooltip-card {
@@ -168,12 +168,12 @@ export default function MacroRow({ ticker, name, price, changePercent }: Props) 
           bottom: calc(100% + 4px);
           left: 0;
           padding: 0.5rem 0.75rem;
-          background: rgba(20, 20, 30, 0.96);
+          background: var(--card-bg);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           border: 1px solid var(--border-color);
           border-radius: var(--radius-sm);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
           color: var(--text-primary);
           font-family: var(--font-body);
           font-size: 0.8rem;

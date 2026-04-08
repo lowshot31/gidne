@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { IndexQuote } from '../lib/types';
+import FlagIcon from './FlagIcon';
 
 interface Props {
   indices: IndexQuote[];
@@ -32,7 +33,7 @@ export default function RelativeStrengthBoard({ indices }: Props) {
         <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--text-secondary)' }}>GLOBAL RS STRENGTH</h3>
         <select 
           className="glass-panel" 
-          style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '0.4rem 0.8rem', borderRadius: '4px', outline: 'none', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}
+          style={{ background: 'var(--overlay)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '0.4rem 0.8rem', borderRadius: '4px', outline: 'none', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}
           value={baselineTicker}
           onChange={(e) => setBaselineTicker(e.target.value)}
         >
@@ -52,7 +53,7 @@ export default function RelativeStrengthBoard({ indices }: Props) {
               return (
                 <div key={idx.symbol}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', marginBottom: '0.4rem' }}>
-                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%', fontWeight: 500 }}>{idx.flag} {idx.name}</span>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.3rem' }}><FlagIcon flag={idx.flag} size={16} /> {idx.name}</span>
                     <span className="text-bull font-mono" style={{ fontSize: '0.9rem', fontWeight: 600}}>+{idx.rs.toFixed(2)}%</span>
                   </div>
                   <div style={{ height: '10px', background: 'var(--glass-border, #1a1a1a)', borderRadius: '6px', overflow: 'hidden' }}>
@@ -77,7 +78,7 @@ export default function RelativeStrengthBoard({ indices }: Props) {
               return (
                 <div key={idx.symbol}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', marginBottom: '0.4rem' }}>
-                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%', fontWeight: 500 }}>{idx.flag} {idx.name}</span>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.3rem' }}><FlagIcon flag={idx.flag} size={16} /> {idx.name}</span>
                     <span className="text-bear font-mono" style={{ fontSize: '0.9rem', fontWeight: 600}}>{idx.rs.toFixed(2)}%</span>
                   </div>
                   <div style={{ height: '10px', background: 'var(--glass-border, #1a1a1a)', borderRadius: '6px', overflow: 'hidden', display: 'flex', justifyContent: 'flex-end' }}>
