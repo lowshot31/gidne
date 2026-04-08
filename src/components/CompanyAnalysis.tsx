@@ -383,16 +383,12 @@ export default function CompanyAnalysis({ ticker, currentPrice }: Props) {
           top: -6px;
           width: 4px;
           height: 20px;
-          background: #00ffff;
+          background: var(--accent-primary);
           border-radius: 2px;
           transform: translateX(-2px);
-          box-shadow: 0 0 8px #00ffff, 0 0 15px #00ffff;
+          box-shadow: 0 0 8px var(--accent-primary), 0 0 15px var(--accent-primary);
           transition: left 0.5s ease;
           z-index: 10;
-        }
-        [data-theme='light'] .current-price-marker {
-          background: #0077ff;
-          box-shadow: 0 0 8px #0077ff, 0 0 15px #0077ff;
         }
         .marker-tooltip {
           position: absolute;
@@ -400,26 +396,19 @@ export default function CompanyAnalysis({ ticker, currentPrice }: Props) {
           left: 50%;
           transform: translateX(-50%);
           margin-top: 6px;
-          background: rgba(0, 255, 255, 0.15);
-          border: 1px solid #00ffff;
-          color: #e0ffff;
+          background: var(--accent-subtle);
+          border: 1px solid var(--accent-primary);
+          color: var(--text-primary);
           padding: 2px 8px;
           border-radius: 4px;
           font-size: 0.70rem;
           font-family: var(--font-mono);
           font-weight: 700;
-          text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
-          box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+          text-shadow: none;
+          box-shadow: 0 0 10px var(--accent-subtle);
           pointer-events: none;
           white-space: nowrap;
           z-index: 10;
-        }
-        [data-theme='light'] .marker-tooltip {
-          background: rgba(0, 119, 255, 0.1);
-          border: 1px solid #0077ff;
-          color: #0044aa;
-          text-shadow: 0 0 8px rgba(0, 119, 255, 0.6);
-          box-shadow: 0 0 10px rgba(0, 119, 255, 0.3);
         }
 
         /* SEC Filings */

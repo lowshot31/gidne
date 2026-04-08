@@ -26,8 +26,8 @@ export const GET: APIRoute = async (context) => {
     // 2. 캐시 미스 → Data Pump 큐에 추가
     await redis.sadd('gidne_queue_quote', ticker);
 
-    // 3. 지수 백오프 폴링 (최대 약 5초 대기)
-    for (let i = 0; i < 10; i++) {
+    // 3. 지수 백오프 폴링 (최대 약 7.5초 대기)
+    for (let i = 0; i < 15; i++) {
       await new Promise(r => setTimeout(r, 500));
       cached = await redis.get(cacheKey);
       if (cached) {

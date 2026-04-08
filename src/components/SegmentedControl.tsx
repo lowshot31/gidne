@@ -36,7 +36,7 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, size = 
       className="segmented-control-wrapper"
       style={{ 
         display: 'flex', 
-        background: 'rgba(255, 255, 255, 0.05)', 
+        background: 'var(--overlay)', 
         borderRadius: '10px', 
         padding: '0.2rem',
         alignItems: 'center',
@@ -57,8 +57,8 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, size = 
               flex: '1 1 auto', // 글자가 긴 놈은 길게, 짧은 놈은 짧게 공간을 유동분배
               flexShrink: 0, // 짤림 방지
               justifyContent: 'center',
-              background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
-              border: isActive ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
+              background: isActive ? 'var(--overlay-hover)' : 'transparent',
+              border: isActive ? '1px solid var(--border-color)' : '1px solid transparent',
               padding: sizeStyle.padding,
               cursor: 'pointer',
               color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
@@ -90,12 +90,12 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, size = 
         scrollbar-width: none;  /* Firefox */
       }
       [data-theme='light'] .segmented-control-wrapper {
-        background: rgba(0, 0, 0, 0.04) !important;
+        background: var(--overlay) !important;
       }
-      [data-theme='light'] .segmented-control-wrapper button[style*="background: rgba(255, 255, 255, 0.1)"] {
-        background: #fff !important;
+      [data-theme='light'] .segmented-control-wrapper button[style*="background: var(--overlay-hover)"] {
+        background: white !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-        border: 1px solid rgba(0,0,0,0.05) !important;
+        border: 1px solid var(--border-color) !important;
       }
     `}</style>
     </>

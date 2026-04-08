@@ -18,6 +18,12 @@
   --bull-bg: rgba(38, 166, 154, 0.1);
   --bear-bg: rgba(239, 83, 80, 0.1);
 
+  /* ── 경기 사이클 범례 컬러 ── */
+  --cycle-early: #22c55e;
+  --cycle-mid: #eab308;
+  --cycle-late: #f97316;
+  --cycle-defensive: #0ea5e9;
+
   /* ── 텍스트 ── */
   --text-primary: #e8e2d6;           /* Warm white — 눈 부시지 않음 */
   --text-secondary: #8a8580;

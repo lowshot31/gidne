@@ -280,7 +280,7 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
               {displayMovers.map((m, idx) => {
                 const isGainer = (m.change ?? 0) >= 0;
                 return (
-                  <a key={m.ticker+idx} href={`/chart/${encodeURIComponent(m.ticker)}`} className="eod-holding-row" style={{border: `1px solid ${isGainer ? 'rgba(34,197,94,0.3)' : 'rgba(239,83,80,0.3)'}`, background: isGainer ? 'rgba(34,197,94,0.05)' : 'rgba(239,83,80,0.05)'}}>
+                  <a key={m.ticker+idx} href={`/chart/${encodeURIComponent(m.ticker)}`} className="eod-holding-row" style={{border: `1px solid ${isGainer ? 'var(--bull)' : 'var(--bear)'}`, background: isGainer ? 'var(--bull-bg)' : 'var(--bear-bg)'}}>
                     <span>{m.ticker} {m.change === null 
                       ? <span className="eod-shimmer-pill" /> 
                       : <span className={isGainer ? 'text-bull' : 'text-bear'} style={{marginLeft:'2px', fontSize:'0.7rem', fontWeight: 600}}>
@@ -348,7 +348,7 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
           border-radius: 4px; cursor: pointer; transition: all 0.2s;
         }
         .eod-tf-tabs button:hover { color: var(--text-primary); }
-        .eod-tf-tabs button.active { background: var(--accent-primary); color: #fff; font-weight: 600; }
+        .eod-tf-tabs button.active { background: var(--accent-primary); color: white; font-weight: 600; }
         
         .eod-summary {
           background: var(--overlay); border: 1px solid var(--border-color);
@@ -369,22 +369,19 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
         .eod-sector-card {
           border: 1px solid var(--border-color); border-radius: var(--radius-md);
           padding: 0.5rem 0.6rem; margin-bottom: 0.4rem; transition: all 0.2s;
-          background: rgba(34, 197, 94, 0.03);
+          background: var(--bull-bg);
         }
-        .eod-weak { background: rgba(239, 83, 80, 0.03); }
+        .eod-weak { background: var(--bear-bg); }
         .eod-neutral { background: transparent; border: 1px dashed var(--border-color); }
         .eod-sector-card:hover { border-style: solid; border-color: var(--accent-primary); }
-        [data-theme='light'] .eod-sector-card { background: rgba(34,197,94,0.04); }
-        [data-theme='light'] .eod-weak { background: rgba(239,83,80,0.04); }
-        [data-theme='light'] .eod-neutral { background: transparent; }
 
         .eod-sector-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; }
         .eod-rank {
-          background: var(--bull); color: #000; font-size: 0.6rem; font-weight: 800;
+          background: var(--bull); color: white; font-size: 0.6rem; font-weight: 800;
           width: 18px; height: 18px; display: flex; align-items: center;
           justify-content: center; border-radius: 50%; flex-shrink: 0;
         }
-        .eod-rank-weak { background: var(--bear); color: #fff; }
+        .eod-rank-weak { background: var(--bear); color: white; }
         .eod-rank-neutral { background: var(--border-color); color: var(--text-secondary); }
 
         .eod-driver {
@@ -411,7 +408,7 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
           width: 36px;
           height: 12px;
           border-radius: 4px;
-          background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%);
+          background: linear-gradient(90deg, var(--card-bg-hover) 25%, var(--border-color) 50%, var(--card-bg-hover) 75%);
           background-size: 200% 100%;
           animation: shimmer 1.5s infinite linear;
           vertical-align: middle;

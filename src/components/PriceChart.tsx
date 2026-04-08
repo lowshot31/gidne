@@ -121,6 +121,9 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
       
       if (typeof window !== 'undefined' && (window as any).TradingView && containerEl && containerEl.innerHTML === '') {
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const cs = getComputedStyle(document.documentElement);
+        const tvBg = cs.getPropertyValue('--card-bg').trim();
+        const tvGrid = cs.getPropertyValue('--glass-border').trim();
         new (window as any).TradingView.widget({
           autosize: true,
           symbol: currentSymbol,
@@ -130,14 +133,14 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
           style: "1",
           locale: "kr",
           enable_publishing: false,
-          backgroundColor: isLight ? "#ffffff" : "#161616",
-          gridColor: isLight ? "rgba(229, 229, 234, 1)" : "rgba(42, 42, 42, 1)",
+          backgroundColor: tvBg,
+          gridColor: tvGrid,
           hide_top_toolbar: false,
           hide_legend: false,
           save_image: false,
           container_id: containerId,
           allow_symbol_change: false,
-          toolbar_bg: isLight ? "#ffffff" : "#161616"
+          toolbar_bg: tvBg
         });
         initializedWidgets.current.add(currentSymbol);
       }
@@ -204,18 +207,18 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
           
           {/* 차트 소스 설명 라벨 (사용자 혼동 방지) */}
           {(currentSymbol.includes('FOREXCOM') || currentSymbol.includes('CAPITALCOM') || currentSymbol.includes('OANDA')) && (
-            <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)' }} title="24시간 실시간 거래되는 CFD/선물 호가입니다. 현물장 마감 후에도 움직입니다.">
+            <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'var(--accent-subtle)', color: 'var(--accent-primary)', border: '1px solid var(--accent-secondary)' }} title="24시간 실시간 거래되는 CFD/선물 호가입니다. 현물장 마감 후에도 움직입니다.">
               🔄 선물/CFD (24H)
             </span>
           )}
           {(currentSymbol.includes('AMEX:') || currentSymbol.includes('BATS:') || currentSymbol.includes('NASDAQ:')) && !['SPY', 'QQQ', 'TLT'].includes(currentTicker) && (
-            <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7', border: '1px solid rgba(168, 85, 247, 0.2)' }} title="해당 지수를 추종하는 가장 대표적인 미국 상장 ETF 차트입니다.">
+            <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'var(--accent-subtle)', color: 'var(--accent-primary)', border: '1px solid var(--accent-secondary)' }} title="해당 지수를 추종하는 가장 대표적인 미국 상장 ETF 차트입니다.">
               📦 ETF 연동
             </span>
           )}
 
           {isDelayed && (
-            <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(255, 165, 0, 0.1)', color: '#ffa500', border: '1px solid rgba(255, 165, 0, 0.2)' }}>
+            <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(255, 165, 0, 0.1)', color: 'var(--neutral)', border: '1px solid rgba(255, 165, 0, 0.2)' }}>
               🕒 15분 지연
             </span>
           )}
@@ -226,7 +229,7 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
                 <div style={{ width: '8px', height: '8px', backgroundColor: 'var(--accent-primary)', borderRadius: '2px' }}></div>
                 <span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--text-muted)' }}>vs S&P 500 (역상관)</span>
               </div>
-              <div style={{ fontSize: '0.65rem', padding: '2px 6px', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--bull)', border: '1px solid rgba(34, 197, 94, 0.2)', borderRadius: '4px' }}>
+              <div style={{ fontSize: '0.65rem', padding: '2px 6px', background: 'var(--bull-bg)', color: 'var(--bull)', border: '1px solid var(--bull)', borderRadius: '4px' }}>
                 ✅ Gidne Native 우회
               </div>
             </div>

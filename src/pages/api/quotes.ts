@@ -39,31 +39,41 @@ export const GET: APIRoute = async (context) => {
       }
     }
 
-    // 2. 누락된 티커가 있다면 Data Pump 큐에 등록하고 폴링
+    // 2. 누락된 티커가 있다면, Data Pump 큐에 넣고 기다리지 않고 즉시 Yahoo Finance 에서 병렬로 가져옴 (큐 지연 방지 및 Redis 사용량 절감)
     if (missingTickers.length > 0) {
-      const remainingTickers = missingTickers.slice(1);
-      await redis.sadd('gidne_queue_quote', missingTickers[0], ...remainingTickers);
-
-      // 최대 10번 (약 5초) 대기하며 폴링
-      for (let attempt = 0; attempt < 10; attempt++) {
-        await new Promise(r => setTimeout(r, 500));
-        
-        const newCachedArray = await redis.mget(...missingTickers.map(t => `gidne_quote_${t}`));
-        const stillMissing: string[] = [];
-        
-        for (let i = 0; i < missingTickers.length; i++) {
-          const ticker = missingTickers[i];
-          const cachedData = newCachedArray[i];
-          if (cachedData) {
-            data[ticker] = typeof cachedData === 'string' ? JSON.parse(cachedData) : cachedData;
-          } else {
-            stillMissing.push(ticker);
-          }
+      const { yahooFinance } = await import('../../lib/yahoo-finance');
+      await Promise.all(missingTickers.map(async (ticker) => {
+        try {
+          const apiTicker = ticker.toUpperCase().endsWith('USDT') ? ticker.toUpperCase().replace('USDT', '-USD') : ticker;
+          const q: any = await yahooFinance.quote(apiTicker);
+          const formatted = {
+            symbol: q.symbol,
+            name: q.shortName || q.longName || q.symbol,
+            price: q.regularMarketPrice ?? 0,
+            change: q.regularMarketChange ?? 0,
+            changePercent: q.regularMarketChangePercent ?? 0,
+            previousClose: q.regularMarketPreviousClose ?? 0,
+            open: q.regularMarketOpen ?? 0,
+            dayHigh: q.regularMarketDayHigh ?? 0,
+            dayLow: q.regularMarketDayLow ?? 0,
+            volume: q.regularMarketVolume ?? 0,
+            avgVolume: q.averageDailyVolume3Month ?? 0,
+            marketCap: q.marketCap ?? 0,
+            fiftyTwoWeekHigh: q.fiftyTwoWeekHigh ?? 0,
+            fiftyTwoWeekLow: q.fiftyTwoWeekLow ?? 0,
+            exchange: q.fullExchangeName || q.exchange || '',
+            quoteType: q.quoteType || '',
+          };
+          data[ticker] = formatted;
+          // 캐시에 저장 (5분 TTL - SWR 5초 폴링 동안 야후 직접 호출 방지)
+          await redis.set(`gidne_quote_${ticker}`, JSON.stringify(formatted), { ex: 300 });
+          // 영구 watched 셋에 등록 → data-pump 15초 주기에서 AAPL처럼 함께 갱신됨
+          // gidne_queue_quote 큐는 처리 후 SREM으로 삭제되므로 지속 갱신 불가
+          await redis.sadd('gidne_watched_tickers', ticker);
+        } catch (e) {
+          console.error(`[quotes fallback] fetch failed for ${ticker}`, e);
         }
-        
-        missingTickers = stillMissing;
-        if (missingTickers.length === 0) break; // 모두 찾음
-      }
+      }));
     }
 
     return new Response(JSON.stringify(data), {

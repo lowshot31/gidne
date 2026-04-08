@@ -145,9 +145,15 @@ class FinnhubWSManager {
           data.data.forEach((trade: any) => {
             const sym = trade.s;
             const newPrice = trade.p;
-            const old = this.cache.get(sym);
+            let old = this.cache.get(sym);
             
-            if (old && old.price !== newPrice) {
+            // 캐시가 없으면 임시 생성 (REST API 429 Limit 방어 및 즉시 실시간 연동)
+            if (!old) {
+              old = { symbol: sym, price: newPrice, prevClose: newPrice, change: 0, changePercent: 0 };
+              this.cache.set(sym, old);
+            }
+
+            if (old.price !== newPrice) {
               const pc = old.prevClose;
               const newChange = newPrice - pc;
               const newDp = pc !== 0 ? (newChange / pc) * 100 : 0;
@@ -157,6 +163,10 @@ class FinnhubWSManager {
                 change: newChange, 
                 changePercent: newDp 
               };
+              
+              // 디버그용: 거래가 정상적으로 변동될 때 로그 출력 (F12에서 확인)
+              console.log(`[Finnhub ⚡] ${sym} : ${newPrice}`);
+              
               this.cache.set(sym, q);
               this.notify(sym, q);
             }

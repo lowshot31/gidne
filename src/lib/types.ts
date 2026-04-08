@@ -8,6 +8,16 @@ export interface TickerQuote {
   change: number;
   changePercent: number;
   previousClose: number;
+  open?: number;
+  dayHigh?: number;
+  dayLow?: number;
+  volume?: number;
+  avgVolume?: number;
+  marketCap?: number;
+  fiftyTwoWeekHigh?: number;
+  fiftyTwoWeekLow?: number;
+  exchange?: string;
+  quoteType?: string;
 }
 
 export interface IndexQuote extends TickerQuote {

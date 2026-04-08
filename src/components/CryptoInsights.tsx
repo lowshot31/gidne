@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import SkeletonCard from './SkeletonCard';
 
 interface CryptoFlowData {
   upbitPrice: number;
@@ -32,7 +33,7 @@ export default function CryptoInsights() {
     return () => clearInterval(interval);
   }, []);
 
-  if (loading && !data) return <div className="bento-item text-center p-xl">Loading Crypto Insights...</div>;
+  if (loading && !data) return <SkeletonCard title="Crypto Insights 🪙" />;
   if (!data) return null;
 
   return (

@@ -2,7 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getWatchlist, addToWatchlist, removeFromWatchlist, reorderWatchlist } from '../lib/watchlist';
 import type { WatchlistItem } from '../lib/watchlist';
 import { useFlash } from '../hooks/useFlash';
+import { useBinanceStream } from '../hooks/useBinanceStream';
 import useSWR from 'swr';
+import SkeletonCard from './SkeletonCard';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -49,14 +51,31 @@ export default function Watchlist() {
     } catch {}
   }, []);
 
+  // 전체 티커 중 일반 종목(미국주식 등)과 지수/특수종목 분리
+  const allTickers = React.useMemo(() => Array.from(new Set([...items.map(i => i.ticker), '^GSPC', '^IXIC'])), [items]);
+  const wsTickers = React.useMemo(() => allTickers.filter(t => !t.startsWith('^') && !t.includes('-') && !t.includes('.')), [allTickers]);
+  
+  // 크립토 티커 분리 및 바이낸스 심볼 매핑
+  const cryptoTickers = React.useMemo(() => {
+    return allTickers
+      .filter(t => t.includes('-USD'))
+      .map(t => t.replace('-USD', 'usdt').toLowerCase()); // BTC-USD -> btcusdt
+  }, [allTickers]);
+
+  // REST API (최초 1회 로딩 및 백업용 폴링)
+  // 미국 주식은 안정성을 위해 Yahoo Finance에서 5초마다 동기화
   const { data: fetchedQuotes } = useSWR<Record<string, QuoteData>>(
-    items.length > 0 
-      ? `/api/quotes?tickers=${Array.from(new Set([...items.map(i => i.ticker), '^GSPC', '^IXIC'])).map(encodeURIComponent).join(',')}`
+    allTickers.length > 0 
+      ? `/api/quotes?tickers=${allTickers.map(encodeURIComponent).join(',')}`
       : null,
     fetcher,
-    { refreshInterval: 5000, dedupingInterval: 2000 }
+    { refreshInterval: 5000, dedupingInterval: 2000, keepPreviousData: true }
   );
 
+  // Binance (크립토 전용 실시간)
+  const cryptoQuotes = useBinanceStream(cryptoTickers);
+
+  // REST API 데이터와 WS 데이터를 병합
   const quotes = React.useMemo(() => {
     const m = new Map<string, QuoteData>();
     if (fetchedQuotes) {
@@ -68,8 +87,19 @@ export default function Watchlist() {
         });
       });
     }
+
+    // Binance 크립토 데이터 기반 오버라이딩
+    cryptoQuotes.forEach((q, symbol) => {
+      // symbol은 'BTCUSDT' 형태, Yahoo 형태로 복원: 'BTC-USD'
+      const yahooSymbol = symbol.replace('USDT', '-USD').toUpperCase();
+      const existing = m.get(yahooSymbol);
+      if (existing) {
+        m.set(yahooSymbol, { ...existing, price: q.price, changePercent: q.change24h });
+      }
+    });
+    
     return m;
-  }, [fetchedQuotes]);
+  }, [fetchedQuotes, cryptoQuotes]);
 
   // 자동완성 검색 (디바운스 300ms)
   const searchTickers = useCallback(async (query: string) => {
@@ -500,14 +530,15 @@ export default function Watchlist() {
           gap: 0.4rem;
           min-width: 0;
           flex: 1; /* Takes exactly the gap between grip and prices */
+          overflow: hidden;
         }
         /* The dotted line is now a pseudo-element safely inside the ticker's flexible space */
         .wl-ticker::after {
           content: "";
           flex: 1; /* Stretches to fill whatever is left inside .wl-ticker */
           border-bottom: 1px dotted var(--border-color);
-          margin: 0 12px;
-          min-width: 4px; /* Drops to 4px before eating into text */
+          margin: 0 8px;
+          min-width: 2px; /* Drops down to tiny gap instead of pushing */
           opacity: 0.5;
           transform: translateY(-2px);
         }
@@ -515,8 +546,9 @@ export default function Watchlist() {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          flex-shrink: 0; /* NEVER shrink the ticker itself */
-          font-size: 0.9rem; /* Slightly smaller to fit better */
+          flex-shrink: 1; /* Allow it to shrink and trigger ellipsis! */
+          min-width: 0;
+          font-size: 0.9rem; 
         }
         .wl-name {
           font-size: 0.65rem;

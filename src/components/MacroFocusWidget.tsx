@@ -3,6 +3,9 @@ import MacroRow from './MacroRow';
 import type { MacroData } from '../lib/types';
 import TickerSearch from './TickerSearch';
 import SegmentedControl from './SegmentedControl';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 interface Props {
   presetData: MacroData[];
@@ -16,9 +19,15 @@ interface CustomItem {
 export default function MacroFocusWidget({ presetData }: Props) {
   const [activeTab, setActiveTab] = useState<'HOT' | 'RATES' | 'CURRENCY' | 'COMMODITY' | 'CUSTOM'>('HOT');
   const [customItems, setCustomItems] = useState<CustomItem[]>([]);
-  const [customQuotes, setCustomQuotes] = useState<Record<string, { price: number; changePercent: number }>>({});
   const [isAdding, setIsAdding] = useState(false);
-  const lastFetchTime = React.useRef<number>(0);
+  
+  const { data: customQuotes } = useSWR<Record<string, { price: number; changePercent: number }>>(
+    activeTab === 'CUSTOM' && customItems.length > 0
+      ? `/api/quotes?tickers=${encodeURIComponent(customItems.map(item => item.ticker).join(','))}`
+      : null,
+    fetcher,
+    { refreshInterval: 5000, dedupingInterval: 2000 }
+  );
 
   useEffect(() => {
     const saved = localStorage.getItem('gidne_macro_custom');
@@ -40,23 +49,6 @@ export default function MacroFocusWidget({ presetData }: Props) {
     setCustomItems(items);
     localStorage.setItem('gidne_macro_custom', JSON.stringify(items));
   };
-
-  useEffect(() => {
-    if (activeTab === 'CUSTOM' && customItems.length > 0) {
-      const now = Date.now();
-      // 1분 이내 동일 탭 전환 시 재요청 방지 (메모리 캐싱)
-      if (now - lastFetchTime.current < 60000 && Object.keys(customQuotes).length > 0) return;
-
-      const tickers = customItems.map(item => item.ticker).join(',');
-      fetch(`/api/quotes?tickers=${encodeURIComponent(tickers)}`)
-        .then(res => res.json())
-        .then(data => {
-          setCustomQuotes(data);
-          lastFetchTime.current = Date.now();
-        })
-        .catch(console.error);
-    }
-  }, [activeTab, customItems]);
 
   const handleAddCustom = (symbol: string, name: string) => {
     if (customItems.some(i => i.ticker === symbol)) return;

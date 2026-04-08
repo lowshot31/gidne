@@ -55,11 +55,10 @@ export default function SkeletonCard({ title, error, onRetry }: Props) {
       
       {/* Shimmer bar */}
       <div 
+        className="shimmer-bg"
         style={{
           flex: 1,
           borderRadius: 'var(--radius-sm)',
-          background: 'linear-gradient(90deg, #161616 25%, #1c1c1c 50%, #161616 75%)',
-          backgroundSize: '200% 100%',
           animation: 'shimmer 1.5s infinite linear'
         }}
       />
@@ -110,6 +109,14 @@ export default function SkeletonCard({ title, error, onRetry }: Props) {
         }
         .skeleton-pulse-text {
           animation: textPulse 2s infinite ease-in-out;
+        }
+        .shimmer-bg {
+          background: linear-gradient(90deg, var(--card-bg-hover) 25%, var(--border-color) 50%, var(--card-bg-hover) 75%);
+          background-size: 200% 100%;
+          opacity: 0.8;
+        }
+        [data-theme='light'] .shimmer-bg {
+          background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--border-color) 50%, var(--bg-secondary) 75%);
         }
         [data-theme='light'] .bento-item .skeleton-dot {
           background: var(--text-secondary);

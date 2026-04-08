@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import PriceChart from './PriceChart';
 import CompanyAnalysis from './CompanyAnalysis';
 import ExpectedMoveWidget from './ExpectedMoveWidget';
+import { useFinnhubStream } from '../hooks/useFinnhubStream';
+import { useBinanceStream } from '../hooks/useBinanceStream';
 
 interface QuoteData {
   symbol: string;
@@ -22,8 +24,8 @@ interface QuoteData {
   quoteType: string;
 }
 
-function formatNumber(n: number): string {
-  if (!n && n !== 0) return '-';
+function formatNumber(n: number | null | undefined): React.ReactNode {
+  if (!n && n !== 0) return <span className="mini-shimmer" style={{ display: 'inline-block', width: '3em', height: '1em', borderRadius: '4px', verticalAlign: 'middle' }} />;
   if (Math.abs(n) >= 1e12) return (n / 1e12).toFixed(2) + 'T';
   if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(2) + 'B';
   if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(2) + 'M';
@@ -31,8 +33,8 @@ function formatNumber(n: number): string {
   return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function formatVolume(n: number): string {
-  if (!n) return '-';
+function formatVolume(n: number | null | undefined): React.ReactNode {
+  if (!n) return <span className="mini-shimmer" style={{ display: 'inline-block', width: '3em', height: '1em', borderRadius: '4px', verticalAlign: 'middle' }} />;
   if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
   if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
   if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
@@ -68,10 +70,49 @@ export default function ChartPageClient({ initialTicker }: Props) {
 
   useEffect(() => {
     fetchQuote();
-    const interval = setInterval(fetchQuote, 15000); // 15초 폴링
+    const interval = setInterval(fetchQuote, 15000); // 15초 폴링 (지수/크립토용 백업)
     return () => clearInterval(interval);
   }, [fetchQuote]);
-  //123
+
+  // Finnhub WebSocket (미국주식 실시간 가격 오버라이드)
+  const isUSStock = !initialTicker.startsWith('^') && !initialTicker.includes('-') && !initialTicker.includes('.');
+  const wsQuotes = useFinnhubStream(isUSStock ? [initialTicker] : []);
+  
+  // Binance WebSocket (크립토 실시간 가격 오버라이드)
+  const isCrypto = initialTicker.includes('-USD') || quote?.quoteType === 'CRYPTOCURRENCY';
+  const binanceTicker = isCrypto ? initialTicker.replace('-USD', 'usdt').toLowerCase() : '';
+  const cryptoQuotes = useBinanceStream(binanceTicker ? [binanceTicker] : []);
+
+  const displayQuote = React.useMemo(() => {
+    if (!quote) return null;
+    
+    if (isUSStock) {
+      const wsQ = wsQuotes.get(initialTicker);
+      if (wsQ) {
+        return { ...quote, price: wsQ.price, change: wsQ.change, changePercent: wsQ.changePercent };
+      }
+    } else if (isCrypto) {
+      // binanceTicker의 키는 대문자이므로 uppercase로 찾습니다.
+      const wsQ = cryptoQuotes.get(binanceTicker.toUpperCase());
+      if (wsQ) {
+        // Binance Stream에는 절대적인 variation 정보 대신 24h 정보가 존재합니다.
+        // 현재 price와 changePercent (change24h)를 바탕으로 단순화하여 보여줍니다.
+        // change 값 추측: price - (price / (1 + change24h/100))
+        const prev = wsQ.price / (1 + (wsQ.change24h / 100));
+        return { 
+          ...quote, 
+          price: wsQ.price, 
+          change: wsQ.price - prev, 
+          changePercent: wsQ.change24h,
+          dayHigh: wsQ.high24h,
+          dayLow: wsQ.low24h
+        };
+      }
+    }
+    return quote;
+  }, [quote, wsQuotes, cryptoQuotes, initialTicker, isUSStock, isCrypto, binanceTicker]);
+
+  const isLivePrice = (isUSStock && wsQuotes.has(initialTicker)) || (isCrypto && cryptoQuotes.has(binanceTicker.toUpperCase()));
 
   if (loading) {
     return (
@@ -87,7 +128,7 @@ export default function ChartPageClient({ initialTicker }: Props) {
           .toss-spinner {
             width: 48px;
             height: 48px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
+            border: 4px solid var(--border-color);
             border-radius: 50%;
             border-top-color: var(--accent-primary);
             animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
@@ -96,12 +137,23 @@ export default function ChartPageClient({ initialTicker }: Props) {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
+          @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+          .mini-shimmer {
+            background: linear-gradient(90deg, var(--card-bg-hover) 25%, var(--border-color) 50%, var(--card-bg-hover) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+            opacity: 0.8;
+          }
+          [data-theme='light'] .mini-shimmer {
+            background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--border-color) 50%, var(--bg-secondary) 75%);
+            background-size: 200% 100%;
+          }
         `}</style>
       </div>
     );
   }
 
-  if (error || !quote) {
+  if (error || !displayQuote) {
     return (
       <div className="bento-item" style={{ padding: '3rem', textAlign: 'center' }}>
         <h2 style={{ color: 'var(--bear)', marginBottom: '1rem' }}>⚠️ 종목을 찾을 수 없습니다</h2>
@@ -111,34 +163,34 @@ export default function ChartPageClient({ initialTicker }: Props) {
     );
   }
 
-  const isUp = quote.change >= 0;
+  const isUp = displayQuote.change >= 0;
   const priceColor = isUp ? 'var(--bull)' : 'var(--bear)';
   const changeSign = isUp ? '+' : '';
 
   // 52주 레인지 퍼센트
-  const range52 = quote.fiftyTwoWeekHigh - quote.fiftyTwoWeekLow;
-  const range52Pct = range52 > 0 ? ((quote.price - quote.fiftyTwoWeekLow) / range52) * 100 : 50;
+  const range52 = displayQuote.fiftyTwoWeekHigh - displayQuote.fiftyTwoWeekLow;
+  const range52Pct = range52 > 0 ? ((displayQuote.price - displayQuote.fiftyTwoWeekLow) / range52) * 100 : 50;
 
   // 일일 레인지 퍼센트
-  const dayRange = quote.dayHigh - quote.dayLow;
-  const dayRangePct = dayRange > 0 ? ((quote.price - quote.dayLow) / dayRange) * 100 : 50;
+  const dayRange = displayQuote.dayHigh - displayQuote.dayLow;
+  const dayRangePct = dayRange > 0 ? ((displayQuote.price - displayQuote.dayLow) / dayRange) * 100 : 50;
 
   // 거래량 vs 평균 비율
-  const volRatio = quote.avgVolume > 0 ? quote.volume / quote.avgVolume : 1;
+  const volRatio = displayQuote.avgVolume > 0 ? displayQuote.volume / displayQuote.avgVolume : 1;
   const volBarPct = Math.min(volRatio * 100, 200); // cap at 200%
 
   const stats = [
-    { label: '전일 종가', value: formatNumber(quote.previousClose) },
-    { label: '시가', value: formatNumber(quote.open) },
-    { label: '고가', value: formatNumber(quote.dayHigh), color: 'var(--bull)' },
-    { label: '저가', value: formatNumber(quote.dayLow), color: 'var(--bear)' },
-    { label: '시가총액', value: formatNumber(quote.marketCap) },
-    { label: '거래소', value: quote.exchange || '-' },
+    { label: '전일 종가', value: formatNumber(displayQuote.previousClose) },
+    { label: '시가', value: formatNumber(displayQuote.open) },
+    { label: '고가', value: formatNumber(displayQuote.dayHigh), color: 'var(--bull)' },
+    { label: '저가', value: formatNumber(displayQuote.dayLow), color: 'var(--bear)' },
+    { label: '시가총액', value: formatNumber(displayQuote.marketCap) },
+    { label: '거래소', value: displayQuote.exchange || <span className="mini-shimmer" style={{ display: 'inline-block', width: '3em', height: '1em', borderRadius: '4px' }} /> },
   ];
 
-  const logoUrl = quote.quoteType === 'CRYPTOCURRENCY' 
-    ? `https://assets.coincap.io/assets/icons/${quote.symbol.replace('-USD', '').toLowerCase()}@2x.png`
-    : `https://assets.parqet.com/logos/symbol/${quote.symbol}?format=png`;
+  const logoUrl = displayQuote.quoteType === 'CRYPTOCURRENCY' 
+    ? `https://assets.coincap.io/assets/icons/${displayQuote.symbol.replace('-USD', '').toLowerCase()}@2x.png`
+    : `https://assets.parqet.com/logos/symbol/${displayQuote.symbol}?format=png`;
 
   return (
     <div className="chart-page">
@@ -148,27 +200,36 @@ export default function ChartPageClient({ initialTicker }: Props) {
           <div className="toss-hero-top">
             <a href="/" className="back-link" title="대시보드로 돌아가기">←</a>
             <div className="toss-logo-circle" style={{ background: priceColor, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ position: 'absolute', color: '#fff', fontSize: '1rem', fontWeight: 600 }}>{quote.symbol.charAt(0)}</span>
+              <span style={{ position: 'absolute', color: 'white', fontSize: '1rem', fontWeight: 600 }}>{displayQuote.symbol.charAt(0)}</span>
               <img 
                 src={logoUrl} 
                 alt="" 
-                style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%', objectFit: 'contain', background: '#fff' }} 
+                style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%', objectFit: 'contain', background: 'white' }} 
                 onError={(e) => { e.currentTarget.style.display = 'none'; }} 
               />
             </div>
-            <h1 className="toss-name">{quote.quoteType === 'CRYPTOCURRENCY' ? quote.name.replace(' USD', '') : quote.name}</h1>
-            <span className="toss-symbol">{quote.quoteType === 'CRYPTOCURRENCY' ? `${quote.symbol.replace('-USD', '')}/USDT` : quote.symbol}</span>
+              <h1 className="toss-name">{displayQuote.quoteType === 'CRYPTOCURRENCY' ? displayQuote.name.replace(' USD', '') : displayQuote.name}</h1>
+            <span className="toss-symbol">{displayQuote.quoteType === 'CRYPTOCURRENCY' ? `${displayQuote.symbol.replace('-USD', '')}/USDT` : displayQuote.symbol}</span>
             
             {/* 태그 영역 */}
             <div className="toss-tags">
-              {/* 기능이 연동되면 표시할 태그 영역 */}
+              {!isLivePrice && (
+                <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'var(--overlay)', color: 'var(--neutral)', border: '1px solid var(--border-color)' }} title="야후 파이낸스 정책에 따라 15~20분 지연된 데이터를 사용 중입니다.">
+                  🕒 15분 지연 데이터
+                </span>
+              )}
+              {isLivePrice && (
+                <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'var(--bull-bg)', color: 'var(--bull)', border: '1px solid var(--bull)' }} title="실시간 스트리밍 시세 적용 중">
+                  ⚡ 실시간
+                </span>
+              )}
             </div>
           </div>
           
           <div className="toss-hero-bot">
-            <div className="toss-price-big">${formatNumber(quote.price)}</div>
-            <div className="toss-change-text" style={{ color: priceColor }}>
-              지난 장보다 {changeSign}${Math.abs(quote.change).toFixed(2)} ({changeSign}{Math.abs(quote.changePercent).toFixed(2)}%)
+            <div className="toss-price-big">${formatNumber(displayQuote.price)}</div>
+            <div className="toss-change-text" style={{ color: 'var(--text-muted)' }}>
+              지난 장보다 <span style={{ color: priceColor, fontWeight: 600 }}>{changeSign}${Math.abs(displayQuote.change).toFixed(2)} ({changeSign}{Math.abs(displayQuote.changePercent).toFixed(2)}%)</span>
             </div>
           </div>
         </div>
@@ -178,19 +239,19 @@ export default function ChartPageClient({ initialTicker }: Props) {
           <div className="toss-stat-col toss-ranges">
             <div className="toss-range-row">
               <span className="tr-label">1일 범위</span>
-              <span className="tr-min">${formatNumber(quote.dayLow)}</span>
+              <span className="tr-min">${formatNumber(displayQuote.dayLow)}</span>
               <div className="tr-bar-bg">
                 <div className="tr-marker" style={{ left: `${Math.max(0, Math.min(dayRangePct, 100))}%` }}></div>
               </div>
-              <span className="tr-max">${formatNumber(quote.dayHigh)}</span>
+              <span className="tr-max">${formatNumber(displayQuote.dayHigh)}</span>
             </div>
             <div className="toss-range-row">
               <span className="tr-label">52주 범위</span>
-              <span className="tr-min">${formatNumber(quote.fiftyTwoWeekLow)}</span>
+              <span className="tr-min">${formatNumber(displayQuote.fiftyTwoWeekLow)}</span>
               <div className="tr-bar-bg">
                 <div className="tr-marker" style={{ left: `${Math.max(0, Math.min(range52Pct, 100))}%` }}></div>
               </div>
-              <span className="tr-max">${formatNumber(quote.fiftyTwoWeekHigh)}</span>
+              <span className="tr-max">${formatNumber(displayQuote.fiftyTwoWeekHigh)}</span>
             </div>
           </div>
 
@@ -200,11 +261,11 @@ export default function ChartPageClient({ initialTicker }: Props) {
           <div className="toss-stat-col toss-kv">
             <div className="toss-kv-row">
               <span className="kv-label">거래량</span>
-              <span className="kv-val">{formatVolume(quote.volume)}</span>
+              <span className="kv-val">{formatVolume(displayQuote.volume)}</span>
             </div>
             <div className="toss-kv-row">
               <span className="kv-label">평균대비</span>
-              <span className="kv-val">{volRatio.toFixed(1)}x</span>
+              <span className="kv-val">{!displayQuote.avgVolume ? <span className="mini-shimmer" style={{ display: 'inline-block', width: '2em', height: '1em', borderRadius: '4px', verticalAlign: 'middle' }} /> : `${volRatio.toFixed(1)}x`}</span>
             </div>
           </div>
 
@@ -214,11 +275,11 @@ export default function ChartPageClient({ initialTicker }: Props) {
           <div className="toss-stat-col toss-kv" style={{ minWidth: '120px' }}>
             <div className="toss-kv-row">
               <span className="kv-label">시가총액</span>
-              <span className="kv-val">${formatNumber(quote.marketCap)}</span>
+              <span className="kv-val">${formatNumber(displayQuote.marketCap)}</span>
             </div>
             <div className="toss-kv-row">
               <span className="kv-label">시장</span>
-              <span className="kv-val">{quote.exchange}</span>
+              <span className="kv-val">{displayQuote.exchange}</span>
             </div>
           </div>
         </div>
@@ -228,7 +289,7 @@ export default function ChartPageClient({ initialTicker }: Props) {
       <div className="chart-body">
         {/* 차트 영역 */}
         <div className="chart-main">
-          <PriceChart ticker={initialTicker} name={quote.name} />
+          <PriceChart ticker={initialTicker} name={displayQuote.name} />
         </div>
 
         {/* 사이드 패널 */}
@@ -247,8 +308,8 @@ export default function ChartPageClient({ initialTicker }: Props) {
           </div>
 
           {/* 당일 예상 변동폭 (Expected Move) - 옵션 IV 기반 */}
-          {quote.quoteType !== 'CRYPTOCURRENCY' && (
-            <ExpectedMoveWidget ticker={initialTicker} currentPrice={quote.price} />
+          {displayQuote.quoteType !== 'CRYPTOCURRENCY' && (
+            <ExpectedMoveWidget ticker={initialTicker} currentPrice={displayQuote.price} />
           )}
 
           {/* 거래량 */}
@@ -257,11 +318,11 @@ export default function ChartPageClient({ initialTicker }: Props) {
             <div className="volume-section">
               <div className="volume-row">
                 <span className="stat-label">오늘</span>
-                <span className="stat-value" style={{ fontFamily: 'var(--font-mono)' }}>{formatVolume(quote.volume)}</span>
+                <span className="stat-value" style={{ fontFamily: 'var(--font-mono)' }}>{formatVolume(displayQuote.volume)}</span>
               </div>
               <div className="volume-row">
                 <span className="stat-label">3M 평균</span>
-                <span className="stat-value" style={{ fontFamily: 'var(--font-mono)' }}>{formatVolume(quote.avgVolume)}</span>
+                <span className="stat-value" style={{ fontFamily: 'var(--font-mono)' }}>{formatVolume(displayQuote.avgVolume)}</span>
               </div>
               <div className="vol-bar-container">
                 <div 
@@ -284,7 +345,7 @@ export default function ChartPageClient({ initialTicker }: Props) {
       </div>
 
       {/* ── 펀더멘털 및 기업 분석 ── */}
-      <CompanyAnalysis ticker={initialTicker} currentPrice={quote.price} />
+      <CompanyAnalysis ticker={initialTicker} currentPrice={displayQuote.price} />
 
       <style>{`
         .chart-page {
@@ -337,7 +398,7 @@ export default function ChartPageClient({ initialTicker }: Props) {
           justify-content: center;
           font-weight: 700;
           font-size: 0.8rem;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
 
         .toss-name {
@@ -369,7 +430,7 @@ export default function ChartPageClient({ initialTicker }: Props) {
         }
 
         .toss-tag.dark-mode-tag {
-          background: rgba(255,255,255,0.06);
+          background: var(--overlay);
           color: var(--text-secondary);
         }
 
@@ -439,7 +500,7 @@ export default function ChartPageClient({ initialTicker }: Props) {
           position: relative;
           width: 60px;
           height: 3px;
-          background: rgba(255, 255, 255, 0.1);
+          background: var(--border-color);
           border-radius: 2px;
         }
 
@@ -447,11 +508,11 @@ export default function ChartPageClient({ initialTicker }: Props) {
           position: absolute;
           top: 50%;
           transform: translate(-50%, -50%);
-          width: 6px;
-          height: 6px;
-          background: #4ade80; /* 밝은 녹색 포인트 점 */
+          width: 8px;
+          height: 8px;
+          background: var(--bull);
           border-radius: 50%;
-          box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+          box-shadow: 0 0 6px var(--bull);
         }
 
         /* 텍스트 KV 스탯 */

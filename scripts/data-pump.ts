@@ -93,15 +93,44 @@ async function pumpMarketData() {
 
     await redis.set('gidne_market_data', JSON.stringify(response), { ex: 60 });
 
-    const pipeline = redis.pipeline();
+    const msetPayload: Record<string, string> = {};
     for (const [ticker, q] of quotes.entries()) {
       if (q) {
-         pipeline.set(`gidne_quote_${ticker}`, JSON.stringify({
-          symbol: ticker, name: q.name || ticker, price: q.price ?? 0, change: q.change ?? 0, changePercent: q.changePercent ?? 0, previousClose: q.previousClose ?? 0, volume: (q as any).volume ?? 0, exchange: (q as any).exchange || ''
-        }), { ex: 30 });
+         msetPayload[`gidne_quote_${ticker}`] = JSON.stringify({
+          symbol: ticker, name: q.name || ticker, price: q.price ?? 0, change: q.change ?? 0, changePercent: q.changePercent ?? 0, previousClose: q.previousClose ?? 0,
+          open: q.open, dayHigh: q.dayHigh, dayLow: q.dayLow, volume: q.volume, avgVolume: q.avgVolume, marketCap: q.marketCap, fiftyTwoWeekHigh: q.fiftyTwoWeekHigh, fiftyTwoWeekLow: q.fiftyTwoWeekLow, exchange: q.exchange, quoteType: q.quoteType
+        });
       }
     }
-    await pipeline.exec();
+    if (Object.keys(msetPayload).length > 0) {
+      await redis.mset(msetPayload);
+    }
+
+    // gidne_watched_tickers: 사용자 커스텀 워치리스트 종목 (FDX, CRWD 등)
+    // api/quotes에서 최초 패치 시 이 셋에 등록 → 이후 15초마다 AAPL처럼 자동 갱신
+    const watchedTickers = await redis.smembers('gidne_watched_tickers');
+    if (watchedTickers && watchedTickers.length > 0) {
+      console.log(`[Pump] 👁️ Refreshing ${watchedTickers.length} watched: ${watchedTickers.slice(0, 5).join(', ')}...`);
+      try {
+        const watchedQuotes = await fetchQuotes(watchedTickers);
+        const watchedMsetPayload: Record<string, string> = {};
+        for (const [ticker, q] of watchedQuotes.entries()) {
+          if (q) {
+            watchedMsetPayload[`gidne_quote_${ticker}`] = JSON.stringify({
+              symbol: ticker, name: q.name || ticker, price: q.price ?? 0,
+              change: q.change ?? 0, changePercent: q.changePercent ?? 0,
+              previousClose: q.previousClose ?? 0,
+              open: q.open, dayHigh: q.dayHigh, dayLow: q.dayLow, volume: q.volume, avgVolume: q.avgVolume, marketCap: q.marketCap, fiftyTwoWeekHigh: q.fiftyTwoWeekHigh, fiftyTwoWeekLow: q.fiftyTwoWeekLow, exchange: q.exchange, quoteType: q.quoteType
+            });
+          }
+        }
+        if (Object.keys(watchedMsetPayload).length > 0) {
+          await redis.mset(watchedMsetPayload);
+        }
+      } catch (e) {
+        console.error('[Pump] Watched tickers refresh error:', e);
+      }
+    }
   } catch (error) {
     console.error('[Pump] Market data error:', error);
   }
@@ -128,15 +157,18 @@ async function pumpHoldingsData() {
     await redis.set('gidne_holdings_v2', JSON.stringify(holdings), { ex: 120 });
     
     // 이 개별 종목들도 quote로 저장해두면 좋음
-    const pipeline = redis.pipeline();
+    const holdingsMsetPayload: Record<string, string> = {};
     for (const [ticker, q] of quotes.entries()) {
       if (q) {
-         pipeline.set(`gidne_quote_${ticker}`, JSON.stringify({
-          symbol: ticker, name: q.name || ticker, price: q.price ?? 0, change: q.change ?? 0, changePercent: q.changePercent ?? 0, previousClose: q.previousClose ?? 0
-        }), { ex: 120 });
+         holdingsMsetPayload[`gidne_quote_${ticker}`] = JSON.stringify({
+          symbol: ticker, name: q.name || ticker, price: q.price ?? 0, change: q.change ?? 0, changePercent: q.changePercent ?? 0, previousClose: q.previousClose ?? 0,
+          open: q.open, dayHigh: q.dayHigh, dayLow: q.dayLow, volume: q.volume, avgVolume: q.avgVolume, marketCap: q.marketCap, fiftyTwoWeekHigh: q.fiftyTwoWeekHigh, fiftyTwoWeekLow: q.fiftyTwoWeekLow, exchange: q.exchange, quoteType: q.quoteType
+        });
       }
     }
-    await pipeline.exec();
+    if (Object.keys(holdingsMsetPayload).length > 0) {
+      await redis.mset(holdingsMsetPayload);
+    }
   } catch (error) {
     console.error('[Pump] Holdings data error:', error);
   }
@@ -176,7 +208,8 @@ async function pumpDemandQueues(): Promise<boolean> {
 
   // 1) Quotes (워치리스트) 처리
   await processQueue('gidne_queue_quote', 'gidne_quote_', async (ticker: string) => {
-    const q: any = await yahooFinance.quote(ticker);
+    const apiTicker = ticker.toUpperCase().endsWith('USDT') ? ticker.toUpperCase().replace('USDT', '-USD') : ticker;
+    const q: any = await yahooFinance.quote(apiTicker);
     return {
       symbol: q.symbol,
       name: q.shortName || q.longName || q.symbol,
@@ -199,51 +232,63 @@ async function pumpDemandQueues(): Promise<boolean> {
 
   // 2) 요약(Summary) 데이터 처리
   await processQueue('gidne_queue_summary', 'gidne_summary_v2_', async (ticker: string) => {
-    const summary: any = await yahooFinance.quoteSummary(ticker, {
-      modules: ['assetProfile', 'financialData', 'defaultKeyStatistics', 'summaryDetail', 'recommendationTrend'],
-    });
-    return {
-      profile: {
-        sector: summary.assetProfile?.sector || 'Unknown',
-        industry: summary.assetProfile?.industry || 'Unknown',
-        website: summary.assetProfile?.website || '',
-        description: summary.assetProfile?.longBusinessSummary || '',
-        employees: summary.assetProfile?.fullTimeEmployees || 0,
-      },
-      financials: {
-        targetHigh: summary.financialData?.targetHighPrice || 0,
-        targetLow: summary.financialData?.targetLowPrice || 0,
-        targetMean: summary.financialData?.targetMeanPrice || 0,
-        recommendationKey: summary.financialData?.recommendationKey || 'none',
-        numberOfAnalysts: summary.financialData?.numberOfAnalystOpinions || 0,
-        totalRevenue: summary.financialData?.totalRevenue || 0,
-        ebitda: summary.financialData?.ebitda || 0,
-        debtToEquity: summary.financialData?.debtToEquity || 0,
-        profitMargins: summary.financialData?.profitMargins || 0,
-        operatingMargins: summary.financialData?.operatingMargins || 0,
-        returnOnEquity: summary.financialData?.returnOnEquity || 0,
-      },
-      statistics: {
-        trailingPE: summary.summaryDetail?.trailingPE || 0,
-        forwardPE: summary.defaultKeyStatistics?.forwardPE || 0,
-        priceToBook: summary.defaultKeyStatistics?.priceToBook || 0,
-        beta: summary.defaultKeyStatistics?.beta || 0,
-        shortRatio: summary.defaultKeyStatistics?.shortRatio || 0,
-        shortPercentOfFloat: summary.defaultKeyStatistics?.shortPercentOfFloat || 0,
-        dividendYield: summary.summaryDetail?.dividendYield || summary.summaryDetail?.trailingAnnualDividendYield || 0,
-      },
-      trends: summary.recommendationTrend?.trend || [],
-      filings: summary.secFilings?.filings || []
-    };
+    const apiTicker = ticker.toUpperCase().endsWith('USDT') ? ticker.toUpperCase().replace('USDT', '-USD') : ticker;
+    try {
+      const summary: any = await yahooFinance.quoteSummary(apiTicker, {
+        modules: ['assetProfile', 'financialData', 'defaultKeyStatistics', 'summaryDetail', 'recommendationTrend'],
+      });
+      return {
+        profile: {
+          sector: summary.assetProfile?.sector || 'Unknown',
+          industry: summary.assetProfile?.industry || 'Unknown',
+          website: summary.assetProfile?.website || '',
+          description: summary.assetProfile?.longBusinessSummary || '',
+          employees: summary.assetProfile?.fullTimeEmployees || 0,
+        },
+        financials: {
+          targetHigh: summary.financialData?.targetHighPrice || 0,
+          targetLow: summary.financialData?.targetLowPrice || 0,
+          targetMean: summary.financialData?.targetMeanPrice || 0,
+          recommendationKey: summary.financialData?.recommendationKey || 'none',
+          numberOfAnalysts: summary.financialData?.numberOfAnalystOpinions || 0,
+          totalRevenue: summary.financialData?.totalRevenue || 0,
+          ebitda: summary.financialData?.ebitda || 0,
+          debtToEquity: summary.financialData?.debtToEquity || 0,
+          profitMargins: summary.financialData?.profitMargins || 0,
+          operatingMargins: summary.financialData?.operatingMargins || 0,
+          returnOnEquity: summary.financialData?.returnOnEquity || 0,
+        },
+        statistics: {
+          trailingPE: summary.summaryDetail?.trailingPE || 0,
+          forwardPE: summary.defaultKeyStatistics?.forwardPE || 0,
+          priceToBook: summary.defaultKeyStatistics?.priceToBook || 0,
+          beta: summary.defaultKeyStatistics?.beta || 0,
+          shortRatio: summary.defaultKeyStatistics?.shortRatio || 0,
+          shortPercentOfFloat: summary.defaultKeyStatistics?.shortPercentOfFloat || 0,
+          dividendYield: summary.summaryDetail?.dividendYield || summary.summaryDetail?.trailingAnnualDividendYield || 0,
+        },
+        trends: summary.recommendationTrend?.trend || [],
+        filings: summary.secFilings?.filings || []
+      };
+    } catch (e: any) {
+      console.warn(`[Pump] quoteSummary for ${ticker} threw error. Returning empty defaults.`, e.message);
+      return {
+        profile: { sector: 'Unknown', industry: 'Unknown', website: '', description: 'Data not available', employees: 0 },
+        financials: { targetHigh: 0, targetLow: 0, targetMean: 0, recommendationKey: 'none', numberOfAnalysts: 0, totalRevenue: 0, ebitda: 0, debtToEquity: 0, profitMargins: 0, operatingMargins: 0, returnOnEquity: 0 },
+        statistics: { trailingPE: 0, forwardPE: 0, priceToBook: 0, beta: 0, shortRatio: 0, shortPercentOfFloat: 0, dividendYield: 0 },
+        trends: [], filings: []
+      };
+    }
   }, 3600); // 1hr
 
   // 3) Expected Move (임플라이드 볼라틸리티) 데이터 처리
   await processQueue('gidne_queue_em', 'gidne_em_', async (ticker: string) => {
-    const quote: any = await yahooFinance.quote(ticker);
+    const apiTicker = ticker.toUpperCase().endsWith('USDT') ? ticker.toUpperCase().replace('USDT', '-USD') : ticker;
+    const quote: any = await yahooFinance.quote(apiTicker);
     const price = quote.regularMarketPrice;
     if (!price) throw new Error('No price found');
 
-    const optionsResponse: any = await yahooFinance.options(ticker);
+    const optionsResponse: any = await yahooFinance.options(apiTicker);
     if (!optionsResponse || !optionsResponse.options || optionsResponse.options.length === 0) {
       throw new Error('No options data');
     }
@@ -306,9 +351,10 @@ async function pumpDemandQueues(): Promise<boolean> {
 
   // 4) 수익률(Returns 1W, 1M) 데이터 처리
   await processQueue('gidne_queue_returns', 'gidne_ret_v2_', async (ticker: string) => {
+    const apiTicker = ticker.toUpperCase().endsWith('USDT') ? ticker.toUpperCase().replace('USDT', '-USD') : ticker;
     const period1 = new Date(); 
     period1.setMonth(period1.getMonth() - 2); // 넉넉히 2달치 (1M 계산을 위해)
-    const chart: any = await yahooFinance.chart(ticker, { period1, interval: '1d' as any });
+    const chart: any = await yahooFinance.chart(apiTicker, { period1, interval: '1d' as any });
     
     const quotes = chart.quotes.filter((q: any) => q.close !== null && q.close !== undefined);
     if (quotes.length === 0) throw new Error('No historical quotes');
@@ -404,8 +450,8 @@ async function main() {
   const POLLING_INTERVAL = getPollingInterval(); // 보통 15000ms
 
   let lastQueuePump = Date.now();
-  let currentPollDelay = 2000; // 초기 큐 폴링 딜레이 (2초)
-  const MAX_POLL_DELAY = 10000; // 큐가 빌 경우 최대 대기 시간 (10초)
+  let currentPollDelay = 1000; // 초기 큐 폴링 딜레이
+  const MAX_POLL_DELAY = 1500; // 큐가 빌 경우 최대 대기 시간 (1.5초 - UI 반응성 최우선)
 
   while (true) {
     const now = Date.now();
@@ -416,12 +462,10 @@ async function main() {
       try {
         const didWork = await pumpDemandQueues();
         if (didWork) {
-          // 큐에 처리할 일이 있었다면, 대기 시간을 즉시 2초로 리셋하여 
-          // 다음 들어오는 큐들도 최대한 빨리 처리 (터미널의 실시간 체감 확보)
+          // 큐에 처리할 일이 있었다면, 대기 시간을 즉시 단축
           currentPollDelay = 2000; 
         } else {
-          // 큐가 비어있다면 대기 시간을 점진적으로 1.5배씩 늘림 (최대 10초 대기)
-          // 아무도 앱을 사용하지 않는 새벽 시간에 API 호출을 80% 이상 절약
+          // 큐가 비어있다면 대기 시간을 점진적으로 늘림 (최대 10초 대기)
           currentPollDelay = Math.min(currentPollDelay * 1.5, MAX_POLL_DELAY);
         }
       } catch (e) {
@@ -453,7 +497,7 @@ async function main() {
       pumpCalendar().catch(e => console.error(e)); // Non-blocking
     }
 
-    await new Promise(r => setTimeout(r, 1000)); // 항상 1초 대기 (CPU 절약)
+    await new Promise(r => setTimeout(r, 200)); // 항상 0.2초 대기 (CPU 폭주 방지)
   }
 }
 

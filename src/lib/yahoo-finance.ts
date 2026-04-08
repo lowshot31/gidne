@@ -65,6 +65,16 @@ export async function fetchQuotes(tickers: string[]): Promise<Map<string, Ticker
             change: q.regularMarketChange ?? 0,
             changePercent: q.regularMarketChangePercent ?? 0,
             previousClose: q.regularMarketPreviousClose ?? 0,
+            open: q.regularMarketOpen,
+            dayHigh: q.regularMarketDayHigh,
+            dayLow: q.regularMarketDayLow,
+            volume: q.regularMarketVolume,
+            avgVolume: q.averageDailyVolume3Month || q.averageDailyVolume10Day,
+            marketCap: q.marketCap,
+            fiftyTwoWeekHigh: q.fiftyTwoWeekHigh,
+            fiftyTwoWeekLow: q.fiftyTwoWeekLow,
+            exchange: q.exchange,
+            quoteType: q.quoteType,
           };
           
           // 반환된 심볼과 요청한 심볼 양쪽 모두로 캐싱
@@ -101,6 +111,16 @@ export async function fetchSingleQuote(ticker: string): Promise<TickerQuote | nu
       change: q.regularMarketChange ?? 0,
       changePercent: q.regularMarketChangePercent ?? 0,
       previousClose: q.regularMarketPreviousClose ?? 0,
+      open: q.regularMarketOpen,
+      dayHigh: q.regularMarketDayHigh,
+      dayLow: q.regularMarketDayLow,
+      volume: q.regularMarketVolume,
+      avgVolume: q.averageDailyVolume3Month || q.averageDailyVolume10Day,
+      marketCap: q.marketCap,
+      fiftyTwoWeekHigh: q.fiftyTwoWeekHigh,
+      fiftyTwoWeekLow: q.fiftyTwoWeekLow,
+      exchange: q.exchange,
+      quoteType: q.quoteType,
     };
   } catch (error) {
     console.error(`[yahoo-finance] fetch error for ${ticker}:`, error);

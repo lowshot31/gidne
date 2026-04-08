@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import SegmentedControl from './SegmentedControl';
+import SkeletonCard from './SkeletonCard';
 
 interface NewsItem {
   uuid: string;
@@ -11,22 +12,8 @@ interface NewsItem {
 }
 
 export default function WatchlistNews() {
-  const [generalNews, setGeneralNews] = useState<NewsItem[]>([]);
   const [tickerNews, setTickerNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'ticker'>('all');
-
-  // 전체 시장 뉴스 가져오기
-  const fetchGeneralNews = async () => {
-    try {
-      const res = await fetch(`/api/news?q=stock market&count=15`);
-      if (!res.ok) throw new Error('API failed');
-      const data = await res.json();
-      setGeneralNews(data);
-    } catch (err) {
-      console.error('Failed to fetch general news', err);
-    }
-  };
 
   // 워치리스트 종목 뉴스 가져오기
   const fetchTickerNews = async () => {
@@ -52,7 +39,7 @@ export default function WatchlistNews() {
 
   useEffect(() => {
     const fetchAll = async () => {
-      await Promise.all([fetchGeneralNews(), fetchTickerNews()]);
+      await fetchTickerNews();
       setLoading(false);
     };
     fetchAll();
@@ -61,7 +48,6 @@ export default function WatchlistNews() {
     window.addEventListener('gidne_watchlist_updated', handleStorageChange);
     
     const iv = setInterval(() => {
-      fetchGeneralNews();
       fetchTickerNews();
     }, 60000);
     return () => {
@@ -87,39 +73,30 @@ export default function WatchlistNews() {
     return `${Math.floor(hours / 24)}일 전`;
   };
 
-  const displayedNews = activeTab === 'all' ? generalNews : tickerNews;
+  if (loading) {
+    return <SkeletonCard title="WATCHLIST NEWS" />;
+  }
 
   return (
     <div className="bento-item h-full flex flex-col" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h3 className="text-secondary" style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <span>🗞️</span> NEWS 
+          <span>🗞️</span> WATCHLIST NEWS 
           {loading && <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', marginLeft: '4px', fontWeight: 'normal' }}>...</span>}
         </h3>
-        <SegmentedControl 
-          tabs={[
-            { id: 'all', label: '📰 전체' },
-            { id: 'ticker', label: '🎯 종목' }
-          ]}
-          activeTab={activeTab}
-          onTabChange={(id) => setActiveTab(id as any)}
-          size="sm"
-          suffix={
-            <a href="https://www.saveticker.com/app/news" target="_blank" rel="noopener noreferrer" className="live-squawk-btn" title="세이브티커 실시간 뉴스 열기">
-              <img src="https://www.google.com/s2/favicons?domain=saveticker.com&sz=16" alt="" style={{ width: '14px', height: '14px', borderRadius: '2px' }} />
-              세이브티커 ↗
-            </a>
-          }
-        />
+        <a href="https://www.saveticker.com/app/news" target="_blank" rel="noopener noreferrer" className="live-squawk-btn" title="세이브티커 실시간 뉴스 열기">
+          <img src="https://www.google.com/s2/favicons?domain=saveticker.com&sz=16" alt="" style={{ width: '14px', height: '14px', borderRadius: '2px' }} />
+          세이브티커 ↗
+        </a>
       </div>
 
       <div className="gidne-list-container" style={{ flex: 1, paddingRight: '4px' }}>
-        {!loading && displayedNews.length === 0 ? (
+        {!loading && tickerNews.length === 0 ? (
           <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '1rem' }}>
-            {activeTab === 'ticker' ? '워치리스트에 종목을 추가하면 관련 뉴스가 표시됩니다.' : '뉴스를 불러오는 중...'}
+            워치리스트에 종목을 추가하면 관련 뉴스가 표시됩니다.
           </div>
         ) : (
-          displayedNews.map((item: NewsItem) => {
+          tickerNews.map((item: NewsItem) => {
             return (
               <a key={item.uuid} href={item.link} target="_blank" rel="noopener noreferrer" className="gidne-list-row news-card-override">
                 <div className="news-meta">

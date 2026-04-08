@@ -22,12 +22,16 @@ export function useBinanceStream(symbols: string[] = ['btcusdt', 'ethusdt', 'sol
   const mountedRef = useRef(true);
 
   useEffect(() => {
+    if (symbols.length === 0) return;
+
     mountedRef.current = true;
 
     const connect = () => {
       // 복수 심볼을 하나의 WebSocket으로 구독 (combined stream)
+      // 초고속(@trade)은 브라우저 소켓이 터질 수 있으므로 안정적인 1초 묶음(@ticker)으로 롤백!
       const streams = symbols.map(s => `${s.toLowerCase()}@ticker`).join('/');
-      const url = `wss://stream.binance.com:9443/ws/${streams}`;
+      // 9443 포트는 Firefox에서 보안 정책으로 차단됨 → 443 포트 사용 (동일 서버)
+      const url = `wss://stream.binance.com:443/ws/${streams}`;
 
       const ws = new WebSocket(url);
       wsRef.current = ws;

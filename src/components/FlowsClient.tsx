@@ -82,7 +82,7 @@ const EquitiesFlows = () => {
       <div className="bento-item" style={{ width: '100%', boxSizing: 'border-box' }}>
         <h3 className="text-secondary mb-md" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           S&P 500 돈의 파도 (히트맵) 🗺️
-          <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(255, 165, 0, 0.1)', color: '#ffa500', border: '1px solid rgba(255, 165, 0, 0.2)', fontWeight: 'normal' }}>
+          <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(255, 165, 0, 0.1)', color: 'var(--neutral)', border: '1px solid rgba(255, 165, 0, 0.2)', fontWeight: 'normal' }}>
             🕒 15분 지연
           </span>
         </h3>

@@ -125,7 +125,15 @@ export default function EconomicCalendar() {
       </div>
 
       <div className="calendar-list" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '4px' }}>
-        {events.map((ev, i) => {
+        {React.useMemo(() => {
+          const todayStart = new Date();
+          todayStart.setHours(0, 0, 0, 0);
+          return events.filter(ev => {
+            const parsed = parseFFDateTimeToKST(ev.date, ev.time);
+            if (!parsed.rawDateObj) return true;
+            return parsed.rawDateObj.getTime() >= todayStart.getTime();
+          });
+        }, [events]).map((ev, i, arr) => {
           const { date, time } = parseFFDateTimeToKST(ev.date, ev.time);
           const isHigh = ev.impact === 'high';
           const isTBD = time === '종일' || time === '미정';
@@ -134,7 +142,7 @@ export default function EconomicCalendar() {
           if (i === 0) {
             showDateHeader = true;
           } else {
-            const prev = parseFFDateTimeToKST(events[i-1].date, events[i-1].time);
+            const prev = parseFFDateTimeToKST(arr[i-1].date, arr[i-1].time);
             if (prev.date !== date) showDateHeader = true;
           }
           

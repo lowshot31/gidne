@@ -10,27 +10,27 @@ interface Props {
 
 const PIN_CITIES = [
   // 미주
-  { id: 'new_york', name: 'New York', region: 'americas', primaryTicker: '^GSPC', left: '26.5%', top: '22.5%' },
-  { id: 'toronto', name: 'Toronto', region: 'americas', primaryTicker: '^GSPTSE', left: '25.5%', top: '20.5%' },
-  { id: 'saopaulo', name: 'Sao Paulo', region: 'emerging', primaryTicker: '^BVSP', left: '33.5%', top: '63.5%' },
-  { id: 'mexicocity', name: 'Mexico City', region: 'emerging', primaryTicker: '^MXX', left: '20.0%', top: '38.0%' },
+  { id: 'new_york', name: 'New York', region: 'americas', primaryTicker: '^GSPC', left: '29.4%', top: '27.4%' },
+  { id: 'toronto', name: 'Toronto', region: 'americas', primaryTicker: '^GSPTSE', left: '28.0%', top: '25.8%' },
+  { id: 'saopaulo', name: 'Sao Paulo', region: 'emerging', primaryTicker: '^BVSP', left: '37.0%', top: '63.1%' },
+  { id: 'mexicocity', name: 'Mexico City', region: 'emerging', primaryTicker: '^MXX', left: '22.5%', top: '39.2%' },
   
-  // 유럽
-  { id: 'london', name: 'London', region: 'europe', primaryTicker: '^FTSE', left: '46.0%', top: '16.5%' },
-  { id: 'paris', name: 'Paris', region: 'europe', primaryTicker: '^FCHI', left: '47.0%', top: '18.5%' },
-  { id: 'frankfurt', name: 'Frankfurt', region: 'europe', primaryTicker: '^GDAXI', left: '48.5%', top: '17.5%' },
-  { id: 'brussels', name: 'Brussels', region: 'europe', primaryTicker: '^STOXX50E', left: '47.8%', top: '16.8%' }, // Euro Stoxx 50 추가
-  { id: 'telaviv', name: 'Tel Aviv', region: 'emerging', primaryTicker: 'TA35.TA', left: '55.0%', top: '31.5%' },
+  // 유럽 & 중동
+  { id: 'london', name: 'London', region: 'europe', primaryTicker: '^FTSE', left: '50.0%', top: '21.4%' },
+  { id: 'paris', name: 'Paris', region: 'europe', primaryTicker: '^FCHI', left: '50.7%', top: '22.9%' },
+  { id: 'frankfurt', name: 'Frankfurt', region: 'europe', primaryTicker: '^GDAXI', left: '52.4%', top: '22.2%' },
+  { id: 'brussels', name: 'Brussels', region: 'europe', primaryTicker: '^STOXX50E', left: '51.2%', top: '21.7%' },
+  { id: 'telaviv', name: 'Tel Aviv', region: 'emerging', primaryTicker: 'TA35.TA', left: '59.7%', top: '32.2%' },
   
-  // 아시아 & 신흥국
-  { id: 'tokyo', name: 'Tokyo', region: 'asia', primaryTicker: '^N225', left: '84.5%', top: '31.0%' },
-  { id: 'seoul', name: 'Seoul', region: 'asia', primaryTicker: '^KS11', left: '81.5%', top: '31.0%' },
-  { id: 'shanghai', name: 'Shanghai', region: 'asia', primaryTicker: '000001.SS', left: '79.5%', top: '34.0%' },
-  { id: 'taipei', name: 'Taipei', region: 'asia', primaryTicker: '^TWII', left: '80.0%', top: '39.0%' },
-  { id: 'hong_kong', name: 'Hong Kong', region: 'asia', primaryTicker: '^HSI', left: '78.5%', top: '41.5%' },
-  { id: 'mumbai', name: 'Mumbai', region: 'emerging', primaryTicker: '^NSEI', left: '68.0%', top: '41.0%' },
-  { id: 'hcmc', name: 'Ho Chi Minh', region: 'emerging', primaryTicker: '^VNINDEX.VN', left: '76.5%', top: '46.5%' },
-  { id: 'sydney', name: 'Sydney', region: 'asia', primaryTicker: '^AXJO', left: '88.0%', top: '75.0%' },
+  // 아시아 & 신흥국 & 오세아니아
+  { id: 'tokyo', name: 'Tokyo', region: 'asia', primaryTicker: '^N225', left: '88.8%', top: '30.2%' },
+  { id: 'seoul', name: 'Seoul', region: 'asia', primaryTicker: '^KS11', left: '85.3%', top: '29.1%' },
+  { id: 'shanghai', name: 'Shanghai', region: 'asia', primaryTicker: '000001.SS', left: '83.7%', top: '32.6%' },
+  { id: 'taipei', name: 'Taipei', region: 'asia', primaryTicker: '^TWII', left: '83.8%', top: '36.1%' },
+  { id: 'hong_kong', name: 'Hong Kong', region: 'asia', primaryTicker: '^HSI', left: '81.7%', top: '37.6%' },
+  { id: 'mumbai', name: 'Mumbai', region: 'emerging', primaryTicker: '^NSEI', left: '70.2%', top: '39.4%' },
+  { id: 'hcmc', name: 'Ho Chi Minh', region: 'emerging', primaryTicker: '^VNINDEX.VN', left: '79.6%', top: '44.0%' },
+  { id: 'sydney', name: 'Sydney', region: 'asia', primaryTicker: '^AXJO', left: '92.0%', top: '68.8%' },
 ];
 
 export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex }: Props) {
@@ -184,7 +184,7 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
 
             const isBull = displayQuote.changePercent >= 0;
             colorVar = isBull ? 'var(--bull)' : 'var(--bear)';
-            shadowColor = isBull ? 'rgba(34, 197, 94, 0.6)' : 'rgba(239, 83, 80, 0.6)';
+            shadowColor = isBull ? 'var(--bull)' : 'var(--bear)';
             changePct = displayQuote.changePercent;
           }
 
@@ -219,7 +219,7 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
                   </div>
                   <div className="tooltip-status">
                     <span className={`status-dot ${isOpen ? 'open' : 'closed'}`} />
-                    <span style={{ color: isOpen ? 'var(--text-secondary)' : '#aaaaaa', fontWeight: 500 }}>
+                    <span style={{ color: isOpen ? 'var(--text-secondary)' : 'var(--text-muted)', fontWeight: 500 }}>
                       {isOpen ? 'Trading' : 'Closed'}
                     </span>
                   </div>
@@ -315,45 +315,43 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           width: 100%;
           max-width: 1100px;
           margin: 0 auto;
+          container-type: inline-size;
         }
 
         .map-inner-wrapper {
           position: relative;
           width: 100%;
-          aspect-ratio: 2754 / 1398;
-          /* Crop the massive empty ocean top/bottom from the SVG */
-          margin-top: -5%;
-          margin-bottom: -8%;
-          pointer-events: none; /* Let overlay clicks pass through if needed, though pins need events */
+          aspect-ratio: 4378 / 2435;
+          margin-top: -3%;
+          margin-bottom: -5%;
+          pointer-events: none;
         }
         /* Restore pointer-events for interactive elements inside the map */
         .map-background, .map-pin {
           pointer-events: auto;
         }
 
-        /* Abstract Low-res World Map via CSS repeated background */
+        /* Standard background image instead of mask, fixes Chrome render issues */
         .map-background {
           position: absolute;
           inset: 0;
-          background-color: rgba(255, 255, 255, 0.12);
-          mask-image: url('/map.svg');
-          mask-size: 100% 100%;
-          mask-position: center;
-          mask-repeat: no-repeat;
-          -webkit-mask-image: url('/map.svg');
-          -webkit-mask-size: 100% 100%;
-          -webkit-mask-position: center;
-          -webkit-mask-repeat: no-repeat;
+          background-image: url('/map.svg');
+          background-size: 100% 100%;
+          background-position: center;
+          background-repeat: no-repeat;
+          opacity: 0.15;
+          filter: grayscale(100%) brightness(200%);
         }
 
         [data-theme='light'] .map-background {
-          background-color: rgba(0, 0, 0, 0.1);
+          opacity: 0.15;
+          filter: grayscale(100%) invert(100%);
         }
 
         .map-pin {
           position: absolute;
-          width: 14px;
-          height: 14px;
+          width: clamp(8px, 1.5cqi, 16px);
+          height: clamp(8px, 1.5cqi, 16px);
           transform: translate(-50%, -50%);
           cursor: pointer;
           z-index: 10;
@@ -361,21 +359,21 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
 
         .pin-core {
           position: absolute;
-          inset: 3px;
+          inset: 20%;
           background: var(--pin-color);
           border-radius: 50%;
-          box-shadow: 0 0 10px var(--pin-shadow);
+          box-shadow: 0 0 6px var(--pin-shadow);
           transition: all 0.2s;
         }
 
         .map-pin:hover .pin-core, .map-pin.is-selected .pin-core {
-          inset: 0px;
-          box-shadow: 0 0 15px var(--pin-shadow), 0 0 30px var(--pin-shadow);
+          inset: 0%;
+          box-shadow: 0 0 12px var(--pin-shadow), 0 0 24px var(--pin-shadow);
         }
 
         .pin-pulse {
           position: absolute;
-          inset: -4px;
+          inset: -30%;
           border-radius: 50%;
           border: 2px solid var(--pin-color);
           opacity: 0;
@@ -400,15 +398,11 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           min-width: 140px;
           z-index: 20;
           pointer-events: none;
-          background: rgba(15, 20, 25, 0.85);
+          background: var(--card-bg);
           backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-
-        [data-theme='light'] .pin-tooltip {
-          background: rgba(255, 255, 255, 0.9);
-          border-color: rgba(0, 0, 0, 0.1);
+          border: 1px solid var(--border-color);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+          color: var(--text-primary);
         }
 
         .tooltip-city {
@@ -446,8 +440,8 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           box-shadow: 0 0 5px var(--bull);
         }
         .status-dot.closed {
-          background: #aaaaaa;
-          box-shadow: 0 0 4px rgba(255,255,255,0.2);
+          background: var(--text-muted);
+          box-shadow: none;
         }
 
         .hero-cards-overlay {
@@ -469,8 +463,8 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           border-radius: var(--radius-lg);
           cursor: pointer;
           transition: all 0.2s ease;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          background: rgba(15, 20, 25, 0.6);
+          border: 1px solid var(--border-color);
+          background: var(--card-bg);
           backdrop-filter: blur(10px);
         }
 
@@ -486,14 +480,9 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           }
         }
 
-        [data-theme='light'] .hero-card {
-          background: rgba(255, 255, 255, 0.7);
-          border-color: rgba(0, 0, 0, 0.05);
-        }
-
         .hero-card:hover {
           transform: translateY(-2px);
-          border-color: rgba(255, 255, 255, 0.1);
+          border-color: var(--accent-primary);
         }
         
         .hero-card.dragging {
@@ -543,16 +532,16 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           font-size: 1.5rem;
           color: var(--text-muted);
           transition: all 0.2s;
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--overlay);
           backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid var(--border-color);
           margin-left: 0.5rem;
         }
 
         .hero-add-btn:hover {
           color: var(--text-primary);
-          background: rgba(255, 255, 255, 0.1);
-          border-color: rgba(255, 255, 255, 0.2);
+          background: var(--overlay-hover);
+          border-color: var(--accent-primary);
           transform: scale(1.05);
         }
 
@@ -564,11 +553,11 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           max-height: 350px;
           display: flex;
           flex-direction: column;
-          background: rgba(15, 20, 25, 0.95);
+          background: var(--card-bg);
           border: 1px solid var(--border-color);
           border-radius: var(--radius-lg);
           z-index: 50;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+          box-shadow: 0 10px 40px rgba(0,0,0,0.3);
           padding: 1rem;
         }
 
@@ -608,26 +597,26 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
         }
         
         .hero-picker-grid::-webkit-scrollbar { width: 4px; }
-        .hero-picker-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        .hero-picker-grid::-webkit-scrollbar-thumb { background: var(--overlay-hover); border-radius: 4px; }
 
         .hero-picker-item {
           display: flex;
           justify-content: space-between;
           padding: 0.6rem 0.8rem;
           border-radius: 6px;
-          background: rgba(255,255,255,0.02);
+          background: var(--overlay);
           cursor: pointer;
           font-size: 0.85rem;
           transition: background 0.1s;
         }
 
         .hero-picker-item:hover {
-          background: rgba(255,255,255,0.06);
+          background: var(--overlay-hover);
         }
 
         .hero-picker-item.selected {
           border: 1px solid var(--accent-primary);
-          background: rgba(234, 179, 8, 0.05);
+          background: var(--accent-subtle);
         }
 
         @media (max-width: 768px) {

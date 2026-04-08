@@ -1,6 +1,7 @@
 import React from 'react';
 import { useBinanceStream } from '../hooks/useBinanceStream';
 import { useFlash } from '../hooks/useFlash';
+import SkeletonCard from './SkeletonCard';
 
 const CRYPTO_SYMBOLS = ['btcusdt', 'ethusdt', 'solusdt', 'xrpusdt', 'dogeusdt'];
 
@@ -48,6 +49,10 @@ function CryptoRow({ symbol, price, change24h, high24h, low24h }: {
 
 export default function CryptoLive() {
   const prices = useBinanceStream(CRYPTO_SYMBOLS);
+
+  if (prices.size === 0) {
+    return <SkeletonCard title="CRYPTO LIVE" />;
+  }
 
   return (
     <div className="bento-item crypto-live-container">

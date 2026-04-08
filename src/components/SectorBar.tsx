@@ -65,10 +65,10 @@ export default function SectorBar({ sectors }: Props) {
         })}
       </div>
       <div className="cycle-legend" style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.8rem', justifyContent: 'center', alignItems: 'center' }}>
-        <span><span style={{ color: '#22c55e' }}>●</span> Early (회복)</span>
-        <span><span style={{ color: '#eab308' }}>●</span> Mid (호황)</span>
-        <span><span style={{ color: '#f97316' }}>●</span> Late (후퇴)</span>
-        <span><span style={{ color: '#0ea5e9' }}>●</span> Defensive (침체)</span>
+        <span><span style={{ color: 'var(--cycle-early)' }}>●</span> Early (회복)</span>
+        <span><span style={{ color: 'var(--cycle-mid)' }}>●</span> Mid (호황)</span>
+        <span><span style={{ color: 'var(--cycle-late)' }}>●</span> Late (후퇴)</span>
+        <span><span style={{ color: 'var(--cycle-defensive)' }}>●</span> Defensive (침체)</span>
         
         <div className="sector-info-wrapper" style={{ marginLeft: '4px' }}>
           <span className="info-icon" style={{ cursor: 'help' }}>
@@ -84,10 +84,10 @@ export default function SectorBar({ sectors }: Props) {
               현재 <strong>가장 높이 올라온 섹터들의 색깔</strong>을 보면, 지금 경제가 4가지 계절 중 어디쯤 와있는지 눈치챌 수 있어요!
             </div>
             <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.8rem' }}>
-              <li><strong style={{ color: '#22c55e' }}>● Early (회복기)</strong>: 금융(XLF), 부동산(XLRE), 소비재(XLY)가 앞장섭니다. 돈이 풀리며 경기가 살아나기 시작해요.</li>
-              <li><strong style={{ color: '#eab308' }}>● Mid (호황기)</strong>: 테크(XLK), 통신(XLC), 산업(XLI)이 질주합니다. 공장이 팡팡 돌아가고 기술 혁신이 주도해요.</li>
-              <li><strong style={{ color: '#f97316' }}>● Late (후퇴기)</strong>: 에너지(XLE), 소재(XLB)가 끝물에 불을 뿜습니다. 물가가 오르고 금리가 높아져 경기가 꺾이기 직전이에요.</li>
-              <li><strong style={{ color: '#0ea5e9' }}>● Defensive (침체기)</strong>: 헬스케어(XLV), 필수소비재(XLP), 유틸리티(XLU)만 버팁니다. 다들 아플 때 약 찾듯, 경기와 무관한 안전빵만 찾아요.</li>
+              <li><strong style={{ color: 'var(--cycle-early)' }}>● Early (회복기)</strong>: 금융(XLF), 부동산(XLRE), 소비재(XLY)가 앞장섭니다. 돈이 풀리며 경기가 살아나기 시작해요.</li>
+              <li><strong style={{ color: 'var(--cycle-mid)' }}>● Mid (호황기)</strong>: 테크(XLK), 통신(XLC), 산업(XLI)이 질주합니다. 공장이 팡팡 돌아가고 기술 혁신이 주도해요.</li>
+              <li><strong style={{ color: 'var(--cycle-late)' }}>● Late (후퇴기)</strong>: 에너지(XLE), 소재(XLB)가 끝물에 불을 뿜습니다. 물가가 오르고 금리가 높아져 경기가 꺾이기 직전이에요.</li>
+              <li><strong style={{ color: 'var(--cycle-defensive)' }}>● Defensive (침체기)</strong>: 헬스케어(XLV), 필수소비재(XLP), 유틸리티(XLU)만 버팁니다. 다들 아플 때 약 찾듯, 경기와 무관한 안전빵만 찾아요.</li>
             </ul>
           </div>
         </div>

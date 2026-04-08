@@ -42,10 +42,11 @@ function CustomLightweightChart({ ticker, name, hideWrapper, compareTicker, comp
         if (!chartContainerRef.current) return;
 
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        const bgColor = isLight ? '#ffffff' : '#161616';
-        const textColor = isLight ? '#333333' : '#d1d4dc';
-        const gridColor = isLight ? 'rgba(229, 229, 234, 1)' : 'rgba(42, 42, 42, 1)';
-        const compColor = isLight ? 'rgba(245, 158, 11, 0.8)' : 'rgba(251, 191, 36, 0.8)'; // Amber/Gold for SPY
+        const cs = getComputedStyle(document.documentElement);
+        const bgColor = cs.getPropertyValue('--card-bg').trim();
+        const textColor = cs.getPropertyValue('--text-secondary').trim();
+        const gridColor = cs.getPropertyValue('--glass-border').trim();
+        const compColor = isLight ? 'rgba(163, 117, 28, 0.8)' : 'rgba(200, 155, 60, 0.8)'; // accent-primary 계열
 
         // Determine if bull or bear overall trend for color
         let trendBull = true;
@@ -53,8 +54,10 @@ function CustomLightweightChart({ ticker, name, hideWrapper, compareTicker, comp
           trendBull = data[data.length - 1].close >= data[0].close;
         }
         
-        const finalLineColor = trendBull ? '#22c55e' : '#ef5350';
-        const finalTopColor = trendBull ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 83, 80, 0.3)';
+        const bullColor = cs.getPropertyValue('--bull').trim();
+        const bearColor = cs.getPropertyValue('--bear').trim();
+        const finalLineColor = trendBull ? bullColor : bearColor;
+        const finalTopColor = trendBull ? `${bullColor}4D` : `${bearColor}4D`; // ~30% opacity hex suffix
 
         if (!chartRef.current) {
           const chart = createChart(chartContainerRef.current, {

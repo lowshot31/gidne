@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useMarketData } from '../hooks/useMarketData';
+import SkeletonCard from './SkeletonCard';
 
 export default function MarketRegimeWidget() {
   const { data, loading, error } = useMarketData();
@@ -52,8 +53,8 @@ export default function MarketRegimeWidget() {
     return { regime, color, shortDesc, icon, score, metrics: { vix, vixChange, dxyChange, tnxChange, spxChange } };
   }, [data]);
 
-  if (loading || !regimeInfo) return <div className="bento-item p-xl text-center">Loading Regime...</div>;
-  if (error) return null;
+  if (loading || !regimeInfo) return <SkeletonCard title="오늘 장 분위기 온도계 🌡️" />;
+  if (error) return <SkeletonCard title="오늘 장 분위기 온도계 🌡️" error="데이터를 불러오지 못했습니다" />;
 
   return (
     <div className="bento-item" style={{ marginBottom: '1rem', width: '100%', boxSizing: 'border-box' }}>
@@ -92,10 +93,10 @@ export default function MarketRegimeWidget() {
         <div style={{ 
           position: 'relative', 
           width: '100%', 
-          height: '10px', 
-          background: 'linear-gradient(90deg, #9c27b0, #ef5350, #f5a623, #22c55e)', 
+          background: 'linear-gradient(90deg, #9c27b0, var(--bear), var(--neutral), var(--bull))', 
+          height: '10px',
           borderRadius: '5px',
-          boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)'
+          boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)'
         }}>
           <div style={{ 
             position: 'absolute', 
@@ -106,7 +107,7 @@ export default function MarketRegimeWidget() {
             background: 'var(--card-bg)', 
             border: `3px solid ${regimeInfo.color}`, 
             borderRadius: '50%',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
             transition: 'left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'
           }} />
         </div>
@@ -200,7 +201,7 @@ export default function MarketRegimeWidget() {
           border-radius: var(--radius-md);
           padding: 1rem;
           color: var(--text-primary);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
           backdrop-filter: blur(12px);
           z-index: 100;
           opacity: 0;
@@ -240,7 +241,7 @@ export default function MarketRegimeWidget() {
           border: 1px solid var(--glass-border);
           padding: 0.75rem;
           border-radius: 8px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.15);
           z-index: 100;
           color: var(--text-primary);
           font-family: var(--font-sans);
