@@ -543,11 +543,11 @@ export default function Watchlist() {
           flex-shrink: 0;
         }
         .wl-col-name {
-          width: 25%;
+          width: 23%;
           flex-shrink: 1;
         }
         .wl-col-price {
-          width: 18%;
+          width: 20%;
           justify-content: flex-end;
           flex-shrink: 0;
         }
@@ -639,7 +639,7 @@ export default function Watchlist() {
         @media (max-width: 600px) {
           .wl-col-ticker { width: 30%; }
           .wl-col-name { display: none; }
-          .wl-col-price { width: 30%; }
+          .wl-col-price { width: 32%; }
           .wl-col-change { width: 40%; }
           .wl-grip { margin-right: 0.15rem; font-size: 0.75rem; }
           .wl-symbol { font-size: 0.8rem; }
@@ -695,7 +695,7 @@ function WatchlistRow({ ticker, name, price, changePercent, isUp, benchmarkChang
       {/* Col 3: 가격 (18%) */}
       <div className="wl-col wl-col-price">
         {!isLoading ? (
-          <span className="wl-price">{price >= 1000 ? price.toLocaleString('en-US', { maximumFractionDigits: 0 }) : price.toFixed(2)}</span>
+          <span className="wl-price">${price >= 1000 ? price.toLocaleString('en-US', { maximumFractionDigits: 0 }) : price.toFixed(2)}</span>
         ) : (
           <span className="text-muted" style={{ fontSize: '0.7rem', opacity: 0.7 }}>로딩...</span>
         )}

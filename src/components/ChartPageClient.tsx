@@ -198,31 +198,40 @@ export default function ChartPageClient({ initialTicker }: Props) {
       <div className="chart-hero toss-style-header bento-item">
         <div className="toss-hero-left">
           <div className="toss-hero-top">
-            <a href="/" className="back-link" title="대시보드로 돌아가기">←</a>
-            <div className="toss-logo-circle" style={{ background: priceColor, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ position: 'absolute', color: 'white', fontSize: '1rem', fontWeight: 600 }}>{displayQuote.symbol.charAt(0)}</span>
-              <img 
-                src={logoUrl} 
-                alt="" 
-                style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%', objectFit: 'contain', background: 'white' }} 
-                onError={(e) => { e.currentTarget.style.display = 'none'; }} 
-              />
+            {/* Zone 1: 고정 — 뒤로가기 + 로고 */}
+            <div className="toss-hero-identity" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+              <a href="/" className="back-link" title="대시보드로 돌아가기">←</a>
+              <div className="toss-logo-circle" style={{ background: priceColor, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ position: 'absolute', color: 'white', fontSize: '1rem', fontWeight: 600 }}>{displayQuote.symbol.charAt(0)}</span>
+                <img 
+                  src={logoUrl} 
+                  alt="" 
+                  style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%', objectFit: 'contain', background: 'transparent' }} 
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                />
+              </div>
             </div>
-              <h1 className="toss-name">{displayQuote.quoteType === 'CRYPTOCURRENCY' ? displayQuote.name.replace(' USD', '') : displayQuote.name}</h1>
-            <span className="toss-symbol">{displayQuote.quoteType === 'CRYPTOCURRENCY' ? `${displayQuote.symbol.replace('-USD', '')}/USDT` : displayQuote.symbol}</span>
+
+            {/* Zone 2: 유동 — 회사명 (overflow ellipsis) */}
+            <h1 className="toss-name">{displayQuote.quoteType === 'CRYPTOCURRENCY' ? displayQuote.name.replace(' USD', '') : displayQuote.name}</h1>
+
+            {/* Zone 3: 고정 — 티커 심볼 + 배지 */}
+            <div className="toss-hero-badges" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+              <span className="toss-symbol">{displayQuote.quoteType === 'CRYPTOCURRENCY' ? `${displayQuote.symbol.replace('-USD', '')}/USDT` : displayQuote.symbol}</span>
             
-            {/* 태그 영역 */}
-            <div className="toss-tags">
-              {!isLivePrice && (
-                <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'var(--overlay)', color: 'var(--neutral)', border: '1px solid var(--border-color)' }} title="야후 파이낸스 정책에 따라 15~20분 지연된 데이터를 사용 중입니다.">
-                  🕒 15분 지연 데이터
-                </span>
-              )}
-              {isLivePrice && (
-                <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'var(--bull-bg)', color: 'var(--bull)', border: '1px solid var(--bull)' }} title="실시간 스트리밍 시세 적용 중">
-                  ⚡ 실시간
-                </span>
-              )}
+              {/* 태그 영역 */}
+              <div className="toss-tags">
+                {!isLivePrice && (
+                  <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'var(--overlay)', color: 'var(--neutral)', border: '1px solid var(--border-color)' }} title="야후 파이낸스 정책에 따라 15~20분 지연된 데이터를 사용 중입니다.">
+                    🕒 15분 지연 데이터
+                  </span>
+                )}
+                {isLivePrice && (
+                  <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'var(--bull-bg)', color: 'var(--bull)', border: '1px solid var(--bull)' }} title="실시간 스트리밍 시세 적용 중">
+                    ⚡ 실시간
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           
@@ -370,13 +379,16 @@ export default function ChartPageClient({ initialTicker }: Props) {
           display: flex;
           flex-direction: column;
           gap: 0.75rem;
-          min-width: 320px;
+          min-width: 0;
+          width: 100%;
+          overflow: hidden;
         }
 
         .toss-hero-top {
           display: flex;
           align-items: center;
           gap: 0.6rem;
+          overflow: hidden;
         }
 
         .back-link {
@@ -389,8 +401,8 @@ export default function ChartPageClient({ initialTicker }: Props) {
         }
 
         .toss-logo-circle {
-          width: 24px;
-          height: 24px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           color: white;
           display: flex;
@@ -406,13 +418,18 @@ export default function ChartPageClient({ initialTicker }: Props) {
           font-size: 1.15rem;
           font-weight: 700;
           color: var(--text-primary);
+          flex: 1;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .toss-symbol {
           font-size: 1.15rem;
           color: var(--text-secondary);
           font-family: var(--font-mono);
-          margin-right: 0.4rem;
+          margin-right: 0;
         }
 
         .toss-tags {
@@ -679,6 +696,14 @@ export default function ChartPageClient({ initialTicker }: Props) {
             align-items: flex-start;
             gap: 0.8rem;
           }
+        }
+        @media (max-width: 450px) {
+          .toss-tags { display: none; }
+          .toss-hero-badges { flex-shrink: 1; overflow: hidden; }
+          .toss-symbol { font-size: 0.9rem; }
+          .toss-name { font-size: 0.95rem; }
+          .toss-logo-circle { width: 28px !important; height: 28px !important; }
+          .back-link { font-size: 1.1rem; margin-right: 0; }
         }
       `}</style>
     </div>
