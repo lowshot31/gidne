@@ -17,6 +17,7 @@
   --neutral: #f5a623;                 /* 앰버 보합 */
   --bull-bg: rgba(38, 166, 154, 0.1);
   --bear-bg: rgba(239, 83, 80, 0.1);
+  --extreme-fear: #9c27b0;             /* 극단적 공포 — 보라색 */
 
   /* ── 경기 사이클 범례 컬러 ── */
   --cycle-early: #22c55e;
@@ -74,6 +75,7 @@
   --neutral: #b98900;
   --bull-bg: rgba(16, 128, 67, 0.1);
   --bear-bg: rgba(216, 44, 13, 0.1);
+  --extreme-fear: #7b1fa2;
 
   --text-primary: #1d1d1f;
   --text-secondary: #515154;

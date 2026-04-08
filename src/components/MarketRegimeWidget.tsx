@@ -93,7 +93,7 @@ export default function MarketRegimeWidget() {
         <div style={{ 
           position: 'relative', 
           width: '100%', 
-          background: 'linear-gradient(90deg, #9c27b0, var(--bear), var(--neutral), var(--bull))', 
+          background: 'linear-gradient(90deg, var(--extreme-fear), var(--bear), var(--neutral), var(--bull))', 
           height: '10px',
           borderRadius: '5px',
           boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)'
@@ -129,33 +129,36 @@ export default function MarketRegimeWidget() {
           </p>
         </div>
         
-        <div className="regime-metrics" style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-            <span className="text-muted tooltip-container" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              공포 지수 (VIX) 😨
-              <span className="mini-info-icon">?</span>
-              <div className="mini-tooltip"><strong>VIX (공포 지수)</strong><br />주식 시장 사람들의 공포심을 수치화했어요. 20이 넘으면 시장이 패닉 상태에 들어섰다는 뜻입니다.</div>
-            </span>
-            <span style={{ color: regimeInfo.metrics.vix > 20 ? 'var(--text-bear)' : 'var(--text-bull)', fontWeight: 500 }}>
-              {regimeInfo.metrics.vix.toFixed(2)} ({regimeInfo.metrics.vixChange > 0 ? '+' : ''}{regimeInfo.metrics.vixChange.toFixed(2)}%)
-            </span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-            <span className="text-muted tooltip-container" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              글로벌 달러 파워 💵
-              <span className="mini-info-icon">?</span>
-              <div className="mini-tooltip"><strong>DXY (달러 인덱스)</strong><br />지구상에서 달러의 힘이 얼마나 센지 보여줍니다. 돈이 오직 달러로만 귀소병(강세)을 보이면 주식엔 완전 악재입니다!</div>
-            </span>
-            <span style={{ fontWeight: 500 }}>{regimeInfo.metrics.dxyChange > 0 ? '+' : ''}{regimeInfo.metrics.dxyChange.toFixed(2)}%</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-            <span className="text-muted tooltip-container" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              글로벌 금리 기준점 🏦
-              <span className="mini-info-icon">?</span>
-              <div className="mini-tooltip"><strong>US10Y (미국 10년물 국채 금리)</strong><br />전 세계 금리의 왕폐입니다. 이게 이틀 연속으로 팍팍 오르면 빅테크 기술주들은 피눈물을 흘립니다.</div>
-            </span>
-            <span style={{ fontWeight: 500 }}>{regimeInfo.metrics.tnxChange > 0 ? '+' : ''}{regimeInfo.metrics.tnxChange.toFixed(2)}%</span>
-          </div>
+        <div className="regime-metrics" style={{ flex: '1 1 200px', display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.5rem 0.75rem', alignItems: 'center' }}>
+          {/* VIX */}
+          <span className="text-muted tooltip-container regime-label">
+            공포 지수 (VIX) 😨
+            <span className="mini-info-icon">?</span>
+            <div className="mini-tooltip"><strong>VIX (공포 지수)</strong><br />주식 시장 사람들의 공포심을 수치화했어요. 20이 넘으면 시장이 패닉 상태에 들어섰다는 뜻입니다.</div>
+          </span>
+          <span className="regime-value" style={{ color: regimeInfo.metrics.vix > 20 ? 'var(--text-bear)' : 'var(--text-bull)' }}>
+            {regimeInfo.metrics.vix.toFixed(2)} ({regimeInfo.metrics.vixChange > 0 ? '+' : ''}{regimeInfo.metrics.vixChange.toFixed(2)}%)
+          </span>
+
+          {/* DXY */}
+          <span className="text-muted tooltip-container regime-label">
+            글로벌 달러 파워 💵
+            <span className="mini-info-icon">?</span>
+            <div className="mini-tooltip"><strong>DXY (달러 인덱스)</strong><br />지구상에서 달러의 힘이 얼마나 센지 보여줍니다. 돈이 오직 달러로만 귀소병(강세)을 보이면 주식엔 완전 악재입니다!</div>
+          </span>
+          <span className="regime-value">
+            {regimeInfo.metrics.dxyChange > 0 ? '+' : ''}{regimeInfo.metrics.dxyChange.toFixed(2)}%
+          </span>
+
+          {/* US10Y */}
+          <span className="text-muted tooltip-container regime-label">
+            글로벌 금리 기준점 🏦
+            <span className="mini-info-icon">?</span>
+            <div className="mini-tooltip"><strong>US10Y (미국 10년물 국채 금리)</strong><br />전 세계 금리의 왕폐입니다. 이게 이틀 연속으로 팍팍 오르면 빅테크 기술주들은 피눈물을 흘립니다.</div>
+          </span>
+          <span className="regime-value">
+            {regimeInfo.metrics.tnxChange > 0 ? '+' : ''}{regimeInfo.metrics.tnxChange.toFixed(2)}%
+          </span>
         </div>
       </div>
       <style>{`
@@ -176,6 +179,20 @@ export default function MarketRegimeWidget() {
             padding-top: 1.5rem;
             margin-top: 0.5rem;
           }
+        }
+        .regime-label {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          font-size: 0.85rem;
+          white-space: nowrap;
+        }
+        .regime-value {
+          font-weight: 600;
+          font-size: 0.88rem;
+          font-family: var(--font-mono);
+          text-align: right;
+          white-space: nowrap;
         }
         .regime-info-wrapper {
           position: relative;
