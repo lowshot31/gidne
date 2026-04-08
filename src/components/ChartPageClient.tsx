@@ -71,6 +71,7 @@ export default function ChartPageClient({ initialTicker }: Props) {
     const interval = setInterval(fetchQuote, 15000); // 15초 폴링
     return () => clearInterval(interval);
   }, [fetchQuote]);
+  //123
 
   if (loading) {
     return (
