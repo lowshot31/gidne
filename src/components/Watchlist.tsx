@@ -494,10 +494,16 @@ export default function Watchlist() {
         }
         .wl-ticker {
           display: flex;
-          align-items: baseline;
+          align-items: center; /* keep it centered vertically avoiding baseline overflow */
           gap: 0.4rem;
           min-width: 0;
-          flex: 1;
+          flex: 1; /* takes available space */
+        }
+        .wl-ticker strong {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          flex-shrink: 1;
         }
         .wl-name {
           font-size: 0.7rem;
@@ -505,6 +511,7 @@ export default function Watchlist() {
           text-overflow: ellipsis;
           white-space: nowrap;
           min-width: 0;
+          flex-shrink: 1;
         }
         .wl-data {
           display: flex;
@@ -528,6 +535,47 @@ export default function Watchlist() {
         }
         .wl-remove:hover {
           color: var(--bear);
+        }
+        .wl-spacer {
+          flex: 0 1 auto; /* changed from 1 to allow ticker to be bigger */
+          width: 100%; /* expands fully but lets ticker take what it needs */
+          max-width: 120px; /* limits spacer size on desktop */
+          border-bottom: 1px dotted var(--border-color);
+          margin: 0 6px;
+          min-width: 10px;
+          align-self: center;
+          opacity: 0.5;
+          transform: translateY(-4px);
+        }
+        @media (max-width: 480px) {
+          .wl-name {
+            display: none;
+          }
+          .wl-spacer {
+            margin: 0 4px;
+            min-width: 4px;
+            flex: 1 1 auto; /* returns to flexible but very small on mobile */
+          }
+          .wl-data {
+            gap: 0.3rem; /* compressed more */
+          }
+          .gidne-list-row {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+          .wl-grip {
+            margin-right: 0.15rem;
+            font-size: 0.8rem;
+          }
+          .wl-price {
+            font-size: 0.85rem; /* tiny bit smaller */
+          }
+          .wl-remove {
+            padding: 0;
+          }
+          .wl-ticker strong {
+            font-size: 0.85rem;
+          }
         }
       `}</style>
     </div>
@@ -565,7 +613,7 @@ function WatchlistRow({ ticker, name, price, changePercent, isUp, benchmarkChang
         <strong>{ticker}</strong>
         {!isLoading && <span className="text-muted wl-name" style={{ marginLeft: '2px' }}>{name}</span>}
       </div>
-      <div style={{ flex: 1, borderBottom: '1px dotted var(--border-color)', margin: '0 12px', minWidth: '20px', alignSelf: 'center', opacity: 0.5, transform: 'translateY(-4px)' }}></div>
+      <div className="wl-spacer"></div>
       <div className="wl-data" style={{ padding: '0 0.25rem', borderRadius: '4px', gap: '0.75rem' }}>
         {!isLoading ? (
           <>
