@@ -489,38 +489,52 @@ export default function Watchlist() {
         .table-row:hover .wl-grip {
           opacity: 0.8;
         }
-        .table-row.is-dragging .wl-grip {
-          cursor: grabbing;
+        .watchlist-row {
+          display: flex; /* Back to flex, but unified */
+          align-items: center;
+          width: 100%;
         }
         .wl-ticker {
           display: flex;
-          align-items: center; /* keep it centered vertically avoiding baseline overflow */
+          align-items: center; 
           gap: 0.4rem;
           min-width: 0;
-          flex: 1; /* takes available space */
+          flex: 1; /* Takes exactly the gap between grip and prices */
+        }
+        /* The dotted line is now a pseudo-element safely inside the ticker's flexible space */
+        .wl-ticker::after {
+          content: "";
+          flex: 1; /* Stretches to fill whatever is left inside .wl-ticker */
+          border-bottom: 1px dotted var(--border-color);
+          margin: 0 12px;
+          min-width: 4px; /* Drops to 4px before eating into text */
+          opacity: 0.5;
+          transform: translateY(-2px);
         }
         .wl-ticker strong {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          flex-shrink: 1;
+          flex-shrink: 0; /* NEVER shrink the ticker itself */
+          font-size: 0.9rem; /* Slightly smaller to fit better */
         }
         .wl-name {
-          font-size: 0.7rem;
+          font-size: 0.65rem;
+          opacity: 0.7;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          min-width: 0;
-          flex-shrink: 1;
+          flex: 0 10 auto; /* Absorbs 10x more shrink damage than strong */
         }
         .wl-data {
           display: flex;
           gap: 0.5rem;
-          align-items: baseline;
-          flex-shrink: 0;
+          align-items: center;
         }
         .wl-price {
           color: var(--text-primary);
+          font-size: 0.9rem;
+          font-weight: 500;
         }
         .wl-remove {
           background: none;
@@ -536,45 +550,30 @@ export default function Watchlist() {
         .wl-remove:hover {
           color: var(--bear);
         }
-        .wl-spacer {
-          flex: 0 1 auto; /* changed from 1 to allow ticker to be bigger */
-          width: 100%; /* expands fully but lets ticker take what it needs */
-          max-width: 120px; /* limits spacer size on desktop */
-          border-bottom: 1px dotted var(--border-color);
-          margin: 0 6px;
-          min-width: 10px;
-          align-self: center;
-          opacity: 0.5;
-          transform: translateY(-4px);
-        }
         @media (max-width: 480px) {
           .wl-name {
             display: none;
           }
-          .wl-spacer {
-            margin: 0 4px;
-            min-width: 4px;
-            flex: 1 1 auto; /* returns to flexible but very small on mobile */
-          }
-          .wl-data {
-            gap: 0.3rem; /* compressed more */
-          }
-          .gidne-list-row {
+          .watchlist-row {
             padding-left: 0 !important;
             padding-right: 0 !important;
+          }
+          .wl-ticker::after {
+            margin: 0 4px; /* Compress the dots gap on mobile */
+            min-width: 2px;
           }
           .wl-grip {
             margin-right: 0.15rem;
             font-size: 0.8rem;
           }
           .wl-price {
-            font-size: 0.85rem; /* tiny bit smaller */
+            font-size: 0.8rem; /* tiny bit smaller */
           }
           .wl-remove {
             padding: 0;
           }
           .wl-ticker strong {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
           }
         }
       `}</style>
@@ -591,7 +590,7 @@ function WatchlistRow({ ticker, name, price, changePercent, isUp, benchmarkChang
   return (
     <div 
       onClick={() => window.location.href = `/chart/${encodeURIComponent(ticker)}`} 
-      className={`gidne-list-row ${flash} ${isDragging ? 'is-dragging' : ''} ${isDragOver ? 'is-dragover' : ''}`} 
+      className={`gidne-list-row watchlist-row ${flash} ${isDragging ? 'is-dragging' : ''} ${isDragOver ? 'is-dragover' : ''}`} 
       style={{ cursor: 'pointer' }}
       draggable
       onDragStart={onDragStart}
@@ -613,7 +612,6 @@ function WatchlistRow({ ticker, name, price, changePercent, isUp, benchmarkChang
         <strong>{ticker}</strong>
         {!isLoading && <span className="text-muted wl-name" style={{ marginLeft: '2px' }}>{name}</span>}
       </div>
-      <div className="wl-spacer"></div>
       <div className="wl-data" style={{ padding: '0 0.25rem', borderRadius: '4px', gap: '0.75rem' }}>
         {!isLoading ? (
           <>
