@@ -19,6 +19,7 @@ const PIN_CITIES = [
   { id: 'london', name: 'London', region: 'europe', primaryTicker: '^FTSE', left: '46.0%', top: '16.5%' },
   { id: 'paris', name: 'Paris', region: 'europe', primaryTicker: '^FCHI', left: '47.0%', top: '18.5%' },
   { id: 'frankfurt', name: 'Frankfurt', region: 'europe', primaryTicker: '^GDAXI', left: '48.5%', top: '17.5%' },
+  { id: 'brussels', name: 'Brussels', region: 'europe', primaryTicker: '^STOXX50E', left: '47.8%', top: '16.8%' }, // Euro Stoxx 50 추가
   { id: 'telaviv', name: 'Tel Aviv', region: 'emerging', primaryTicker: 'TA35.TA', left: '55.0%', top: '31.5%' },
   
   // 아시아 & 신흥국
@@ -456,7 +457,7 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           flex-wrap: wrap;
           justify-content: center;
           gap: 16px;
-          z-index: 5;
+          z-index: 50; /* 툴팁(20)보다 높게 설정하여 플러스 버튼 팝업이 가려지지 않게 수정 */
           width: 100%;
           pointer-events: auto;
         }

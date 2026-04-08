@@ -215,7 +215,7 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
     <div className="bento-item eod-briefing" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
       {/* Header */}
       <div className="eod-header">
-        <h3 className="text-secondary" style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <h3 className="text-secondary" style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap' }}>
           <span>🌇</span> ALPHA BRIEFING
           {isLoading && <span style={{fontSize: '0.7rem', color: 'var(--accent-primary)'}}>...</span>}
         </h3>
@@ -225,7 +225,8 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
             style={{ 
               background: 'transparent', border: '1px solid var(--border-color)', 
               color: copied ? 'var(--bull)' : 'var(--text-muted)', 
-              fontSize: '0.65rem', padding: '3px 8px', borderRadius: '4px', cursor: 'pointer' 
+              fontSize: '0.65rem', padding: '3px 8px', borderRadius: '4px', cursor: 'pointer',
+              whiteSpace: 'nowrap'
             }}
           >
             {copied ? '복사됨!' : '복사'}
@@ -361,8 +362,8 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
         .eod-scroll::-webkit-scrollbar-thumb { background: var(--overlay-hover); border-radius: 4px; }
 
         .eod-section-label {
-          font-size: 0.7rem; font-weight: 700; padding: 4px 0;
-          font-family: var(--font-mono); letter-spacing: 0.5px;
+          font-size: 0.75rem; font-weight: 600; padding: 4px 0;
+          font-family: var(--font-sans); letter-spacing: 0px;
         }
 
         .eod-sector-card {
@@ -387,8 +388,8 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
         .eod-rank-neutral { background: var(--border-color); color: var(--text-secondary); }
 
         .eod-driver {
-          font-size: 0.68rem; color: var(--accent-primary); margin: 3px 0 2px 24px;
-          font-family: var(--font-mono); opacity: 0.9;
+          font-size: 0.7rem; color: var(--text-muted); margin: 3px 0 2px 24px;
+          font-family: var(--font-sans);
         }
 
         .eod-holdings {
@@ -398,6 +399,7 @@ export default function EODBriefing({ sectors, macro, holdings, indices }: Props
           font-size: 0.72rem; color: var(--text-secondary); text-decoration: none;
           padding: 2px 6px; border-radius: 4px; transition: all 0.15s;
           border: 1px solid transparent;
+          white-space: nowrap; display: inline-flex; align-items: center;
         }
         .eod-holding-row:hover {
           background: var(--accent-subtle, rgba(200,155,60,0.12));

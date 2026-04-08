@@ -16,9 +16,9 @@ interface Props {
 }
 
 const SIZE_MAP = {
-  sm: { padding: '0.35rem 0.7rem', fontSize: '0.75rem' },
-  md: { padding: '0.5rem 0.8rem', fontSize: '0.85rem' },
-  lg: { padding: '0.6rem 1.5rem', fontSize: '0.9rem' },
+  sm: { padding: '0.35rem 0.3rem', fontSize: '0.72rem' },
+  md: { padding: '0.4rem 0.4rem', fontSize: '0.78rem' },
+  lg: { padding: '0.6rem 1rem', fontSize: '0.9rem' },
 } as const;
 
 /**
@@ -31,18 +31,18 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, size = 
   const sizeStyle = SIZE_MAP[size];
 
   return (
+    <>
     <div 
       className="segmented-control-wrapper"
       style={{ 
-        display: 'inline-flex', 
+        display: 'flex', 
         background: 'rgba(255, 255, 255, 0.05)', 
-        borderRadius: '12px', 
-        padding: '0.25rem',
+        borderRadius: '10px', 
+        padding: '0.2rem',
         alignItems: 'center',
-        gap: '4px',
-        flexWrap: 'wrap',
+        gap: '2px', // 탭 사이 간격을 좁혀서 공간 확보
         maxWidth: '100%',
-        width: '100%', // make it full width if it's wrapping to keep borders clean
+        width: '100%',
       }}
     >
       {tabs.map(tab => {
@@ -52,22 +52,24 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, size = 
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             style={{
-              flex: '1 1 auto', // Make buttons stretch beautifully when wrapped
+              flex: '1 1 auto', // 글자가 긴 놈은 길게, 짧은 놈은 짧게 공간을 유동분배
               justifyContent: 'center',
               background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
-              border: 'none',
+              border: isActive ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
               padding: sizeStyle.padding,
               cursor: 'pointer',
               color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
               fontWeight: isActive ? 600 : 500,
               fontSize: sizeStyle.fontSize,
               whiteSpace: 'nowrap',
+              overflow: 'hidden', // 만약 글자가 길어도 넘치지 않도록
+              textOverflow: 'ellipsis',
               borderRadius: '8px',
               transition: 'all 0.2s',
               boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '4px',
             }}
           >
             {tab.label}
@@ -76,5 +78,23 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, size = 
       })}
       {suffix}
     </div>
+    <style>{`
+      .segmented-control-wrapper::-webkit-scrollbar {
+        display: none;
+      }
+      .segmented-control-wrapper {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+      [data-theme='light'] .segmented-control-wrapper {
+        background: rgba(0, 0, 0, 0.04) !important;
+      }
+      [data-theme='light'] .segmented-control-wrapper button[style*="background: rgba(255, 255, 255, 0.1)"] {
+        background: #fff !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+      }
+    `}</style>
+    </>
   );
 }

@@ -201,6 +201,19 @@ function PriceChart({ ticker: initialTicker, name: initialName, isDelayed }: Pro
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h3 className="text-secondary" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '1rem', flexWrap: 'wrap' }}>
           {currentName}
+          
+          {/* 차트 소스 설명 라벨 (사용자 혼동 방지) */}
+          {(currentSymbol.includes('FOREXCOM') || currentSymbol.includes('CAPITALCOM') || currentSymbol.includes('OANDA')) && (
+            <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)' }} title="24시간 실시간 거래되는 CFD/선물 호가입니다. 현물장 마감 후에도 움직입니다.">
+              🔄 선물/CFD (24H)
+            </span>
+          )}
+          {(currentSymbol.includes('AMEX:') || currentSymbol.includes('BATS:') || currentSymbol.includes('NASDAQ:')) && !['SPY', 'QQQ', 'TLT'].includes(currentTicker) && (
+            <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7', border: '1px solid rgba(168, 85, 247, 0.2)' }} title="해당 지수를 추종하는 가장 대표적인 미국 상장 ETF 차트입니다.">
+              📦 ETF 연동
+            </span>
+          )}
+
           {isDelayed && (
             <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(255, 165, 0, 0.1)', color: '#ffa500', border: '1px solid rgba(255, 165, 0, 0.2)' }}>
               🕒 15분 지연

@@ -69,11 +69,11 @@ export default function MacroFocusWidget({ presetData }: Props) {
   };
 
   const tabs = [
-    { id: 'HOT', label: '🔥 필수 감시' },
-    { id: 'RATES', label: '🏦 금리/채권' },
-    { id: 'CURRENCY', label: '💵 외환' },
-    { id: 'COMMODITY', label: '🛢️ 원자재' },
-    { id: 'CUSTOM', label: '⭐ 내 지표' }
+    { id: 'HOT', label: '주요 지표' },
+    { id: 'RATES', label: '금리·채권' },
+    { id: 'CURRENCY', label: '외환' },
+    { id: 'COMMODITY', label: '원자재' },
+    { id: 'CUSTOM', label: '내 지표' }
   ] as const;
 
   const renderContent = () => {
