@@ -538,7 +538,7 @@ export default function Watchlist() {
           overflow: hidden;
         }
         .wl-col-ticker {
-          width: 35%;
+          width: 32%; /* 35 -> 32 */
           gap: 0.35rem;
           flex-shrink: 0;
         }
@@ -552,7 +552,7 @@ export default function Watchlist() {
           flex-shrink: 0;
         }
         .wl-col-change {
-          width: 22%;
+          width: 20%; /* 22 -> 20 */
           flex-direction: column;
           align-items: flex-end;
           justify-content: center;
@@ -639,8 +639,8 @@ export default function Watchlist() {
         @media (max-width: 600px) {
           .wl-col-ticker { width: 30%; }
           .wl-col-name { display: none; }
-          .wl-col-price { width: 32%; }
-          .wl-col-change { width: 40%; }
+          .wl-col-price { width: 30%; } /* 32 -> 30 */
+          .wl-col-change { width: 35%; } /* 40 -> 35 */
           .wl-grip { margin-right: 0.15rem; font-size: 0.75rem; }
           .wl-symbol { font-size: 0.8rem; }
           .wl-price { font-size: 0.8rem; }

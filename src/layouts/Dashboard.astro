@@ -1,11 +1,11 @@
 ---
-import '../styles/global.css';
-import TickerStripClient from '../components/TickerStripClient';
-import ThemeToggle from '../components/ThemeToggle';
-import TickerSearch from '../components/TickerSearch';
+import "../styles/global.css";
+import TickerStripClient from "../components/TickerStripClient";
+import ThemeToggle from "../components/ThemeToggle";
+import TickerSearch from "../components/TickerSearch";
 
 interface Props {
-	title: string;
+  title: string;
 }
 
 const { title } = Astro.props;
@@ -14,168 +14,214 @@ const currentPath = Astro.url.pathname;
 
 <!doctype html>
 <html lang="ko">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="description" content="Gidne v2 - Financial Dashboard" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-		<link rel="manifest" href="/manifest.json">
-		<meta name="theme-color" content="#0a0a0a">
-		<meta name="apple-mobile-web-app-capable" content="yes">
-		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-		<meta name="generator" content={Astro.generator} />
-		<title>{title}</title>
-	</head>
-	<body>
-		<div class="dashboard-container">
-			<!-- Header / Nav -->
-			<div class="app-header-wrapper">
-				<header class="app-header" style="display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; width: 100%; min-height: 60px; box-sizing: border-box;">
-					<div class="header-left" style="display: flex; align-items: center; gap: 2rem;">
-						<a href="/" class="logo" style="text-decoration: none; color: var(--accent-primary); cursor: pointer; font-family: var(--font-heading); font-size: 1.3rem; font-weight: 600; letter-spacing: 0.08em;">GIDNE</a>
-						<nav class="tabs" style="display: flex; gap: 1.5rem; align-items: center;">
-							<a href="/" class={currentPath === '/' ? "active" : ""}>Equities</a>
-							<a href="/indices" class={currentPath.startsWith('/indices') ? "active" : ""}>Indices</a>
-							<a href="/macro" class={currentPath.startsWith('/macro') ? "active" : ""}>Macro</a>
-							<a href="/flows" class={currentPath.startsWith('/flows') ? "active" : ""}>Flows</a>
-						</nav>
-					</div>
-					<div class="header-right" style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
-						<div class="header-search" style="min-width: 280px; flex-shrink: 0;">
-							<TickerSearch client:load />
-						</div>
-						<ThemeToggle client:load />
-					</div>
-				</header>
-			</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Gidne v2 - Financial Dashboard" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Header / Nav -->
+      <div class="app-header-wrapper">
+        <header
+          class="app-header"
+          style="display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; width: 100%; min-height: 60px; box-sizing: border-box;"
+        >
+          <div
+            class="header-left"
+            style="display: flex; align-items: center; gap: 2rem;"
+          >
+            <a
+              href="/"
+              class="logo"
+              style="text-decoration: none; color: var(--accent-primary); cursor: pointer; font-family: var(--font-heading); font-size: 1.3rem; font-weight: 600; letter-spacing: 0.08em;"
+              >GIDNE</a
+            >
+            <nav
+              class="tabs"
+              style="display: flex; gap: 1.5rem; align-items: center;"
+            >
+              <a href="/" class={currentPath === "/" ? "active" : ""}
+                >Equities</a
+              >
+              <a
+                href="/indices"
+                class={currentPath.startsWith("/indices") ? "active" : ""}
+                >Indices</a
+              >
+              <a
+                href="/macro"
+                class={currentPath.startsWith("/macro") ? "active" : ""}
+                >Macro</a
+              >
+              <a
+                href="/flows"
+                class={currentPath.startsWith("/flows") ? "active" : ""}
+                >Flows</a
+              >
+            </nav>
+          </div>
+          <div
+            class="header-right"
+            style="display: flex; align-items: center; gap: 1rem; margin-left: auto;"
+          >
+            <div
+              class="header-search"
+              style="min-width: 280px; flex-shrink: 0;"
+            >
+              <TickerSearch client:load />
+            </div>
+            <ThemeToggle client:load />
+          </div>
+        </header>
+      </div>
 
-			<!-- Ticker Strip React Island -->
-			<TickerStripClient client:load />
+      <!-- Ticker Strip React Island -->
+      <TickerStripClient client:load />
 
-			<!-- Main Content -->
-			<main class="dashboard-content">
-				<slot />
-			</main>
-		</div>
+      <!-- Main Content -->
+      <main class="dashboard-content">
+        <slot />
+      </main>
+    </div>
 
-		<style>
-			.dashboard-container {
-				display: flex;
-				flex-direction: column;
-				min-height: 100vh;
-			}
-			.app-header-wrapper {
-				width: 100%;
-				border-bottom: 1px solid var(--border-color);
-				background: var(--bg-secondary);
-			}
-			.app-header {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				padding: 0 var(--gap-md);
-				width: 100%;
-				height: 60px;
-				box-sizing: border-box;
-			}
-			.header-left {
-				display: flex;
-				align-items: center;
-				gap: 2rem;
-				flex: 1;
-				min-width: 0; /* for flex overflow */
-			}
-			.header-right {
-				display: flex;
-				align-items: center;
-				gap: 1rem;
-				margin-left: auto;
-			}
-			.header-search {
-				width: 280px;
-			}
-			.logo {
-				font-family: var(--font-heading);
-				font-size: 1.3rem;
-				font-weight: 600;
-				letter-spacing: 0.08em;
-				color: var(--accent-primary);
-			}
-			.tabs {
-				display: flex;
-				gap: var(--gap-md);
-			}
-			.tabs a {
-				color: var(--text-muted);
-				text-decoration: none;
-				font-size: 0.9rem;
-				font-weight: 500;
-				padding-bottom: 4px;
-				transition: color var(--transition-fast);
-				white-space: nowrap;
-			}
-			.tabs a:hover {
-				color: var(--text-secondary);
-			}
-			.tabs a.active {
-				color: var(--text-primary);
-				border-bottom: 2px solid var(--accent-primary);
-			}
-			.ticker-strip {
-				display: flex;
-				gap: var(--gap-md);
-				padding: 8px var(--gap-md);
-				font-family: var(--font-mono);
-				font-size: 0.85rem;
-				border-bottom: 1px solid var(--border-color);
-				background: var(--bg-secondary);
-			}
-			.dashboard-content {
-				flex: 1;
-				padding: var(--gap-md);
-			}
+    <style>
+      .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        width: 100%;
+        overflow-x: hidden;
+      }
+      .app-header-wrapper {
+        width: 100%;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+      }
+      .app-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--gap-md);
+        width: 100%;
+        height: 60px;
+        box-sizing: border-box;
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex: 1;
+        min-width: 0; /* for flex overflow */
+      }
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-left: auto;
+      }
+      .header-search {
+        width: 280px;
+      }
+      .logo {
+        font-family: var(--font-heading);
+        font-size: 1.3rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: var(--accent-primary);
+      }
+      .tabs {
+        display: flex;
+        gap: var(--gap-md);
+      }
+      .tabs a {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding-bottom: 4px;
+        transition: color var(--transition-fast);
+        white-space: nowrap;
+      }
+      .tabs a:hover {
+        color: var(--text-secondary);
+      }
+      .tabs a.active {
+        color: var(--text-primary);
+        border-bottom: 2px solid var(--accent-primary);
+      }
+      .ticker-strip {
+        display: flex;
+        gap: var(--gap-md);
+        padding: 8px var(--gap-md);
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+      }
+      .dashboard-content {
+        flex: 1;
+        padding: var(--gap-md);
+      }
 
-			/* Mobile Responsiveness */
-			@media (max-width: 768px) {
-				.app-header {
-					flex-direction: column !important;
-					align-items: stretch !important;
-					height: auto !important;
-					padding: 0.75rem var(--gap-md) !important;
-					gap: 0.75rem !important;
-				}
-				.header-left {
-					gap: 1rem !important;
-					flex-direction: column !important;
-					align-items: flex-start !important;
-				}
-				.tabs {
-					width: 100% !important;
-					overflow-x: auto !important;
-					scrollbar-width: none !important; /* Firefox */
-				}
-				.tabs::-webkit-scrollbar { 
-					display: none !important; /* Safari and Chrome */
-				}
-				.ticker-strip {
-					font-size: 0.75rem !important;
-					padding-top: 4px !important;
-					padding-bottom: 4px !important;
-				}
-				.header-right {
-					width: 100% !important;
-					margin-left: 0 !important;
-					justify-content: space-between !important;
-				}
-				.header-search {
-					width: 100% !important;
-					min-width: 0 !important;
-					flex: 1 !important;
-				}
-			}
-		</style>
-	</body>
+      /* Mobile Responsiveness */
+      @media (max-width: 768px) {
+        .app-header {
+          flex-direction: column !important;
+          align-items: stretch !important;
+          height: auto !important;
+          padding: 0.75rem var(--gap-md) !important;
+          gap: 0.75rem !important;
+        }
+        .header-left {
+          gap: 1rem !important;
+          flex-direction: column !important;
+          align-items: flex-start !important;
+        }
+        .tabs {
+          width: 100% !important;
+          overflow-x: auto !important;
+          scrollbar-width: none !important; /* Firefox */
+        }
+        .tabs::-webkit-scrollbar {
+          display: none !important; /* Safari and Chrome */
+        }
+        .ticker-strip {
+          font-size: 0.75rem !important;
+          padding-top: 4px !important;
+          padding-bottom: 4px !important;
+        }
+        .header-right {
+          width: 100% !important;
+          margin-left: 0 !important;
+          justify-content: space-between !important;
+        }
+        .header-search {
+          width: 100% !important;
+          min-width: 0 !important;
+          flex: 1 !important;
+        }
+      }
+    </style>
+  </body>
 </html>
