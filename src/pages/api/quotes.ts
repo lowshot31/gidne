@@ -39,11 +39,15 @@ export const GET: APIRoute = async (context) => {
       }
     }
 
-    // 2. 캐시 미스 → Yahoo Finance REST API (v8)를 fetch()로 직접 호출
-    //    yahoo-finance2 Node.js 패키지는 Cloudflare Workers에서 사용 불가하므로
-    //    Workers 네이티브 fetch()를 사용하여 호환성을 확보합니다.
+    // 2. 캐시 미스 → Data Pump 큐 등록 및 빠른 fetch() 시도
+    //    Yahoo Finance REST API 직접 호출이 실패(401/403)하더라도 Data Pump가 처리.
     if (missingTickers.length > 0) {
       try {
+        if (missingTickers.length > 0) {
+          await redis.sadd('gidne_queue_quote', missingTickers[0], ...missingTickers.slice(1));
+          await redis.sadd('gidne_watched_tickers', missingTickers[0], ...missingTickers.slice(1));
+        }
+        
         const symbols = missingTickers.join(',');
         const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}&crumb=`;
         
