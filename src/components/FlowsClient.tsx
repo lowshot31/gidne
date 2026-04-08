@@ -16,7 +16,7 @@ const CryptoFlows = () => {
         <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '1.25rem' }}>
           비트코인이 혼자 독주하는지, 아니면 알트코인까지 다 같이 오르는 축제인지 확인해보세요. 테더(USDT) 도미넌스가 치솟는다면 사람들이 겁을 먹고 현금을 꽉 쥐고 있다는 뜻입니다!
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: '1rem' }}>
           <PriceChart ticker="CRYPTOCAP:TOTAL3" name="알트코인 전체 시가총액 (오르면 알트 불장!)" />
           <PriceChart ticker="CRYPTOCAP:BTC.D" name="비트코인 지배력 (비트 혼자 오르는지 확인)" />
           <PriceChart ticker="CRYPTOCAP:USDT.D" name="스테이블코인 대기자금 (오르면 사람들 쫄아서 관망 중)" />
@@ -28,7 +28,7 @@ const CryptoFlows = () => {
         <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '1.25rem' }}>
           고배율 롱/숏 포지션이 어느 가격대에 몰려있는지(청산맵), 그리고 데리비트(Deribit) 옵션 시장에서 스마트 머니가 어느 방향으로 콜/풋 배팅을 걸고 있는지 실시간으로 추적합니다.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: '1rem' }}>
           <div style={{ background: 'var(--overlay)', border: '1px dashed var(--border-color)', borderRadius: '8px', padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontSize: '2rem', marginBottom: '1rem' }}>💣</span>
             <div style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>Liquidation Map (청산맵)</div>
@@ -61,7 +61,7 @@ const EquitiesFlows = () => {
         <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>
           시장 메이커(MM)들의 실시간 스트래들 프라이싱과 내재변동성을 기반으로 산출된 오늘/이번 주/이번 달 미국 증시(S&P 500, 나스닥)의 통계적 허용치(Expected Move)입니다.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: '1rem' }}>
           <ExpectedMoveWidget ticker="SPY" />
           <ExpectedMoveWidget ticker="QQQ" />
         </div>
@@ -72,7 +72,7 @@ const EquitiesFlows = () => {
         <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '1.25rem' }}>
           일반 개미가 아닌, 시장을 쥐락펴락하는 거대 자본(스마트 머니)의 방향을 훔쳐봅니다. 풋/콜 비율이 비정상적으로 높다면 모두가 겁에 질렸다는 뜻이니, 오히려 기회일 수도 있어요!
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: '1rem' }}>
           <PriceChart ticker="USI:PCC" name="하락 배팅 비율 (풋/콜 1 이상이면 극도 공포)" isDelayed={true} />
           <PriceChart ticker="AMEX:HYG" name="고래들의 공격 투자 동향 (이게 오르면 불장🔥)" />
           <PriceChart ticker="NASDAQ:TLT" name="고래들의 방어 투자 동향 (이게 오르면 공포장🥶)" />

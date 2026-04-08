@@ -243,7 +243,7 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
                 onDragStart={(e) => handleHeroDragStart(e, index)}
                 onDragOver={(e) => handleHeroDragOver(e, index)}
                 onDragEnd={handleHeroDragEnd}
-                className={`hero-card glass-panel flex-1 cursor-move ${isSelected ? 'selected-card' : ''} ${draggedHeroIndex === index ? 'dragging' : ''}`}
+                className={`hero-card glass-panel cursor-move ${isSelected ? 'selected-card' : ''} ${draggedHeroIndex === index ? 'dragging' : ''}`}
                 onClick={() => onSelectIndex(u.symbol)}
               >
                 <div className="flex justify-between items-center mb-2">
@@ -463,6 +463,8 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
         }
 
         .hero-card {
+          flex: 1 1 150px;
+          min-width: 0;
           padding: 1rem 1.25rem;
           border-radius: var(--radius-lg);
           cursor: pointer;
@@ -470,6 +472,18 @@ export default function GlobalMarketMap({ indices, onSelectIndex, selectedIndex 
           border: 1px solid rgba(255, 255, 255, 0.05);
           background: rgba(15, 20, 25, 0.6);
           backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 480px) {
+          .hero-cards-overlay {
+            flex-direction: column;
+            padding: 0.5rem;
+            gap: 8px;
+          }
+          .hero-card {
+            flex: 1 1 100%;
+            width: 100%;
+          }
         }
 
         [data-theme='light'] .hero-card {

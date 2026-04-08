@@ -110,17 +110,17 @@ export default function MarketRegimeWidget() {
             transition: 'left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'
           }} />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '14px', fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500, padding: '0 2px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '14px', fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 500, padding: '0 2px' }}>
           <span>극단적 공포</span>
-          <span>공포</span>
-          <span>중립</span>
+          <span style={{ transform: 'translateX(-20%)' }}>공포</span>
+          <span style={{ transform: 'translateX(20%)' }}>중립</span>
           <span>탐욕</span>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 300px' }}>
-          <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: regimeInfo.color, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div className="regime-flex-container">
+        <div style={{ flex: '1 1 250px' }}>
+          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: regimeInfo.color, display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             {regimeInfo.icon} {regimeInfo.regime}
           </div>
           <p className="text-muted" style={{ marginTop: '0.5rem', lineHeight: 1.5 }}>
@@ -128,7 +128,7 @@ export default function MarketRegimeWidget() {
           </p>
         </div>
         
-        <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', borderLeft: '1px solid var(--glass-border)', paddingLeft: '1.5rem' }}>
+        <div className="regime-metrics" style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
             <span className="text-muted tooltip-container" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
               공포 지수 (VIX) 😨
@@ -158,6 +158,24 @@ export default function MarketRegimeWidget() {
         </div>
       </div>
       <style>{`
+        .regime-flex-container {
+          display: flex;
+          gap: 2rem;
+          flex-wrap: wrap;
+        }
+        .regime-metrics {
+          border-left: 1px solid var(--glass-border);
+          padding-left: 1.5rem;
+        }
+        @media (max-width: 600px) {
+          .regime-metrics {
+            border-left: none;
+            padding-left: 0;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 1.5rem;
+            margin-top: 0.5rem;
+          }
+        }
         .regime-info-wrapper {
           position: relative;
           display: flex;

@@ -43,6 +43,8 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, size = 
         gap: '2px', // 탭 사이 간격을 좁혀서 공간 확보
         maxWidth: '100%',
         width: '100%',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
       }}
     >
       {tabs.map(tab => {
@@ -53,6 +55,7 @@ export default function SegmentedControl({ tabs, activeTab, onTabChange, size = 
             onClick={() => onTabChange(tab.id)}
             style={{
               flex: '1 1 auto', // 글자가 긴 놈은 길게, 짧은 놈은 짧게 공간을 유동분배
+              flexShrink: 0, // 짤림 방지
               justifyContent: 'center',
               background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
               border: isActive ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
