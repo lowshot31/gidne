@@ -637,10 +637,10 @@ export default function Watchlist() {
 
         /* ── 모바일 반응형 ── */
         @media (max-width: 600px) {
-          .wl-col-ticker { width: 30%; }
+          .wl-col-ticker { width: 30%; flex-shrink: 1; }
           .wl-col-name { display: none; }
-          .wl-col-price { width: 30%; } /* 32 -> 30 */
-          .wl-col-change { width: 35%; } /* 40 -> 35 */
+          .wl-col-price { width: 30%; flex-shrink: 1; } /* 32 -> 30 */
+          .wl-col-change { width: 35%; flex-shrink: 1; } /* 40 -> 35 */
           .wl-grip { margin-right: 0.15rem; font-size: 0.75rem; }
           .wl-symbol { font-size: 0.8rem; }
           .wl-price { font-size: 0.8rem; }

@@ -196,6 +196,7 @@ h1, h2, h3, h4, h5, h6 {
   flex-direction: column;
   gap: 0.2rem;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 0.25rem;
 }
 

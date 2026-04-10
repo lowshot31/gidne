@@ -210,6 +210,7 @@ async function pumpDemandQueues(): Promise<boolean> {
   await processQueue('gidne_queue_quote', 'gidne_quote_', async (ticker: string) => {
     const apiTicker = ticker.toUpperCase().endsWith('USDT') ? ticker.toUpperCase().replace('USDT', '-USD') : ticker;
     const q: any = await yahooFinance.quote(apiTicker);
+    if (!q) throw new Error('Yahoo API returned empty quote');
     return {
       symbol: q.symbol,
       name: q.shortName || q.longName || q.symbol,
