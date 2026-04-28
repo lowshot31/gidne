@@ -48,7 +48,7 @@ export const GET: APIRoute = async (context) => {
       }));
 
     // 5분 캐시
-    await redis.set(cacheKey, JSON.stringify(suggestions), { ex: 300 });
+    await redis.set(cacheKey, JSON.stringify(suggestions), 'EX', 300);
 
     return new Response(JSON.stringify(suggestions), {
       status: 200,

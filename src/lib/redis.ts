@@ -1,16 +1,18 @@
-import { Redis } from '@upstash/redis';
+import { Redis } from 'ioredis';
+
+let globalRedis: Redis | null = null;
 
 // Cloudflare 런타임 context에서 env를 동적으로 주입받아 Redis 클라이언트를 생성합니다.
 export function getRedis(context?: any) {
-  // @ts-ignore
-  const pEnvUrl = typeof process !== 'undefined' ? process.env.UPSTASH_REDIS_REST_URL : '';
-  // @ts-ignore
-  const pEnvToken = typeof process !== 'undefined' ? process.env.UPSTASH_REDIS_REST_TOKEN : '';
+  if (globalRedis) return globalRedis;
 
-  const url = context?.locals?.runtime?.env?.UPSTASH_REDIS_REST_URL || import.meta.env.UPSTASH_REDIS_REST_URL || pEnvUrl || '';
-  const token = context?.locals?.runtime?.env?.UPSTASH_REDIS_REST_TOKEN || import.meta.env.UPSTASH_REDIS_REST_TOKEN || pEnvToken || '';
+  // @ts-ignore
+  const pEnvUrl = typeof process !== 'undefined' ? process.env.REDIS_URL : '';
 
-  return new Redis({ url, token });
+  const url = context?.locals?.runtime?.env?.REDIS_URL || import.meta.env.REDIS_URL || pEnvUrl || '';
+
+  globalRedis = new Redis(url);
+  return globalRedis;
 }
 
 /**
@@ -41,8 +43,7 @@ export async function getGlobalMarketData(context?: any) {
 export async function setGlobalMarketData(data: any, context?: any) {
   try {
     const redis = getRedis(context);
-    // 15초 TTL 부여 (데이터가 신선하도록 유지)
-    await redis.set('gidne_market_data', JSON.stringify(data), { ex: 15 });
+    await redis.set('gidne_market_data', JSON.stringify(data), 'EX', 15);
   } catch (error) {
     console.error('[Redis] SET Error:', error);
   }

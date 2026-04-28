@@ -87,7 +87,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const responsePayload = JSON.stringify(sortedNews);
     
     // 비동기 백그라운드로 캐시 저장 (응답 속도 향상)
-    redis.set(cacheKey, responsePayload, { ex: 60 }).catch(e => console.error('Redis Set Error:', e));
+    redis.set(cacheKey, responsePayload, 'EX', 60).catch(e => console.error('Redis Set Error:', e));
 
     return new Response(responsePayload, {
       status: 200,

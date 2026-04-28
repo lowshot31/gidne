@@ -1,5 +1,6 @@
-// scripts/data-pump.ts
+import 'dotenv/config';
 import { fetchQuotes, yahooFinance } from '../src/lib/yahoo-finance';
+import { fetchAlpacaQuotes } from '../src/lib/alpaca';
 import { buildSectorData } from '../src/lib/indicators';
 import { calculateMarketPulse } from '../src/lib/market-pulse';
 import {
@@ -12,13 +13,10 @@ import {
   isUSMarketOpen,
   getPollingInterval,
 } from '../src/lib/tickers';
-import { Redis } from '@upstash/redis';
+import { Redis } from 'ioredis';
 import type { MarketDataResponse, TickerQuote, MacroData, IndexQuote } from '../src/lib/types';
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || '',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-});
+const redis = new Redis(process.env.REDIS_URL || '');
 
 const CHART_TICKERS = [
   ...SECTOR_ETFS.map(t => t.ticker),
@@ -65,7 +63,22 @@ function translateEvent(title: string): string {
 async function pumpMarketData() {
   try {
     const allTickers = getAllTickers();
-    const quotes = await fetchQuotes(allTickers);
+    
+    // Alpaca 무료 티어(IEX)는 ETF 거래량이 매우 적어 데이터가 누락되는 현상(0.00%) 발생.
+    // 따라서 ETF들은 Yahoo Finance로 강제 라우팅.
+    const ETF_TICKERS = [...SECTOR_ETFS.map(t => t.ticker), 'SPY', 'QQQ', 'HYG', 'LQD', 'TLT'];
+    
+    const alpacaTickers = allTickers.filter(t => 
+      (/^[A-Z]+$/.test(t) || t.includes('-USD')) && !ETF_TICKERS.includes(t)
+    );
+    const yahooTickers = allTickers.filter(t => !alpacaTickers.includes(t));
+
+    const [alpacaQuotes, yahooQuotes] = await Promise.all([
+      fetchAlpacaQuotes(alpacaTickers),
+      fetchQuotes(yahooTickers)
+    ]);
+
+    const quotes = new Map([...alpacaQuotes, ...yahooQuotes]);
 
     const tickerStrip: TickerQuote[] = TICKER_STRIP.map(t => {
       const q = quotes.get(t.ticker);
@@ -91,7 +104,7 @@ async function pumpMarketData() {
       meta: { isMarketOpen: isUSMarketOpen(), lastUpdated: new Date().toISOString(), pollingInterval: getPollingInterval() },
     };
 
-    await redis.set('gidne_market_data', JSON.stringify(response), { ex: 60 });
+    await redis.set('gidne_market_data', JSON.stringify(response), 'EX', 60);
 
     const msetPayload: Record<string, string> = {};
     for (const [ticker, q] of quotes.entries()) {
@@ -112,7 +125,14 @@ async function pumpMarketData() {
     if (watchedTickers && watchedTickers.length > 0) {
       console.log(`[Pump] 👁️ Refreshing ${watchedTickers.length} watched: ${watchedTickers.slice(0, 5).join(', ')}...`);
       try {
-        const watchedQuotes = await fetchQuotes(watchedTickers);
+        const watchedAlpaca = watchedTickers.filter(t => /^[A-Z]+$/.test(t) || t.includes('-USD'));
+        const watchedYahoo = watchedTickers.filter(t => !watchedAlpaca.includes(t));
+
+        const [wAlpacaQuotes, wYahooQuotes] = await Promise.all([
+          fetchAlpacaQuotes(watchedAlpaca),
+          fetchQuotes(watchedYahoo)
+        ]);
+        const watchedQuotes = new Map([...wAlpacaQuotes, ...wYahooQuotes]);
         const watchedMsetPayload: Record<string, string> = {};
         for (const [ticker, q] of watchedQuotes.entries()) {
           if (q) {
@@ -142,8 +162,8 @@ async function pumpHoldingsData() {
     const holdingTickers = new Set<string>();
     Object.values(SECTOR_HOLDINGS).forEach(stocks => stocks.forEach(s => holdingTickers.add(s.ticker)));
     
-    // 개별 종목 시세 패치
-    const quotes = await fetchQuotes(Array.from(holdingTickers));
+    // 개별 종목 시세 패치 (전부 미국 주식이므로 Alpaca 사용)
+    const quotes = await fetchAlpacaQuotes(Array.from(holdingTickers));
     
     const holdings: Record<string, TickerQuote[]> = {};
     for (const [sectorId, stocks] of Object.entries(SECTOR_HOLDINGS)) {
@@ -154,7 +174,7 @@ async function pumpHoldingsData() {
     }
 
     // gidne_holdings_v2 키에 별도 저장 (만료시간 120초)
-    await redis.set('gidne_holdings_v2', JSON.stringify(holdings), { ex: 120 });
+    await redis.set('gidne_holdings_v2', JSON.stringify(holdings), 'EX', 120);
     
     // 이 개별 종목들도 quote로 저장해두면 좋음
     const holdingsMsetPayload: Record<string, string> = {};
@@ -190,7 +210,7 @@ async function pumpDemandQueues(): Promise<boolean> {
     for (const ticker of tickers) {
       try {
         const data = await fetchFn(ticker);
-        pipeline.set(`${cachePrefix}${ticker}`, JSON.stringify(data), { ex: ttl });
+        pipeline.set(`${cachePrefix}${ticker}`, JSON.stringify(data), 'EX', ttl);
       } catch (err: any) {
         console.error(`[Pump:Queue] Failed ${queueName} for ${ticker}: ${err.message}`);
         if (err.message?.includes('429') || err.message?.includes('Too Many')) {
@@ -208,6 +228,14 @@ async function pumpDemandQueues(): Promise<boolean> {
 
   // 1) Quotes (워치리스트) 처리
   await processQueue('gidne_queue_quote', 'gidne_quote_', async (ticker: string) => {
+    // 1. 먼저 Alpaca 지원 포맷인지 확인
+    if (/^[A-Z]+$/.test(ticker) || ticker.includes('-USD')) {
+      const alpacaResult = await fetchAlpacaQuotes([ticker]);
+      const q = alpacaResult.get(ticker);
+      if (q) return q; // 알피카에서 찾았으면 반환
+    }
+
+    // 2. Alpaca 지원 외(지수 등)이거나 Alpaca에서 실패한 경우 Yahoo Fallback
     const apiTicker = ticker.toUpperCase().endsWith('USDT') ? ticker.toUpperCase().replace('USDT', '-USD') : ticker;
     const q: any = await yahooFinance.quote(apiTicker);
     if (!q) throw new Error('Yahoo API returned empty quote');
@@ -393,7 +421,7 @@ async function pumpChartData() {
         .filter((q: any) => q.close !== null && q.close !== undefined)
         .map((q: any) => ({ time: q.date.toISOString().split('T')[0], open: q.open, high: q.high, low: q.low, close: q.close }));
 
-      await redis.set(cacheKey, JSON.stringify(chartData), { ex: 300 });
+      await redis.set(cacheKey, JSON.stringify(chartData), 'EX', 300);
       await new Promise(r => setTimeout(r, 500));
     } catch (err) {}
   }
@@ -431,7 +459,7 @@ async function pumpCalendar() {
         });
       }
     }
-    await redis.set('gidne_calendar_v2', JSON.stringify(events.slice(0, 15)), { ex: 3600 });
+    await redis.set('gidne_calendar_v2', JSON.stringify(events.slice(0, 15)), 'EX', 3600);
   } catch (err) {}
 }
 

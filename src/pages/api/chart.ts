@@ -59,7 +59,7 @@ export const GET: APIRoute = async (context) => {
       .filter(Boolean);
 
     // [Step 3] Redis에 60초 TTL로 캐싱
-    await redis.set(cacheKey, JSON.stringify(chartData), { ex: 60 });
+    await redis.set(cacheKey, JSON.stringify(chartData), 'EX', 60);
 
     return new Response(JSON.stringify(chartData), { 
       status: 200,
