@@ -1,0 +1,52 @@
+name: Deploy to Oracle VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Compress Build Artifacts
+        run: |
+          tar -czf deploy.tar.gz dist/ scripts/ src/ package.json package-lock.json astro.config.mjs tsconfig.json
+
+      - name: Copy files to Oracle VM via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ${{ secrets.HOST_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "deploy.tar.gz"
+          target: "/home/${{ secrets.HOST_USER }}/gidne"
+
+      - name: Execute deployment scripts on Oracle VM
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ${{ secrets.HOST_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ secrets.HOST_USER }}/gidne
+            tar -xzf deploy.tar.gz
+            rm deploy.tar.gz
+            npm ci --omit=dev
+            pm2 restart all
