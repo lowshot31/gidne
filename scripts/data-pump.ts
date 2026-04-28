@@ -64,20 +64,29 @@ async function pumpMarketData() {
   try {
     const allTickers = getAllTickers();
     
-    // Alpaca 무료 티어(IEX)는 ETF 거래량이 매우 적어 데이터가 누락되는 현상(0.00%) 발생.
-    // 따라서 ETF들은 Yahoo Finance로 강제 라우팅.
+    // 1. 기본 라우팅: ETF는 야후, 일반 주식/코인은 알파카
     const ETF_TICKERS = [...SECTOR_ETFS.map(t => t.ticker), 'SPY', 'QQQ', 'HYG', 'LQD', 'TLT'];
-    
-    const alpacaTickers = allTickers.filter(t => 
-      (/^[A-Z]+$/.test(t) || t.includes('-USD')) && !ETF_TICKERS.includes(t)
-    );
-    const yahooTickers = allTickers.filter(t => !alpacaTickers.includes(t));
+    const initialAlpacaTickers = allTickers.filter(t => (/^[A-Z]+$/.test(t) || t.includes('-USD')) && !ETF_TICKERS.includes(t));
+    const initialYahooTickers = allTickers.filter(t => !initialAlpacaTickers.includes(t));
 
-    const [alpacaQuotes, yahooQuotes] = await Promise.all([
-      fetchAlpacaQuotes(alpacaTickers),
-      fetchQuotes(yahooTickers)
-    ]);
+    // 2. 알파카 1차 호출
+    const alpacaQuotes = await fetchAlpacaQuotes(initialAlpacaTickers);
 
+    // 3. 알파카에서 누락되었거나 데이터가 텅 빈(price == 0) 종목 색출 (Fallback)
+    const missingFromAlpaca = initialAlpacaTickers.filter(t => {
+      const q = alpacaQuotes.get(t);
+      return !q || !q.price || q.price === 0;
+    });
+
+    if (missingFromAlpaca.length > 0) {
+      console.log(`[Pump] ⚠️ Alpaca missed ${missingFromAlpaca.length} tickers. Falling back to Yahoo...`);
+    }
+
+    // 4. 야후 파이낸스 호출 (기본 야후 할당 종목 + 알파카 빵꾸난 종목)
+    const finalYahooTickers = [...initialYahooTickers, ...missingFromAlpaca];
+    const yahooQuotes = await fetchQuotes(finalYahooTickers);
+
+    // 5. 최종 맵 병합
     const quotes = new Map([...alpacaQuotes, ...yahooQuotes]);
 
     const tickerStrip: TickerQuote[] = TICKER_STRIP.map(t => {
@@ -125,13 +134,18 @@ async function pumpMarketData() {
     if (watchedTickers && watchedTickers.length > 0) {
       console.log(`[Pump] 👁️ Refreshing ${watchedTickers.length} watched: ${watchedTickers.slice(0, 5).join(', ')}...`);
       try {
-        const watchedAlpaca = watchedTickers.filter(t => /^[A-Z]+$/.test(t) || t.includes('-USD'));
-        const watchedYahoo = watchedTickers.filter(t => !watchedAlpaca.includes(t));
+        const initialWatchedAlpaca = watchedTickers.filter(t => /^[A-Z]+$/.test(t) || t.includes('-USD'));
+        const initialWatchedYahoo = watchedTickers.filter(t => !initialWatchedAlpaca.includes(t));
 
-        const [wAlpacaQuotes, wYahooQuotes] = await Promise.all([
-          fetchAlpacaQuotes(watchedAlpaca),
-          fetchQuotes(watchedYahoo)
-        ]);
+        const wAlpacaQuotes = await fetchAlpacaQuotes(initialWatchedAlpaca);
+        const missingWAlpaca = initialWatchedAlpaca.filter(t => {
+          const q = wAlpacaQuotes.get(t);
+          return !q || !q.price || q.price === 0;
+        });
+
+        const finalWatchedYahoo = [...initialWatchedYahoo, ...missingWAlpaca];
+        const wYahooQuotes = await fetchQuotes(finalWatchedYahoo);
+        
         const watchedQuotes = new Map([...wAlpacaQuotes, ...wYahooQuotes]);
         const watchedMsetPayload: Record<string, string> = {};
         for (const [ticker, q] of watchedQuotes.entries()) {

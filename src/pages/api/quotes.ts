@@ -45,17 +45,22 @@ export const GET: APIRoute = async (context) => {
         await redis.sadd('gidne_queue_quote', missingTickers[0], ...missingTickers.slice(1));
         await redis.sadd('gidne_watched_tickers', missingTickers[0], ...missingTickers.slice(1));
         
-        // 빠른 응답을 위해 직접 한 번 긁어온다.
+        // 빠른 응답을 위해 1차 알파카, 2차 야후 하이브리드 폴백
+        const initialAlpacaMisses = missingTickers.filter(t => /^[A-Z]+$/.test(t) || t.includes('-USD'));
+        const initialYahooMisses = missingTickers.filter(t => !initialAlpacaMisses.includes(t));
+
         const { fetchAlpacaQuotes } = await import('../../lib/alpaca');
         const { fetchQuotes } = await import('../../lib/yahoo-finance');
 
-        const alpacaMisses = missingTickers.filter(t => /^[A-Z]+$/.test(t) || t.includes('-USD'));
-        const yahooMisses = missingTickers.filter(t => !alpacaMisses.includes(t));
+        const alpacaResult = await fetchAlpacaQuotes(initialAlpacaMisses);
+        
+        const trueMissingAlpaca = initialAlpacaMisses.filter(t => {
+          const q = alpacaResult.get(t);
+          return !q || !q.price || q.price === 0;
+        });
 
-        const [alpacaResult, yahooResult] = await Promise.all([
-          fetchAlpacaQuotes(alpacaMisses),
-          fetchQuotes(yahooMisses)
-        ]);
+        const finalYahooMisses = [...initialYahooMisses, ...trueMissingAlpaca];
+        const yahooResult = await fetchQuotes(finalYahooMisses);
 
         const merged = new Map([...alpacaResult, ...yahooResult]);
 
