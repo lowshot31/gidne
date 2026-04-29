@@ -44,9 +44,11 @@ jobs:
           host: ${{ secrets.HOST_IP }}
           username: ${{ secrets.HOST_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: "20m"
           script: |
             cd /home/${{ secrets.HOST_USER }}/gidne
+            pm2 stop all || true
             tar -xzf deploy.tar.gz
             rm deploy.tar.gz
             npm ci --omit=dev
-            pm2 restart all
+            pm2 restart all || pm2 start all
